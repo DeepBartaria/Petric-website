@@ -1,0 +1,89 @@
+import React from "react";
+
+import { useDialog } from "../context/DialogContext";
+
+import img1 from "../assets/grooming/grooming1.png";
+import img2 from "../assets/grooming/grooming2.png";
+import img3 from "../assets/grooming/grooming3.png";
+import img4 from "../assets/grooming/grooming4.png";
+import img5 from "../assets/grooming/grooming5.png";
+import img6 from "../assets/grooming/grooming6.png";
+
+const services = [
+  {
+    img: img1,
+    title: "Pet's Haircut",
+    description: "Full-body styling by trained pet groomers",
+  },
+  {
+    img: img2,
+    title: "Pet's Bathing",
+    description: "Gentle bath, coat brush, and a fresh feel",
+  },
+  {
+    img: img3,
+    title: "Complete Bath And Brush",
+    description: "Complete Full Body Hair Cut & Bath By Certified Groomers",
+  },
+  {
+    img: img4,
+    title: "Tick Treatment",
+    description: "Effective tick and flea removal, stress-free",
+  },
+  {
+    img: img5,
+    title: "Ear Cleaning",
+    description: "Thorough ear care for comfort and hygiene",
+  },
+  {
+    img: img6,
+    title: "Dental Cleaning",
+    description: "Healthy teeth, fresh breath — vet-recommended",
+  },
+];
+
+export default function BestGroomingServices() {
+  const { showDialog } = useDialog();
+
+  return (
+    <div className="p-4 py-10 sm:p-8 md:p-12 lg:p-20">
+      <div className="mx-auto">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl balsamiq-sans-bold primary-color text-center mb-8 sm:mb-10 md:mb-12 px-4">
+          Best Grooming Services <br className="md:hidden" />
+          For Your Pet
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
+          {services.map((service) => (
+            <div
+              key={service.title}
+              className="bg-white rounded-2xl border p-4 sm:p-6 md:p-8 flex flex-col items-center justify-between text-center w-full"
+            >
+              <div className="w-full h-40 sm:h-48 md:h-60 rounded-full overflow-hidden">
+                <img
+                  src={service.img}
+                  alt={service.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-lg sm:text-xl md:text-2xl primary-color mt-4 sm:mt-6">
+                {service.title}
+              </h3>
+              <p className="mt-2 text-sm sm:text-base">{service.description}</p>
+              {/* <button className="mt-6 sm:mt-8 bg-white border border-[#1D3557] primary-color font-semibold py-2 px-6 sm:px-8 rounded-lg hover:bg-gray-100 transition-colors text-sm sm:text-base" onClick={showDialog}>
+                Book Appointment
+              </button> */}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-center">
+        <button
+          className="mt-6 sm:mt-8 bg-white border border-[#1D3557] primary-color font-semibold py-2 px-6 sm:px-8 rounded-lg hover:bg-gray-100 transition-colors text-sm sm:text-base"
+          onClick={showDialog}
+        >
+          Book Appointment
+        </button>
+      </div>
+    </div>
+  );
+}
