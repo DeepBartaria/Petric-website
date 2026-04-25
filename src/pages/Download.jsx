@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import Footer from "../components/Footer";
 
-import headerbg from "../assets/Homedesktop.jpg";
+import headerbg from "../assets/homedesktop.jpg";
 import headerbgMobile from "../assets/homemobile.jpg";
 
 import StatsBar from "../components/StatsBar";
