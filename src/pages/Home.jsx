@@ -44,10 +44,8 @@ export default function Home() {
       //   backgroundImage: `url(${headerbg})`,
       // }}
       >
-        <h1 className="text-4xl text-center sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl balsamiq-sans-bold leading-tight pt-5 bg-white">
-          Pet Care in Minutes!
-          <br />
-          {/* <span className="text-[#FF5757]">In Minutes !!</span> */}
+        <h1 className="text-4xl text-center sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl balsamiq-sans-bold leading-tight pt-5 bg-white pb-3 md:pb-5">
+          Pet Care in Minutes
         </h1>
         <div
           className="mx-auto flex flex-col justify-end sm:px-8 md:px-20 md:flex-row md:items-start md:justify-around py-10 md:pt-0 h-full rounded overflow-hidden bg-[#FFD000]"
@@ -55,16 +53,8 @@ export default function Home() {
         >
           {/* Left: Text */}
           <div className="flex flex-col px-4 md:mt-10 md:bg-none md:pt-10">
-            {/* <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-5xl balsamiq-sans-bold mb-3 sm:mb-4 leading-tight">
-              Pet Care in Minutes!
-              <br />
-              <span className="text-[#FF5757]">In Minutes !!</span>
-            </h1> */}
-            <p className="mb-1 sm:mb-6 sm:max-w-md md:max-w-lg text-sm sm:text-base md:text-3xl 2xl:text-5xl font-medium text-center md:text-left">
-              They don’t care about when, they just need it now
-            </p>
-            <p className="sm:mb-6 sm:max-w-md md:max-w-lg text-sm sm:text-base md:text-lg 2xl:text-2xl font-medium text-center md:text-left">
-              All pet essentials delivered within 59 minutes.
+            <p className="sm:mb-6 sm:max-w-md md:max-w-lg text-sm sm:text-base md:text-2xl 2xl:text-4xl font-medium text-center md:text-left">
+              Get everything your pet needs — food, medicine, toys, treats — delivered in minutes. Not tomorrow. Not in 2 hours. Minutes.
             </p>
             {!isMobile && (
               <>
@@ -168,12 +158,9 @@ export default function Home() {
       >
         <div className="flex-1 flex flex-col gap-4 text-white max-w-lg">
           <h2 className="text-2xl md:text-4xl outfit-bold">
-            Petric -
-            <br /> Pet Care In Minutes
+            Your Pet's Entire World.
+            <br /> One Tap Away.
           </h2>
-          <p className="text-base md:text-2xl outfit-medium">
-            Everything your pet needs, all in one place.
-          </p>
           <div className="flex gap-4 mt-2">
             <a
               href="https://apps.apple.com/us/app/petric-pet-care-app/id6752010764"

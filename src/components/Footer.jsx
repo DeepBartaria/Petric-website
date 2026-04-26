@@ -88,6 +88,7 @@ export default function Footer() {
               <li><a to="/about/#contact" className="hover:underline">Contact Us</a></li>
               <li><Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link></li>
               <li><Link to="/terms-and-conditions" className="hover:underline">Terms & Conditions</Link></li>
+              <li><Link to="/refund-cancellation" className="hover:underline">Refund & Cancellation</Link></li>
             </ul>
           </div>
           {/* Services */}

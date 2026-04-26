@@ -22,7 +22,7 @@ export default function Story() {
       {/* 1. Header Section */}
       <section className="w-full bg-white pt-10 md:pt-20 pb-4 flex flex-col items-center justify-center text-center px-4">
         <h1 className="text-4xl md:text-5xl lg:text-[5rem] text-black font-normal balsamiq-sans-bold tracking-tight leading-[1.1]">
-          Our love for pets is<br />Emaculate ❤️
+          Built by Pet Parents,  <br />For Pet Parents ❤️
         </h1>
       </section>
 
@@ -36,8 +36,7 @@ export default function Story() {
           </div>
 
           <div className="py-8 text-center text-black font-medium text-lg md:text-xl w-full">
-            At Petric, we don't just see pets. We see our own family.<br className="hidden md:block"/>
-            And our family deserves nothing but the best.
+            We Didn't Build a Delivery App. We Built What We Wished Existed.  
           </div>
         </div>
       </section>
@@ -154,7 +153,11 @@ export default function Story() {
            Our Mission: Reliability You<br className="hidden md:block" /> Can Feel
          </h2>
          <p className="text-black text-base md:text-lg px-2 font-medium leading-relaxed max-w-3xl">
-           Our mission is to be the most trusted, human pet care partner in India. We envision a world where no pet parent ever feels alone or unprepared. From smart refill reminders to celebrating your "Gotcha Day" milestones, we are here to ensure your pet's journey is filled with joy, health, and zero stress.
+           Petric is proudly rooted in Gurugram. <br/>
+           We understand this city: its pace, its pet parents, its lanes, its late nights. <br/>
+           We're not a distant warehouse dispatching boxes. <br/>
+           We're your neighbours, your community, your go-to at any hour. <br/>
+           And as we grow, we carry that same spirit forward. The belief that every pet deserves uninterrupted care, and every pet parent deserves a partner they can actually count on. 
          </p>
       </section>
 

@@ -7,7 +7,7 @@ import product5 from '../assets/product5.png';
 import product6 from '../assets/product6.png';
 import product7 from '../assets/product7.png';
 import product8 from '../assets/product8.png';
-// import product9 from '../assets/product9.png';
+import product9 from '../assets/product9.png';
 import { useDialog } from '../context/DialogContext';
 
 const essentials = [
@@ -15,10 +15,13 @@ const essentials = [
   { name: 'Cat Food', img: product2 },
   { name: 'Treats', img: product3 },
   { name: 'Vet Food', img: product4 },
-  { name: 'Essentials', img: product5 },
-  { name: 'Grooming Products', img: product6 },
   { name: 'Pharmacy', img: product7 },
-  { name: 'Birds & Fish', img: product8 },
+  { name: 'Cat Litter', img: product9 },
+  { name: 'Essentials', img: product5 },
+  { name: 'Toys', img: product1 },
+  { name: 'Walking Gears', img: product2 },
+  { name: 'Grooming Products', img: product6 },
+  { name: 'Fish, Birds & more', img: product8 },
 ];
 
 export default function Essentials() {
@@ -26,7 +29,7 @@ export default function Essentials() {
   return (
     <div className="bg-white p-4 sm:p-8 md:p-12 lg:p-20">
       <div className="mx-auto">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center balsamiq-sans-bold primary-color mb-8 sm:mb-12 md:mb-20 px-4">Essentials</h2>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center balsamiq-sans-bold primary-color mb-8 sm:mb-12 md:mb-20 px-4">Everything you can find on the app</h2>
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-18">
           {essentials.map((item) => (
             <a

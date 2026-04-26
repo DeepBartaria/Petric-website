@@ -15,6 +15,8 @@ import Download from "../pages/Download";
 import Partners from "../pages/Partners";
 import Story from "../pages/Story";
 
+import RefundCancellation from '../pages/RefundCancellation';
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -34,6 +36,7 @@ export default function AppRoutes() {
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       <Route path="/contactus" element={<ContactDetails />} />
       <Route path="/partners" element={<Partners />} />
+      <Route path="/refund-cancellation" element={<RefundCancellation />} />
       {/* Add other routes here, e.g. HealthCare, Products, Grooming, About, Register */}
     </Routes>
   );

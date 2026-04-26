@@ -33,11 +33,9 @@ const Counter = ({ target, duration = 2000, suffix = '' }) => {
 
 const StatsBar = () => {
   const stats = [
+    { icon: experience, count: 1800, suffix: '+', label: 'Pet Products' },
     { icon: clinic, count: 200, suffix: '+', label: 'Pet Brands' },
-    { icon: experience, count: 100, suffix: '+', label: 'Daily Users' },
-    { icon: vet, count: 1, suffix: 'k+', label: 'Downloads' },
-    { icon: vet, count: 100, suffix: '+', label: 'Certified Vets' },
-    { icon: grooming, count: 500, suffix: '+', label: 'Total Orders' }
+    { icon: vet, count: 1, suffix: 'K+', label: 'App Downloads' }
   ];
 
   return (

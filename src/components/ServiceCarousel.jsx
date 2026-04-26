@@ -71,16 +71,17 @@ const groomingCards = [
 ];
 
 const brands = [
-  { img: pedigree, alt: 'Pedigree' },
-  { img: drools, alt: 'drools' },
-  { img: whiskas, alt: 'whiskas' },
-  { img: royalcanin, alt: 'Royal Canin' },
-  { img: sheba, alt: 'Sheba' },
-  { img: brand1, alt: 'brand1' },
-  { img: brand2, alt: 'brand2' },
-  { img: brand3, alt: 'brand3' },
-  { img: brand4, alt: 'brand4' },
-  { img: brand5, alt: 'brand5' },
+  { img: pedigree, alt: 'Pedigree', discount: '26%' },
+  { img: royalcanin, alt: 'Royal Canin', discount: '27%' },
+  { img: brand1, alt: 'Farmina N&D', discount: '28%' },
+  { img: brand2, alt: 'Vet-Life', discount: '23%' },
+  { img: sheba, alt: 'Sheba', discount: '24%' },
+  { img: whiskas, alt: 'Whiskas', discount: '24%' },
+  { img: drools, alt: 'Drools', discount: '28%' },
+  { img: brand3, alt: 'HUFT', discount: '17%' },
+  { img: brand4, alt: 'JerHigh', discount: '15%' },
+  { img: brand5, alt: 'Purina Pro', discount: '23%' },
+  { img: brand1, alt: 'Farmina Matisse', discount: '24%' },
 ];
 
 const settings = {
@@ -114,12 +115,14 @@ const settings = {
   ],
 };
 
-export default function ServiceCarousel() {
+export default function ServiceCarousel({ customHeading }) {
   const [currentTab, setCurrentTab] = useState(0);
   const isMobile = useIsMobile();
   return (
     <div className="w-full flex flex-col items-center py-10 p-4 sm:p-8 md:p-12 lg:p-20">
-      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-4xl balsamiq-sans-bold text-black mb-2 text-center">The Ultimate Pet Care :  <br className='md:hidden' /> Essentials, Everyday, Everywhere</h2>
+      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-4xl balsamiq-sans-bold text-black mb-2 text-center">
+        {customHeading ? customHeading : <>The Ultimate Pet Care :  <br className='md:hidden' /> Essentials, Everyday, Everywhere</>}
+      </h2>
       {/* Tabs */}
       <div className="flex justify-center gap-2 sm:gap-4 md:gap-8 my-6 sm:my-8 md:my-10 w-full border-b">
         {tabs.map((tab, idx) => (
@@ -171,8 +174,8 @@ export default function ServiceCarousel() {
                         className="h-12 sm:h-16 md:h-20 object-contain mx-auto group-hover:scale-110 transition-transform duration-300"
                         style={{ maxWidth: "120px" }}
                       />
-                      <div className="absolute -top-3 -right-6 bg-[#FF5757] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-md">
-                        Up to 50% Off
+                      <div className="absolute -top-3 -right-6 bg-[#FF5757] text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
+                        {brand.discount} Off
                       </div>
                     </div>
                   </Link>
