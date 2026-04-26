@@ -28,7 +28,7 @@ export default function Navbar() {
         {/* Logo (Left, takes available space so center is truly centered) */}
         <div className="flex-1 flex items-center justify-start">
           <a href="/">
-            <img src={logo} alt="logo" className="h-10 sm:h-12 xl:h-14 object-contain" />
+            <img src={logo} alt="logo" className="h-14 sm:h-16 xl:h-20 object-contain" />
           </a>
         </div>
 
@@ -100,14 +100,14 @@ export default function Navbar() {
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="absolute top-full left-4 right-4 mt-3 bg-white/80 backdrop-blur-md rounded-3xl border border-white/50 shadow-2xl overflow-hidden lg:hidden z-50">
+          <div className="absolute top-full left-4 right-4 mt-3 bg-white rounded-3xl border border-gray-100 shadow-2xl overflow-hidden lg:hidden z-50">
             <ul className="flex flex-col py-3">
               {navLinks.map(link => (
                 <li key={link.name}>
                   <NavLink
                     to={link.path}
                     className={({ isActive }) =>
-                      `block text-base font-semibold px-8 py-3 transition-colors ${isActive ? 'text-black bg-white/40 border-l-4 border-yellow-400' : 'text-gray-800 hover:text-black hover:bg-white/20'}`
+                      `block text-base font-semibold px-8 py-3 transition-colors ${isActive ? 'text-black bg-yellow-50 border-l-4 border-yellow-400' : 'text-gray-800 hover:text-black hover:bg-gray-50'}`
                     }
                     end={link.path === '/'}
                     onClick={closeMobileMenu}

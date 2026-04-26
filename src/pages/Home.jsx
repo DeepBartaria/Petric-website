@@ -22,6 +22,7 @@ import headerbg from "../assets/Homedesktop.png";
 import dogs from "../assets/Homedogs.png";
 import headerbgMobile from "../assets/homemobile.jpg";
 import hiImage from "../assets/hi.jpg";
+import heart from "../assets/clip.png";
 
 import StatsBar from "../components/StatsBar";
 
@@ -35,7 +36,7 @@ export default function Home() {
     <>
       <div className='bg-black text-white py-2 overflow-hidden flex items-center'>
         <marquee className="text-xl sm:text-2xl outfit-medium m-0" behavior="scroll" direction="left" scrollamount="12">
-          Now LIVE in Gurgaon ! | <span className="font-bold underline">Use Code: XXX for 25% discount</span>
+          Delivery in Gurugram & nearby areas ! | <span className="font-bold underline">Upto 30% off on selected brands</span>
         </marquee>
       </div>
       <section
@@ -54,7 +55,9 @@ export default function Home() {
           {/* Left: Text */}
           <div className="flex flex-col px-4 md:mt-10 md:bg-none md:pt-10">
             <p className="sm:mb-6 sm:max-w-md md:max-w-lg text-sm sm:text-base md:text-2xl 2xl:text-4xl font-medium text-center md:text-left">
-              Get everything your pet needs — food, medicine, toys, treats — delivered in minutes. Not tomorrow. Not in 2 hours. Minutes.
+              Get everything your pet needs — 
+              <img src={heart} alt="heart" className="inline-block w-6 h-6 md:w-8 md:h-8 ml-2 -mt-1" />
+              <br/>Food, medicine, toys, treats - delivered in 59 minutes.
             </p>
             {!isMobile && (
               <>

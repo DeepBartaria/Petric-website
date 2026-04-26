@@ -34,11 +34,14 @@ export default function PetsProducts() {
       {/* 2. Stat Banner */}
       <StatsBar />
 
+      {/* Offers Banner Carousel */}
+      <Banner />
+
       {/* 3. Categories */}
       <Essentials />
 
       {/* 4. Our Brands */}
-      <ServiceCarousel customHeading="Our Products" />
+      <ServiceCarousel customHeading="Our Brands" />
 
       {/* 5. Testimonials */}
       <Testimonials />

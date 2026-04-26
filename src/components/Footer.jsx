@@ -80,39 +80,35 @@ export default function Footer() {
               <a href="http://wa.me/918295756962" aria-label="Instagram" className=" text-white bg-[#1D3557] rounded-full p-2"><IoLogoWhatsapp size={16} className="sm:w-[18px] sm:h-[18px]" /></a>
             </div>
           </div>
-          {/* Company */}
+          {/* Quick links */}
           <div>
-            <div className="mb-3 text-base sm:text-lg">Company</div>
+            <div className="mb-3 text-base sm:text-lg">Quick links</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
-              <li><Link to="/about" className="hover:underline">About Us</Link></li>
-              <li><a to="/about/#contact" className="hover:underline">Contact Us</a></li>
-              <li><Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link></li>
-              <li><Link to="/terms-and-conditions" className="hover:underline">Terms & Conditions</Link></li>
-              <li><Link to="/refund-cancellation" className="hover:underline">Refund & Cancellation</Link></li>
+              <li><Link to="/story" className="hover:underline">Our Story</Link></li>
+              <li><Link to="/products" className="hover:underline">Pet Products</Link></li>
+              <li><Link to="/" className="hover:underline">Our Catalogue</Link></li>
             </ul>
           </div>
-          {/* Services */}
+          {/* Policies */}
           <div>
-            <div className="mb-3 text-base sm:text-lg">Offerings For Your Pet</div>
+            <div className="mb-3 text-base sm:text-lg">Policies</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
-              <li><a href="/#doctors" className="hover:underline">Tele-Consultation</a></li>
-              {/* <li><Link to="/healthcare" className="hover:underline">Clinic Appointment</Link></li> */}
-              {/* <li><Link to="/grooming" className="hover:underline">Vaccination</Link></li> */}
-              {/* <li><Link to="/products" className="hover:underline">Surgeries</Link></li> */}
-              <li><Link to="/products" className="hover:underline">Pet Products</Link></li>
-              {/* <li><Link to="/products" className="hover:underline">Grooming</Link></li> */}
+              <li><Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link></li>
+              <li><Link to="/shipping-and-delivery" className="hover:underline">Shipping & Delivery</Link></li>
+              <li><Link to="/refund-cancellation" className="hover:underline">Refunds & Cancellations</Link></li>
+              <li><Link to="/terms-and-conditions" className="hover:underline">Terms & Conditions</Link></li>
             </ul>
           </div>
           {/* Popular Searches */}
           <div className="col-span-1 sm:col-span-2 md:col-span-1">
             <div className="mb-3 text-base sm:text-lg">Popular Searches Near You</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
-              <li><Link to="/healthcare" className="hover:underline">Veterinary Hospital Near Me</Link></li>
-              <li><Link to="/products" className="hover:underline">Pet Clinic Near Me</Link></li>
-              <li><Link to="/products" className="hover:underline">Vet Near Me</Link></li>
-              <li><Link to="/grooming" className="hover:underline">Pet Grooming Clinic Near Me</Link></li>
-              <li><Link to="/products" className="hover:underline">Pet Cancer Treatment Near Me</Link></li>
-
+              <li><Link to="/products" className="hover:underline">Pet Pharmacy Near me</Link></li>
+              <li><Link to="/healthcare" className="hover:underline">Vets Near Me</Link></li>
+              <li><Link to="/healthcare" className="hover:underline">Pet Clinic Near Me</Link></li>
+              <li><Link to="/products" className="hover:underline">Pet Food Near Me</Link></li>
+              <li><Link to="/products" className="hover:underline">Pet Treats Near Me</Link></li>
+              <li><Link to="/products" className="hover:underline">Pet Toys Near Me</Link></li>
             </ul>
           </div>
         </div>

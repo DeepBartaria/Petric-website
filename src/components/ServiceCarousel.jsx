@@ -24,6 +24,7 @@ import brand2 from '../assets/brand2.png';
 import brand3 from '../assets/brand3.png';
 import brand4 from '../assets/brand4.png';
 import brand5 from '../assets/brand5.png';
+import brand6 from '../assets/brand6.png';
 import useIsMobile from "../useIsMobile";
 
 
@@ -81,7 +82,7 @@ const brands = [
   { img: brand3, alt: 'HUFT', discount: '17%' },
   { img: brand4, alt: 'JerHigh', discount: '15%' },
   { img: brand5, alt: 'Purina Pro', discount: '23%' },
-  { img: brand1, alt: 'Farmina Matisse', discount: '24%' },
+  { img: brand6, alt: 'Farmina Matisse', discount: '24%' },
 ];
 
 const settings = {
