@@ -6,7 +6,7 @@ import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
-import { FiChevronRight } from 'react-icons/fi';
+import { FiChevronRight, FiGift, FiShield } from 'react-icons/fi';
 
 import banner1 from '../assets/banner/banner1.jpg';
 import banner2 from '../assets/banner/banner2.jpg';
@@ -102,14 +102,14 @@ export default function NewHome() {
         </div>
 
         {/* Mobile View - Sliding Cards */}
-        <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-4 mb-12 pb-2">
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
+        <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-4 mb-10 pb-2">
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
             <img src={banner1} alt="Banner 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           </div>
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
             <img src={banner2} alt="Banner 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           </div>
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
             <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           </div>
         </div>
@@ -120,11 +120,11 @@ export default function NewHome() {
             <h2 className="text-2xl font-bold text-black transition-colors duration-300 hover:text-gray-700 cursor-pointer">Shop by Brands</h2>
             <a href="#" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
           </div>
-          <div className="flex items-center gap-5 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
+          <div className="flex items-center gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
             {brands.map((brand, i) => (
-              <div key={i} className="relative shrink-0 flex items-center justify-center w-24 h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
-                <img src={brand.img} alt={brand.alt} className="w-16 h-16 object-contain transition-transform duration-300 hover:scale-110" />
-                <div className="absolute -top-1 -right-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap z-10 transition-transform duration-300 hover:scale-110">
+              <div key={i} className="relative shrink-0 flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                <img src={brand.img} alt={brand.alt} className="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 hover:scale-110" />
+                <div className="absolute -top-1 -right-2 bg-[#FF5757] text-white text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap z-10 transition-transform duration-300 hover:scale-110">
                   {brand.discount} Off
                 </div>
               </div>
@@ -132,6 +132,43 @@ export default function NewHome() {
             <button className="w-10 h-10 rounded-full bg-black flex items-center justify-center shrink-0 ml-2 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-md hover:bg-gray-800">
               <FiChevronRight className="text-white h-6 w-6 transition-transform duration-300 hover:translate-x-0.5" strokeWidth={3} />
             </button>
+          </div>
+        </div>
+
+        {/* Personalized Welcome Banner */}
+        <div className="mb-14 bg-gradient-to-r from-[#FFF9E5] to-[#F8F9FA] border border-[#FFE880] rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+          
+          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full lg:w-auto shrink-0">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-black whitespace-nowrap">
+              Hello, Pet Parent! 👋
+            </h2>
+            <button className="bg-black text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto">
+              Sign In / Sign Up
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-auto">
+            {/* Autoship Card */}
+            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm border border-transparent hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-[280px]">
+               <div className="bg-blue-50 border border-blue-100 text-blue-600 p-3 rounded-xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                 <FiGift className="w-6 h-6" />
+               </div>
+               <div className="flex flex-col">
+                 <span className="font-extrabold text-black text-[13px] md:text-sm">Save 35% on first order</span>
+                 <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Set up an Autoship →</span>
+               </div>
+            </div>
+
+            {/* Pharmacy Card */}
+            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm border border-transparent hover:border-[#FF5757] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-[280px]">
+               <div className="bg-red-50 border border-red-100 text-[#FF5757] p-3 rounded-xl group-hover:scale-110 group-hover:bg-[#FF5757] group-hover:text-white transition-all duration-300">
+                 <FiShield className="w-6 h-6" />
+               </div>
+               <div className="flex flex-col">
+                 <span className="font-extrabold text-black text-[13px] md:text-sm">Save 50% on first Pharmacy order</span>
+                 <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Explore Pharmacy →</span>
+               </div>
+            </div>
           </div>
         </div>
 
@@ -157,7 +194,7 @@ export default function NewHome() {
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>
@@ -190,7 +227,7 @@ export default function NewHome() {
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>
@@ -223,7 +260,7 @@ export default function NewHome() {
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-sm font-bold px-6 py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>

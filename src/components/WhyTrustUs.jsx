@@ -5,7 +5,7 @@ import trustImg from '../assets/dog.png';
 export default function WhyTrustUs() {
   return (
     <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-10 mb-14 font-sans">
-      <h2 className="text-3xl md:text-5xl text-black text-center mb-8 font-normal tracking-tight">
+      <h2 className="text-2xl md:text-3xl font-bold text-black text-center mb-8">
         Why Pet Parents Trust Us?
       </h2>
       
