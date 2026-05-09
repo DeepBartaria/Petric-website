@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
+import CartFloatingButton from '../components/CartFloatingButton';
 import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
@@ -82,6 +83,12 @@ export default function NewHome() {
         onClose={() => setIsCartOpen(false)} 
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
+      />
+
+      <CartFloatingButton
+        cartItems={cartItems}
+        isCartOpen={isCartOpen}
+        onClick={() => setIsCartOpen(true)}
       />
       
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-10">

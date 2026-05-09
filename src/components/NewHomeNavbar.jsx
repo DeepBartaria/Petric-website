@@ -6,6 +6,7 @@ import logo from '../assets/logo.png';
 
 export default function NewHomeNavbar() {
   const placeholders = ['Type "pedigree"', 'Type "milk"', 'Type "nutrition"'];
+  const quickCategories = ['Dog Food', 'Cat Food', 'Vet Food', 'Treats', 'Toys', 'Meds', 'Supplements', 'Grooming'];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -106,28 +107,60 @@ export default function NewHomeNavbar() {
       </div>
 
       {/* Categories Sub-navbar */}
-      <div className="bg-[#FFD000] py-3.5 px-4 md:px-8 flex items-center gap-6 md:gap-10 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-        <button className="flex items-center gap-2 font-bold text-black whitespace-nowrap border-b-[3px] border-transparent hover:border-black transition-all duration-300 pb-0.5 shrink-0 group">
-          <FiGrid className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
-          All Categories
-        </button>
-        
-        {['Dog Food', 'Cat Food', 'Vet Food', 'Treats', 'Toys', 'Meds', 'Supplements', 'Grooming'].map(category => (
-          <Link 
-            key={category} 
-            to="#" 
-            className="relative overflow-hidden group px-3 py-1 rounded-md text-black text-lg font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] shrink-0 isolate"
-          >
-            <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
-            {category}
-          </Link>
-        ))}
+      <div className="bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8">
+        {/* Mobile */}
+        <div className="md:hidden">
+          <div className="rounded-2xl border border-black/10 bg-white/90 p-2 shadow-sm">
+            <div className="relative">
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-5 bg-gradient-to-r from-white/95 to-transparent"></div>
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-5 bg-gradient-to-l from-white/95 to-transparent"></div>
+              <div className="flex items-center gap-2 overflow-x-auto px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <Link
+                  to="/all-categories"
+                  className="shrink-0 rounded-full bg-black px-3.5 py-2 text-xs font-bold text-white flex items-center gap-1.5 shadow-sm"
+                >
+                  <FiGrid className="h-3.5 w-3.5" strokeWidth={2.8} />
+                  All Categories
+                </Link>
 
-        <div className="flex-1 min-w-[20px]"></div> {/* Spacer */}
+                {quickCategories.map((category) => (
+                  <Link
+                    key={category}
+                    to="/all-categories"
+                    className="shrink-0 whitespace-nowrap rounded-full border border-black/15 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition-colors hover:bg-[#FFF4B8]"
+                  >
+                    {category}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <button className="bg-black text-white p-1 rounded-full shrink-0 flex items-center justify-center h-7 w-7 md:h-8 md:w-8 sticky right-0 transition-transform duration-300 hover:scale-110 hover:shadow-lg">
-          <FiChevronRight className="h-4 w-4 md:h-5 md:w-5 text-[#FFD000]" strokeWidth={3} />
-        </button>
+        {/* Desktop */}
+        <div className="hidden md:flex items-center gap-10 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+          <button className="flex items-center gap-2 font-bold text-black whitespace-nowrap border-b-[3px] border-transparent hover:border-black transition-all duration-300 pb-0.5 shrink-0 group">
+            <FiGrid className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            All Categories
+          </button>
+
+          {quickCategories.map((category) => (
+            <Link
+              key={category}
+              to="#"
+              className="relative overflow-hidden group px-3 py-1 rounded-md text-black text-lg font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] shrink-0 isolate"
+            >
+              <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
+              {category}
+            </Link>
+          ))}
+
+          <div className="flex-1 min-w-[20px]"></div>
+
+          <button className="bg-black text-white p-1 rounded-full shrink-0 flex items-center justify-center h-8 w-8 sticky right-0 transition-transform duration-300 hover:scale-110 hover:shadow-lg">
+            <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
+          </button>
+        </div>
       </div>
     </div>
   );

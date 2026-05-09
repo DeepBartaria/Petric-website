@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import CartSidebar from '../components/CartSidebar';
+import CartFloatingButton from '../components/CartFloatingButton';
 import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
@@ -111,6 +112,12 @@ export default function AllCategories() {
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
       />
+
+      <CartFloatingButton
+        cartItems={cartItems}
+        isCartOpen={isCartOpen}
+        onClick={() => setIsCartOpen(true)}
+      />
       
       {/* Hero Banner */}
       <section className="w-full bg-white bg-cover bg-center bg-no-repeat min-h-[40vh] sm:h-[60vh] md:h-[70vh] flex items-center" style={{ backgroundImage: `url(${headerbg})` }}>
@@ -218,24 +225,24 @@ export default function AllCategories() {
           {/* Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-4 shadow-sm">
-                <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-2xl mb-4 p-2 relative">
+              <div key={i} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm">
+                <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
                    <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                   <div className="absolute top-2 left-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                   <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                       {product.discount} Off
                    </div>
                 </div>
                 <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-sm line-clamp-2 mb-1">{product.name}</h3>
-                   <span className="text-xs text-gray-500 mb-2">{product.weight}</span>
+                   <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
+                   <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
-                         <span className="text-gray-400 text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-lg">{product.price}</span>
+                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>

@@ -15,7 +15,7 @@ export default function WhatsappStickyButton() {
     }, []);
 
     return (
-        <div className="fixed z-50 bottom-6 right-6 group">
+        <div className="fixed z-50 bottom-6 left-6 group">
             <a
                 href={`https://wa.me/${WHATSAPP_NUMBER}`}
                 target="_blank"
@@ -28,7 +28,7 @@ export default function WhatsappStickyButton() {
                     className="w-14 h-14 rounded-full shadow-lg hover:scale-110 transition"
                 />
             </a>
-            {/* <div className={`absolute bottom-full right-0 mb-2 px-3 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-lg border border-gray-200 transition-opacity duration-300 whitespace-nowrap ${showTooltip ? 'opacity-100' : 'opacity-0'}`}>
+            {/* <div className={`absolute bottom-full left-0 mb-2 px-3 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-lg border border-gray-200 transition-opacity duration-300 whitespace-nowrap ${showTooltip ? 'opacity-100' : 'opacity-0'}`}>
                 Order Now
             </div> */}
         </div>
