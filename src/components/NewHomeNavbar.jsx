@@ -139,10 +139,13 @@ export default function NewHomeNavbar() {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-10 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-          <button className="flex items-center gap-2 font-bold text-black whitespace-nowrap border-b-[3px] border-transparent hover:border-black transition-all duration-300 pb-0.5 shrink-0 group">
-            <FiGrid className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
-            All Categories
-          </button>
+          <Link
+              to="/all-categories"
+              className="relative overflow-hidden group px-3 py-1 rounded-md text-black text-lg font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] shrink-0 isolate"
+            >
+              <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
+              All Categories
+            </Link>
 
           {quickCategories.map((category) => (
             <Link

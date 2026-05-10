@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
@@ -131,7 +132,7 @@ export default function NewHome() {
         <div className="mb-14">
           <div className="flex justify-between items-end mb-6">
             <h2 className="text-2xl font-bold text-black transition-colors duration-300 hover:text-gray-700 cursor-pointer">Shop by Brands</h2>
-            <a href="#" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
+            <Link to="/all-brands" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</Link>
           </div>
           <div className="flex items-center gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
             {brands.map((brand, i) => (
@@ -188,26 +189,26 @@ export default function NewHome() {
         {/* Most Bought */}
         <div className="mb-14">
           <h2 className="text-2xl font-bold text-black mb-6">Most Bought</h2>
-          <div className="flex md:grid md:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
             {mostBoughtProducts.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[75vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-4 shadow-sm">
-                <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-2xl mb-4 p-2 relative">
+              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm">
+                <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
                    <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
                    <div className="absolute top-2 left-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                       {product.discount} Off
                    </div>
                 </div>
                 <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-sm line-clamp-2 mb-1">{product.name}</h3>
-                   <span className="text-xs text-gray-500 mb-2">{product.weight}</span>
+                   <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                   <span className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</span>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
-                         <span className="text-gray-400 text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-lg">{product.price}</span>
+                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>
@@ -221,26 +222,26 @@ export default function NewHome() {
         {/* New Arrivals */}
         <div className="mb-14">
           <h2 className="text-2xl font-bold text-black mb-6">New Arrivals</h2>
-          <div className="flex md:grid md:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
             {mostBoughtProducts.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[75vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-4 shadow-sm">
-                <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-2xl mb-4 p-2 relative">
+              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm">
+                <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
                    <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
                    <div className="absolute top-2 left-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                       {product.discount} Off
                    </div>
                 </div>
                 <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-sm line-clamp-2 mb-1">{product.name}</h3>
-                   <span className="text-xs text-gray-500 mb-2">{product.weight}</span>
+                   <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                   <span className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</span>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
-                         <span className="text-gray-400 text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-lg">{product.price}</span>
+                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>
@@ -254,26 +255,26 @@ export default function NewHome() {
         {/* Toys */}
         <div className="mb-14">
           <h2 className="text-2xl font-bold text-black mb-6">Toys</h2>
-          <div className="flex md:grid md:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
             {mostBoughtProducts.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[75vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-4 shadow-sm">
-                <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded-2xl mb-4 p-2 relative">
+              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm">
+                <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
                    <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
                    <div className="absolute top-2 left-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                       {product.discount} Off
                    </div>
                 </div>
                 <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-sm line-clamp-2 mb-1">{product.name}</h3>
-                   <span className="text-xs text-gray-500 mb-2">{product.weight}</span>
+                   <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                   <span className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</span>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
-                         <span className="text-gray-400 text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-lg">{product.price}</span>
+                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-xs md:text-sm font-bold px-4 md:px-6 py-1.5 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
                       </button>

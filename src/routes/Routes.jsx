@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
+import NewHome from '../pages/NewHome';
 import HealthCare from '../pages/HealthCare'
 import PetsProducts from '../pages/PetsProduct';
 import Grooming from '../pages/Grooming';
@@ -21,8 +22,9 @@ import ShippingAndDelivery from '../pages/ShippingAndDelivery';
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="*" element={<Home />} />
-      <Route path="/" element={<Home />} />
+      <Route path="*" element={<NewHome />} />
+      <Route path="/" element={<NewHome />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/download" element={<Download />} />
       <Route path="/healthcare" element={<HealthCare />} />
       <Route path="/products" element={<PetsProducts />} />
