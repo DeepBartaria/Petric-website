@@ -1,45 +1,85 @@
 import React from 'react';
-import { FiCheck } from 'react-icons/fi';
-import trustImg from '../assets/dog.png'; 
+import { FiCheck, FiZap, FiPackage, FiClock } from 'react-icons/fi';
+import trustImg from '../assets/dog.png';
+
+const trustPoints = [
+  { icon: FiZap, title: 'Lightning Fast', subtitle: 'Delivery in 59 mins' },
+  { icon: FiPackage, title: 'Full Inventory', subtitle: 'Deep pet supply stock' },
+  { icon: FiClock, title: 'On-Demand', subtitle: 'Any item, just ask' },
+];
+
+const trustFeatures = [
+  "Delivery within 59 minutes",
+  "Deep pet supply inventory",
+  "Item availability on request"
+];
 
 export default function WhyTrustUs() {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-10 mb-14 font-sans">
-      <h2 className="text-2xl md:text-3xl font-bold text-black text-center mb-8">
-        Why Pet Parents Trust Us?
-      </h2>
-      
-      <div className="border-2 border-[#FFD000] rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center bg-white shadow-sm overflow-hidden">
-        
-        {/* Left Content */}
-        <div className="flex-1 flex flex-col gap-6 md:pl-4">
-          <p className="text-gray-800 text-lg md:text-xl font-medium leading-relaxed max-w-md">
-            We're not just another faceless brand. We stay in touch with the pet parents and assist them in finding exactly what they're looking for.
-          </p>
-          
-          <div className="flex flex-col gap-5 mt-2">
-            {[
-              "Delivery within 59 minutes",
-              "Deep pet supply inventory",
-              "Item availability on request"
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="bg-[#FFD000] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-6 w-6 shadow-sm">
-                  <FiCheck className="h-4 w-4" strokeWidth={4} />
+    <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16 mb-8 sm:mb-12 md:mb-14 font-sans">
+      <div className="text-center mb-6 sm:mb-8 md:mb-12">
+        <span className="inline-block bg-gradient-to-r from-[#FFD000] to-[#FFEC6E] text-black text-[10px] sm:text-xs md:text-sm font-bold px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4 shadow-sm">
+          ❤️ Why Choose Us
+        </span>
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-2 sm:mb-3 md:mb-4">
+          Why Pet Parents <span className="text-[#FF5757]">Trust Us</span>?
+        </h2>
+        <p className="text-gray-500 text-[11px] sm:text-sm md:text-base max-w-lg mx-auto px-4">
+          Not just a brand — we're fellow pet parents who understand what your furry friend needs
+        </p>
+      </div>
+
+      {/* Main Card */}
+      <div className="bg-gradient-to-br from-white via-[#FFF9E5] to-white rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-10 lg:p-12 shadow-xl sm:shadow-2xl border border-[#FFE880]/50 relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-16 -right-16 w-40 h-40 sm:w-60 sm:h-60 bg-[#FFD000]/10 rounded-full" />
+        <div className="absolute -bottom-12 -left-12 w-28 h-28 sm:w-40 sm:h-40 bg-[#FF5757]/10 rounded-full" />
+
+        {/* Content Layout - stacked on mobile, side by side on lg */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 relative z-10">
+          {/* Left Content */}
+          <div className="flex-1 flex flex-col gap-4 sm:gap-6">
+            <p className="text-gray-700 text-sm sm:text-base md:text-lg font-medium leading-relaxed">
+              We're not just another faceless brand. We stay in touch with the pet parents and assist them in finding exactly what they're looking for.
+            </p>
+
+            {/* Trust Points - horizontal scroll on mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {trustPoints.map((point, i) => (
+                <div key={i} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-center gap-3 sm:flex-col sm:items-center sm:text-center shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FFD000] to-[#FFEC6E] rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 sm:shrink shadow-sm">
+                    <point.icon className="h-5 w-5 sm:h-6 sm:w-6 text-black" />
+                  </div>
+                  <div className="sm:mt-2 sm:mb-1">
+                    <h4 className="font-bold text-black text-[11px] sm:text-sm">{point.title}</h4>
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{point.subtitle}</p>
+                  </div>
                 </div>
-                <span className="text-gray-800 font-medium text-lg">{text}</span>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Trust Features */}
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {trustFeatures.map((text, i) => (
+                <div key={i} className="flex items-center gap-2 bg-white/80 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full shadow-sm">
+                  <div className="bg-[#FFD000] text-white rounded-full p-0.5 sm:p-1 flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 shadow-sm">
+                    <FiCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={4} />
+                  </div>
+                  <span className="text-gray-800 font-medium text-[10px] sm:text-sm">{text}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <button className="bg-black hover:bg-gray-800 text-white rounded-[2rem] px-8 py-3 font-semibold w-fit mt-4 transition-colors shadow-md text-sm">
-            Download App
-          </button>
-        </div>
-
-        {/* Right Image */}
-        <div className="flex-1 w-full h-[250px] md:h-[350px] rounded-[1.5rem] overflow-hidden relative shadow-sm border border-gray-100">
-           <img src={trustImg} alt="Pet Parent" className="w-full h-full object-cover" />
+          {/* Right Image - hidden on very small screens, shown on sm+ */}
+          <div className="hidden sm:block flex-1 w-full relative">
+            <div className="bg-gradient-to-br from-[#FFE5E5] to-[#FFF9E5] rounded-xl sm:rounded-2xl p-2 sm:p-4 h-[200px] sm:h-[280px] md:h-[350px] overflow-hidden relative shadow-lg sm:shadow-xl border-2 sm:border-4 border-white">
+              <img src={trustImg} alt="Happy Pet Parent" className="w-full h-full object-cover rounded-lg sm:rounded-xl" />
+                          </div>
+            {/* Decorative elements */}
+            <div className="absolute -top-2 -left-2 sm:-top-4 sm:-left-4 w-4 h-4 sm:w-8 sm:h-8 bg-[#FFD000] rounded-full shadow-md" />
+            <div className="absolute -bottom-1 left-6 sm:-bottom-2 sm:left-10 w-3 h-3 sm:w-5 sm:h-5 bg-[#FF5757] rounded-full shadow-md" />
+          </div>
         </div>
       </div>
     </div>

@@ -14,6 +14,8 @@ import logo from '../assets/logo.png';
 import appstore from '../assets/appstore.svg';
 import playstore from '../assets/playstore.svg';
 import mobiles from "../assets/mobiles.png";
+import hi from '../assets/hi.jpg';
+import laptop_hi from '../assets/laptop_hi.png';
 
 export default function Footer() {
   const { showDialog } = useDialog();
@@ -58,7 +60,9 @@ export default function Footer() {
         className="w-full bg-cover bg-no-repeat p-6 sm:p-8 md:p-10"
         style={{ backgroundImage: `url(${f2})` }}
       >
-        <div className="w-full flex flex-col justify-center items-center ">
+        <img src={laptop_hi} alt="Hi" className="hidden md:block w-full mb-6 sm:mb-8" />
+        <img src={hi} alt="Hi" className="md:hidden w-full mb-6 sm:mb-8" />
+        <div className="w-full flex flex-col justify-center items-center">
           <h3 className="text-lg sm:text-xl primary-color mb-4 text-center">Have A Question ?</h3>
           <div className="flex flex-row gap-3 sm:gap-4 w-full max-w-md justify-center">
             <Link to="/faqs"><button className="bg-[#1D3557] text-white px-6 sm:px-8 py-2 rounded-lg font-semibold shadow transition text-sm sm:text-base">Explore FAQs</button></Link>
