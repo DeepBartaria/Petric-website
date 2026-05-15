@@ -9,7 +9,8 @@ import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
-import { FiChevronRight, FiGift, FiShield } from 'react-icons/fi';
+import VariantPopup from '../components/VariantPopup';
+import { FiChevronRight, FiChevronDown, FiGift, FiShield } from 'react-icons/fi';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/banner2.jpg';
@@ -33,8 +34,19 @@ import product3 from '../assets/product3.png';
 import product4 from '../assets/product4.png';
 
 const mostBoughtProducts = [
-  { id: 1, img: product1, name: "Pedigree Adult Dry Dog Food", weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%" },
-  { id: 2, img: product2, name: "Royal Canin Mini Adult", weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%" },
+  { id: 1, img: product1, name: "Pedigree Adult Dry Dog Food", weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%",
+    variants: [
+      { weight: "1 kg", price: "₹350", oldPrice: "₹450", discount: "22%" },
+      { weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%" },
+      { weight: "10 kg", price: "₹2,500", oldPrice: "₹2,999", discount: "16%" }
+    ]
+  },
+  { id: 2, img: product2, name: "Royal Canin Mini Adult", weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%",
+    variants: [
+      { weight: "1 kg", price: "₹650", oldPrice: "₹750", discount: "13%" },
+      { weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%" }
+    ]
+  },
   { id: 3, img: product3, name: "Whiskas Adult Dry Cat Food", weight: "1.2 kg", price: "₹450", oldPrice: "₹500", discount: "10%" },
   { id: 4, img: product4, name: "Drools Chicken and Egg Adult", weight: "3 kg", price: "₹650", oldPrice: "₹750", discount: "13%" },
 ];
@@ -56,6 +68,8 @@ const brands = [
 export default function NewHome() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
+  const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
+  const [variantPopupProduct, setVariantPopupProduct] = useState(null);
 
   const handleAddToCart = (product) => {
     setCartItems(prev => {
@@ -92,6 +106,13 @@ export default function NewHome() {
         cartItems={cartItems}
         isCartOpen={isCartOpen}
         onClick={() => setIsCartOpen(true)}
+      />
+
+      <VariantPopup 
+        isOpen={isVariantPopupOpen} 
+        onClose={() => setIsVariantPopupOpen(false)} 
+        product={variantPopupProduct} 
+        onAddToCart={handleAddToCart} 
       />
       
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-10">
@@ -202,14 +223,34 @@ export default function NewHome() {
                 </div>
                 <div className="flex flex-col flex-grow">
                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                   <span className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</span>
+                   <div 
+                     className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
+                     onClick={(e) => { 
+                       if (product.variants && product.variants.length > 1) {
+                         e.stopPropagation();
+                         setVariantPopupProduct(product);
+                         setIsVariantPopupOpen(true);
+                       }
+                     }}
+                   >
+                     {product.weight}
+                     {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
+                   </div>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
                          <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (product.variants && product.variants.length > 1) {
+                            setVariantPopupProduct(product);
+                            setIsVariantPopupOpen(true);
+                          } else {
+                            handleAddToCart(product); 
+                          }
+                        }}
                         className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
@@ -235,14 +276,34 @@ export default function NewHome() {
                 </div>
                 <div className="flex flex-col flex-grow">
                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                   <span className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</span>
+                   <div 
+                     className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
+                     onClick={(e) => { 
+                       if (product.variants && product.variants.length > 1) {
+                         e.stopPropagation();
+                         setVariantPopupProduct(product);
+                         setIsVariantPopupOpen(true);
+                       }
+                     }}
+                   >
+                     {product.weight}
+                     {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
+                   </div>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
                          <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (product.variants && product.variants.length > 1) {
+                            setVariantPopupProduct(product);
+                            setIsVariantPopupOpen(true);
+                          } else {
+                            handleAddToCart(product); 
+                          }
+                        }}
                         className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
@@ -268,14 +329,34 @@ export default function NewHome() {
                 </div>
                 <div className="flex flex-col flex-grow">
                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                   <span className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</span>
+                   <div 
+                     className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
+                     onClick={(e) => { 
+                       if (product.variants && product.variants.length > 1) {
+                         e.stopPropagation();
+                         setVariantPopupProduct(product);
+                         setIsVariantPopupOpen(true);
+                       }
+                     }}
+                   >
+                     {product.weight}
+                     {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
+                   </div>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
                          <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (product.variants && product.variants.length > 1) {
+                            setVariantPopupProduct(product);
+                            setIsVariantPopupOpen(true);
+                          } else {
+                            handleAddToCart(product); 
+                          }
+                        }}
                         className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                       >
                          ADD
