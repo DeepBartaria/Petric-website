@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FiArrowLeft, FiShare2, FiInfo, FiPlus, FiMinus, FiChevronRight } from 'react-icons/fi';
+import { FiArrowLeft, FiShare2, FiInfo, FiPlus, FiMinus, FiChevronRight, FiCheck } from 'react-icons/fi';
 import { BsClockHistory } from 'react-icons/bs';
 import { post, get } from '../helper/api';
 
@@ -25,6 +25,17 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalPayable = itemsTotal - couponDiscount;
@@ -156,6 +167,44 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       alert('An error occurred. Please try again.');
     }
   };
+  const handlePayment = async () => {
+    const res = await loadRazorpayScript();
+    
+    if (!res) {
+      alert('Razorpay SDK failed to load. Are you online?');
+      return;
+    }
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sq3zLrq0lg5vDL',
+      amount: totalPayable * 100, // Amount in paise
+      currency: 'INR',
+      name: 'Petric',
+      description: 'Test Transaction',
+      image: '/logo.png', // Assuming a logo is available
+      handler: function (response) {
+        setPaymentSuccess(true);
+        setTimeout(() => {
+           setPaymentSuccess(false);
+           onClose(); // Close the cart after successful payment
+        }, 3000);
+      },
+      prefill: {
+        name: 'Petric User',
+        contact: mobileNumber || '9999999999',
+      },
+      theme: {
+        color: '#FFD000',
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.on('payment.failed', function (response) {
+      alert(`Payment failed: ${response.error.description}`);
+    });
+    paymentObject.open();
+  };
+
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -401,8 +450,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
               type="button"
               onClick={() => {
                 if (isLoggedIn) {
-                  alert('Proceeding to checkout...');
-                  // Implement actual checkout routing/logic here later
+                  handlePayment();
                 } else {
                   setCheckoutStep('mobile');
                 }
@@ -443,6 +491,19 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
             >
               Verify OTP
             </button>
+          </div>
+        )}
+
+        {/* Payment Success Overlay */}
+        {paymentSuccess && (
+          <div className="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center animate-in fade-in duration-300">
+            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-[0_0_0_15px_rgba(220,252,231,0.5)] animate-[bounce_1s_ease-in-out_infinite]">
+              <FiCheck className="w-12 h-12 text-green-600 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-2">Order Confirmed!</h2>
+            <p className="text-gray-500 font-medium text-center px-8">
+              Thank you for shopping with Petric. Your order has been placed successfully.
+            </p>
           </div>
         )}
       </div>
