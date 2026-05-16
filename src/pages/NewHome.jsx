@@ -53,6 +53,7 @@ export default function NewHome() {
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
   const [homePageSections, setHomePageSections] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
     const fetchHomePageProducts = async () => {
@@ -109,6 +110,29 @@ export default function NewHome() {
 
     fetchHomePageProducts();
   }, []);
+  
+  const fetchBrands = async () => {
+    try {
+      const response = await get('product/brand');
+
+      if (response && response.productBrands) {
+        const formattedBrands = response.productBrands
+          .sort((a, b) => (a.order || 999) - (b.order || 999))
+          .map((brand) => ({
+            id: brand._id,
+            img: brand.image,
+            alt: brand.name,
+            name: brand.name,
+          }));
+
+        setBrands(formattedBrands);
+      }
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+    }
+  };
+
+  fetchBrands();
 
   const handleAddToCart = (product) => {
     setCartItems(prev => {
@@ -210,12 +234,14 @@ export default function NewHome() {
           </div>
           <div className="flex items-center gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
             {brands.map((brand, i) => (
-              <div key={i} className="relative shrink-0 flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+              <Link
+                  key={i}
+                  to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                  className="relative shrink-0 flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300"
+                >
                 <img src={brand.img} alt={brand.alt} className="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 hover:scale-110" />
-                <div className="absolute -top-1 -right-2 bg-[#FF5757] text-white text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap z-10 transition-transform duration-300 hover:scale-110">
-                  {brand.discount} Off
-                </div>
-              </div>
+                
+              </Link>
             ))}
             <button className="w-10 h-10 rounded-full bg-black flex items-center justify-center shrink-0 ml-2 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-md hover:bg-gray-800">
               <FiChevronRight className="text-white h-6 w-6 transition-transform duration-300 hover:translate-x-0.5" strokeWidth={3} />
