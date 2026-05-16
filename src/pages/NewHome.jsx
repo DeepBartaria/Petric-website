@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
+import OrdersSidebar from '../components/OrdersSidebar';
+import OrdersFloatingButton from '../components/OrdersFloatingButton';
 import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
@@ -11,6 +13,7 @@ import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import { FiChevronRight, FiChevronDown, FiGift, FiShield } from 'react-icons/fi';
+import { get } from '../helper/api';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/banner2.jpg';
@@ -28,29 +31,6 @@ import brand4 from '../assets/brand4.png';
 import brand5 from '../assets/brand5.png';
 import brand6 from '../assets/brand6.png';
 
-import product1 from '../assets/product1.png';
-import product2 from '../assets/product2.png';
-import product3 from '../assets/product3.png';
-import product4 from '../assets/product4.png';
-
-const mostBoughtProducts = [
-  { id: 1, img: product1, name: "Pedigree Adult Dry Dog Food", weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%",
-    variants: [
-      { weight: "1 kg", price: "₹350", oldPrice: "₹450", discount: "22%" },
-      { weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%" },
-      { weight: "10 kg", price: "₹2,500", oldPrice: "₹2,999", discount: "16%" }
-    ]
-  },
-  { id: 2, img: product2, name: "Royal Canin Mini Adult", weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%",
-    variants: [
-      { weight: "1 kg", price: "₹650", oldPrice: "₹750", discount: "13%" },
-      { weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%" }
-    ]
-  },
-  { id: 3, img: product3, name: "Whiskas Adult Dry Cat Food", weight: "1.2 kg", price: "₹450", oldPrice: "₹500", discount: "10%" },
-  { id: 4, img: product4, name: "Drools Chicken and Egg Adult", weight: "3 kg", price: "₹650", oldPrice: "₹750", discount: "13%" },
-];
-
 const brands = [
   { img: pedigree, alt: 'Pedigree', discount: '26%' },
   { img: royalcanin, alt: 'Royal Canin', discount: '27%' },
@@ -66,10 +46,54 @@ const brands = [
 ];
 
 export default function NewHome() {
+  const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
+  const [homePageSections, setHomePageSections] = useState([]);
+
+  useEffect(() => {
+    const fetchHomePageProducts = async () => {
+      try {
+        const response = await get('home-page/products');
+        if (response && response.type === 'success' && response.homePageProductsData) {
+          const parsedSections = response.homePageProductsData.map(section => ({
+            title: section.title,
+            products: section.products.map(p => {
+              const variants = p.variants?.map(v => ({
+                id: v._id,
+                weight: v.name,
+                price: `₹${v.discountedPrice}`,
+                oldPrice: `₹${v.originalPrice}`,
+                discount: Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
+              })) || [];
+              
+              const defaultVariant = variants[0] || {};
+              
+              return {
+                id: p._id,
+                img: p.productImage,
+                name: p.name,
+                weight: defaultVariant.weight || '',
+                price: defaultVariant.price || '',
+                oldPrice: defaultVariant.oldPrice || '',
+                discount: defaultVariant.discount || '',
+                variants: variants
+              };
+            })
+          }));
+          
+          setHomePageSections(parsedSections);
+        }
+      } catch (error) {
+        console.error("Error fetching home page products:", error);
+      }
+    };
+
+    fetchHomePageProducts();
+  }, []);
 
   const handleAddToCart = (product) => {
     setCartItems(prev => {
@@ -102,10 +126,22 @@ export default function NewHome() {
         onUpdateQuantity={handleUpdateQuantity}
       />
 
+      <OrdersSidebar
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
+      />
+
       <CartFloatingButton
         cartItems={cartItems}
         isCartOpen={isCartOpen}
+        isOrdersOpen={isOrdersOpen}
         onClick={() => setIsCartOpen(true)}
+      />
+
+      <OrdersFloatingButton
+        isCartOpen={isCartOpen}
+        isOrdersOpen={isOrdersOpen}
+        onClick={() => setIsOrdersOpen(true)}
       />
 
       <VariantPopup 
@@ -209,164 +245,68 @@ export default function NewHome() {
           </div>
         </div>
 
-        {/* Most Bought */}
-        <div className="mb-14">
-          <h2 className="text-2xl font-bold text-black mb-6">Most Bought</h2>
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
-            {mostBoughtProducts.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm">
-                <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
-                   <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                   <div className="absolute top-2 right-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                      {product.discount} Off
-                   </div>
+        {/* Dynamic Sections from API */}
+        {homePageSections.map((section, idx) => (
+          <div key={idx} className="mb-14">
+            <h2 className="text-2xl font-bold text-black mb-6">{section.title}</h2>
+            <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
+              {section.products.map((product, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
+                >
+                  <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
+                     <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
+                     {product.discount && product.discount !== '0%' && (
+                       <div className="absolute top-2 right-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          {product.discount} Off
+                       </div>
+                     )}
+                  </div>
+                  <div className="flex flex-col flex-grow">
+                     <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                     <div 
+                       className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
+                       onClick={(e) => { 
+                         if (product.variants && product.variants.length > 1) {
+                           e.stopPropagation();
+                           setVariantPopupProduct(product);
+                           setIsVariantPopupOpen(true);
+                         }
+                       }}
+                     >
+                       {product.weight}
+                       {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
+                     </div>
+                     <div className="mt-auto flex items-center justify-between">
+                        <div className="flex flex-col">
+                           {product.oldPrice && product.oldPrice !== product.price && (
+                             <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                           )}
+                           <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
+                        </div>
+                        <button
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (product.variants && product.variants.length > 1) {
+                              setVariantPopupProduct(product);
+                              setIsVariantPopupOpen(true);
+                            } else {
+                              handleAddToCart(product); 
+                            }
+                          }}
+                          className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        >
+                           ADD
+                        </button>
+                     </div>
+                  </div>
                 </div>
-                <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                   <div 
-                     className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
-                     onClick={(e) => { 
-                       if (product.variants && product.variants.length > 1) {
-                         e.stopPropagation();
-                         setVariantPopupProduct(product);
-                         setIsVariantPopupOpen(true);
-                       }
-                     }}
-                   >
-                     {product.weight}
-                     {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
-                   </div>
-                   <div className="mt-auto flex items-center justify-between">
-                      <div className="flex flex-col">
-                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
-                      </div>
-                      <button
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          if (product.variants && product.variants.length > 1) {
-                            setVariantPopupProduct(product);
-                            setIsVariantPopupOpen(true);
-                          } else {
-                            handleAddToCart(product); 
-                          }
-                        }}
-                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                      >
-                         ADD
-                      </button>
-                   </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* New Arrivals */}
-        <div className="mb-14">
-          <h2 className="text-2xl font-bold text-black mb-6">New Arrivals</h2>
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
-            {mostBoughtProducts.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm">
-                <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
-                   <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                   <div className="absolute top-2 right-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                      {product.discount} Off
-                   </div>
-                </div>
-                <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                   <div 
-                     className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
-                     onClick={(e) => { 
-                       if (product.variants && product.variants.length > 1) {
-                         e.stopPropagation();
-                         setVariantPopupProduct(product);
-                         setIsVariantPopupOpen(true);
-                       }
-                     }}
-                   >
-                     {product.weight}
-                     {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
-                   </div>
-                   <div className="mt-auto flex items-center justify-between">
-                      <div className="flex flex-col">
-                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
-                      </div>
-                      <button
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          if (product.variants && product.variants.length > 1) {
-                            setVariantPopupProduct(product);
-                            setIsVariantPopupOpen(true);
-                          } else {
-                            handleAddToCart(product); 
-                          }
-                        }}
-                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                      >
-                         ADD
-                      </button>
-                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Toys */}
-        <div className="mb-14">
-          <h2 className="text-2xl font-bold text-black mb-6">Toys</h2>
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
-            {mostBoughtProducts.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm">
-                <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
-                   <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                   <div className="absolute top-2 right-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                      {product.discount} Off
-                   </div>
-                </div>
-                <div className="flex flex-col flex-grow">
-                   <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                   <div 
-                     className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
-                     onClick={(e) => { 
-                       if (product.variants && product.variants.length > 1) {
-                         e.stopPropagation();
-                         setVariantPopupProduct(product);
-                         setIsVariantPopupOpen(true);
-                       }
-                     }}
-                   >
-                     {product.weight}
-                     {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
-                   </div>
-                   <div className="mt-auto flex items-center justify-between">
-                      <div className="flex flex-col">
-                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                         <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
-                      </div>
-                      <button
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          if (product.variants && product.variants.length > 1) {
-                            setVariantPopupProduct(product);
-                            setIsVariantPopupOpen(true);
-                          } else {
-                            handleAddToCart(product); 
-                          }
-                        }}
-                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                      >
-                         ADD
-                      </button>
-                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
 
       </main>
       

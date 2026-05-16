@@ -1,29 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { FiArrowLeft, FiShare2, FiInfo, FiPlus, FiMinus, FiChevronRight } from 'react-icons/fi';
 import { BsClockHistory } from 'react-icons/bs';
+import { post, get } from '../helper/api';
 
 export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuantity }) {
-  // Calculate totals
-  const itemsTotal = cartItems.reduce((total, item) => total + (parseInt(item.price.replace('₹', '').replace(',', '')) * item.quantity), 0);
-  const deliveryCharge = 25;
-  const handlingCharge = 2;
-  const surgeCharge = 30;
-  const grandTotal = itemsTotal + deliveryCharge + handlingCharge + surgeCharge;
+  const totalMrp = cartItems.reduce((total, item) => {
+    const priceStr = item.oldPrice ? item.oldPrice : item.price;
+    const numericPrice = parseInt(priceStr.replace('₹', '').replace(',', '')) || 0;
+    return total + (numericPrice * item.quantity);
+  }, 0);
+  
+  const itemsTotal = cartItems.reduce((total, item) => {
+    const numericPrice = parseInt(item.price.replace('₹', '').replace(',', '')) || 0;
+    return total + (numericPrice * item.quantity);
+  }, 0);
+
+  const mrpDiscount = totalMrp - itemsTotal;
+  
   const [checkoutStep, setCheckoutStep] = useState('cart');
   const [mobileNumber, setMobileNumber] = useState('');
   const [otpValue, setOtpValue] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
+  const totalPayable = itemsTotal - couponDiscount;
+  const [deliveryTime, setDeliveryTime] = useState(16);
 
   const isMobileValid = mobileNumber.length === 10;
-  const isOtpValid = otpValue.length === 6;
+  const isOtpValid = otpValue.length === 4;
 
   useEffect(() => {
+    if (localStorage.getItem('petric_token')) {
+      setIsLoggedIn(true);
+    }
+    
+    const storedDeliveryTime = localStorage.getItem('petric_delivery_time');
+    if (storedDeliveryTime) {
+      setDeliveryTime(storedDeliveryTime);
+    }
+
+    const handleDeliveryTimeUpdate = (e) => {
+      setDeliveryTime(e.detail);
+    };
+
+    window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+    
     if (!isOpen) {
       setCheckoutStep('cart');
       setMobileNumber('');
       setOtpValue('');
       setResendTimer(60);
     }
+    
+    return () => {
+      window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -58,27 +93,106 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   };
 
   const handleOtpChange = (event) => {
-    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 6);
+    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 4);
     setOtpValue(digitsOnly);
   };
 
-  const handleContinueToOtp = () => {
-    if (!isMobileValid) {
-      return;
-    }
+  const handleContinueToOtp = async () => {
+    if (!isMobileValid) return;
 
-    setCheckoutStep('otp');
-    setOtpValue('');
-    setResendTimer(60);
+    try {
+      const res = await post('user/sendOtp', { mobileNo: mobileNumber });
+      if (res && res.type === 'error' && res.message === 'Account not found') {
+        const regRes = await post('user/register', { mobileNo: mobileNumber });
+        if (regRes && regRes.type === 'success') {
+          setCheckoutStep('otp');
+          setOtpValue('');
+          setResendTimer(60);
+        } else {
+          alert(regRes?.message || 'Registration failed');
+        }
+      } else if (res && res.type === 'success') {
+        setCheckoutStep('otp');
+        setOtpValue('');
+        setResendTimer(60);
+      } else {
+        alert(res?.message || 'Failed to send OTP');
+      }
+    } catch (err) {
+      alert('An error occurred. Please try again.');
+    }
   };
 
-  const handleResendOtp = () => {
-    if (resendTimer !== 0) {
-      return;
-    }
+  const handleResendOtp = async () => {
+    if (resendTimer !== 0) return;
 
-    setResendTimer(60);
-    setOtpValue('');
+    try {
+      const res = await post('user/sendOtp', { mobileNo: mobileNumber });
+      if (res && res.type === 'success') {
+        setResendTimer(60);
+        setOtpValue('');
+      } else {
+        alert(res?.message || 'Failed to resend OTP');
+      }
+    } catch (err) {
+      alert('An error occurred. Please try again.');
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!isOtpValid) return;
+
+    try {
+      const res = await post('user/verifyOtp', { mobileNo: mobileNumber, otp: otpValue });
+      if (res && res.type === 'success') {
+        localStorage.setItem('petric_token', res.token);
+        localStorage.setItem('petric_user', JSON.stringify({ _id: res._id, name: res.name, mobileNo: res.mobileNo }));
+        setIsLoggedIn(true);
+        setCheckoutStep('cart');
+      } else {
+        alert(res?.message || 'Invalid OTP');
+      }
+    } catch (err) {
+      alert('An error occurred. Please try again.');
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponError('');
+    try {
+      const token = localStorage.getItem('petric_token');
+      if (!token) {
+        setCouponError('Please login to apply coupon');
+        return;
+      }
+      const res = await get('coupon?type=3', { headers: { Authorization: `Bearer ${token}` } });
+      if (res && res.coupons) {
+        const found = res.coupons.find(c => c.couponPromoCode && c.couponPromoCode.toLowerCase() === couponCode.toLowerCase());
+        if (found) {
+          let discountAmt = 0;
+          if (found.couponType === "0") { // Percentage
+             discountAmt = (itemsTotal * found.couponPrice) / 100;
+             if (found.couponMaximumAmount && discountAmt > found.couponMaximumAmount) {
+                 discountAmt = found.couponMaximumAmount;
+             }
+          } else { // Flat
+             discountAmt = found.couponPrice;
+          }
+          if (found.couponMinimumAmount && itemsTotal < found.couponMinimumAmount) {
+             setCouponError(`Minimum order amount should be ₹${found.couponMinimumAmount}`);
+             return;
+          }
+          setAppliedCoupon({ code: found.couponPromoCode, discount: Math.round(discountAmt) });
+        } else {
+          setCouponError('Invalid coupon code');
+        }
+      } else {
+        setCouponError('Invalid coupon code');
+      }
+    } catch (e) {
+      setCouponError('Failed to apply coupon');
+    }
   };
 
   if (!isOpen) return null;
@@ -102,12 +216,6 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
             </button>
             <h2 className="text-xl font-bold text-black">My Cart</h2>
           </div>
-          {checkoutStep === 'cart' && (
-            <button className="flex items-center gap-1.5 text-black font-semibold hover:bg-yellow-50 px-3 py-1.5 rounded-md transition-colors">
-              <FiShare2 className="h-4 w-4" />
-              <span>Share</span>
-            </button>
-          )}
         </div>
 
         {/* Scrollable Content */}
@@ -120,7 +228,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   <BsClockHistory className="h-8 w-8 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-black text-lg">Delivery in 16 minutes</h3>
+                  <h3 className="font-bold text-black text-lg">Delivery in {deliveryTime} minutes</h3>
                   <p className="text-gray-500 text-sm">Shipment of {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</p>
                 </div>
               </div>
@@ -156,6 +264,27 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                 ))}
               </div>
 
+              {/* Coupon Section */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Enter Coupon Code" 
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none uppercase"
+                  />
+                  <button 
+                    onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); } : handleApplyCoupon}
+                    className="bg-[#FFD000] text-black px-4 py-2 rounded-lg text-sm font-bold"
+                  >
+                    {appliedCoupon ? 'Remove' : 'Apply'}
+                  </button>
+                </div>
+                {couponError && <p className="text-red-500 text-xs mt-2">{couponError}</p>}
+                {appliedCoupon && <p className="text-green-600 text-xs mt-2 font-bold">Coupon applied successfully!</p>}
+              </div>
+
               {/* Bill Details */}
               <div className="bg-white rounded-2xl p-4 shadow-sm">
                 <h3 className="font-bold text-black mb-4">Bill details</h3>
@@ -163,39 +292,46 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   <div className="flex justify-between text-gray-700">
                     <div className="flex items-center gap-1.5">
                       <span className="w-3 h-3 bg-gray-500 rounded-sm"></span>
-                      Items total
+                      Total MRP
                     </div>
-                    <span className="font-medium">₹{itemsTotal}</span>
+                    <span className="font-medium">₹{totalMrp}</span>
                   </div>
                   <div className="flex justify-between text-gray-700">
                     <div className="flex items-center gap-1.5">
                       <span className="w-3 h-3 border border-gray-400 rounded-sm"></span>
-                      Delivery charge <FiInfo className="text-gray-400 h-3.5 w-3.5" />
+                      MRP Discount
                     </div>
-                    <span className="font-medium">₹{deliveryCharge}</span>
+                    <span className="font-medium text-green-600">-₹{mrpDiscount}</span>
                   </div>
                   <div className="flex justify-between text-gray-700">
                     <div className="flex items-center gap-1.5">
                       <span className="w-3 h-3 border border-gray-400 rounded-sm"></span>
-                      Handling charge <FiInfo className="text-gray-400 h-3.5 w-3.5" />
+                      Coupon Code
                     </div>
-                    <span className="font-medium">₹{handlingCharge}</span>
+                    <span className="font-medium">{couponDiscount > 0 ? <span className="text-green-600">-₹{couponDiscount}</span> : '₹0'}</span>
                   </div>
                   <div className="flex justify-between text-gray-700">
                     <div className="flex items-center gap-1.5">
                       <span className="w-3 h-3 border border-gray-400 rounded-sm"></span>
-                      High demand surge charge <FiInfo className="text-gray-400 h-3.5 w-3.5" />
+                      Delivery Fee <FiInfo className="text-gray-400 h-3.5 w-3.5" />
                     </div>
-                    <span className="font-medium">₹{surgeCharge}</span>
+                    <span className="font-bold text-green-600">FREE</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 border border-gray-400 rounded-sm"></span>
+                      Platform Fee <FiInfo className="text-gray-400 h-3.5 w-3.5" />
+                    </div>
+                    <span className="font-bold text-green-600">FREE</span>
                   </div>
 
                   <div className="border-t border-dashed my-1"></div>
 
                   <div className="flex justify-between text-black font-bold text-base mt-1">
                     <div className="flex items-center gap-1.5">
-                      Grand total <FiInfo className="text-gray-400 h-3.5 w-3.5" />
+                      Total Payable Amount <FiInfo className="text-gray-400 h-3.5 w-3.5" />
                     </div>
-                    <span>₹{grandTotal}</span>
+                    <span>₹{totalPayable}</span>
                   </div>
                 </div>
               </div>
@@ -238,10 +374,10 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                 type="tel"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                placeholder="Enter 6 digit OTP"
+                placeholder="Enter 4 digit OTP"
                 value={otpValue}
                 onChange={handleOtpChange}
-                maxLength={6}
+                maxLength={4}
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-black outline-none focus:border-black transition-colors"
               />
               <div className="mt-4">
@@ -263,15 +399,22 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
           <div className="absolute bottom-0 w-full p-4 bg-[#f8f9fa] border-t">
             <button
               type="button"
-              onClick={() => setCheckoutStep('mobile')}
+              onClick={() => {
+                if (isLoggedIn) {
+                  alert('Proceeding to checkout...');
+                  // Implement actual checkout routing/logic here later
+                } else {
+                  setCheckoutStep('mobile');
+                }
+              }}
               className="w-full bg-[#FFD000] hover:bg-[#ffdb33] text-black rounded-xl p-4 flex items-center justify-between transition-colors shadow-md"
             >
               <div className="flex flex-col items-start">
-                <span className="font-bold text-lg leading-tight">₹{grandTotal}</span>
+                <span className="font-bold text-lg leading-tight">₹{totalPayable}</span>
                 <span className="text-[10px] font-bold tracking-wider">TOTAL</span>
               </div>
               <div className="flex items-center gap-1 font-medium text-lg">
-                Login to Proceed <FiChevronRight className="h-5 w-5" strokeWidth={2.5} />
+                {isLoggedIn ? 'Proceed to Checkout' : 'Login to Proceed'} <FiChevronRight className="h-5 w-5" strokeWidth={2.5} />
               </div>
             </button>
           </div>
@@ -294,6 +437,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
           <div className="absolute bottom-0 w-full p-4 bg-[#f8f9fa] border-t">
             <button
               type="button"
+              onClick={handleVerifyOtp}
               disabled={!isOtpValid}
               className={`w-full rounded-xl p-4 text-lg font-medium transition-colors shadow-md ${isOtpValid ? 'bg-[#FFD000] hover:bg-[#ffdb33] text-black' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
             >

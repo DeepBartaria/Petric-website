@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin } from 'react-icons/fi';
 import { BsArrowRepeat } from 'react-icons/bs';
 import logo from '../assets/logo.png'; 
+import DeliveryLocationModal from './DeliveryLocationModal';
 
 export default function NewHomeNavbar() {
   const placeholders = ['Type "pedigree"', 'Type "milk"', 'Type "nutrition"'];
@@ -11,12 +12,46 @@ export default function NewHomeNavbar() {
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [deliveryTime, setDeliveryTime] = useState(null);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
+      navigate(`/all-categories?search=${encodeURIComponent(inputValue.trim())}`);
+    }
+  };
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('petric_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Error parsing user data", e);
+      }
+    }
+
+    const storedDeliveryTime = localStorage.getItem('petric_delivery_time');
+    if (storedDeliveryTime) {
+      setDeliveryTime(storedDeliveryTime);
+    }
+
+    const handleDeliveryTimeUpdate = (e) => {
+      setDeliveryTime(e.detail);
+    };
+
+    window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+
     const intervalId = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
     }, 3000);
-    return () => clearInterval(intervalId);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+    };
   }, []);
 
   return (
@@ -43,6 +78,7 @@ export default function NewHomeNavbar() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
+                onKeyDown={handleSearch}
               />
               {/* Animated Placeholder */}
               {!isFocused && !inputValue && (
@@ -61,7 +97,12 @@ export default function NewHomeNavbar() {
               )}
             </div>
             <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block border-b border-black hover:border-[#FFD000] transition-colors duration-200 z-20">
-              <a href="#" className="text-xs text-black font-medium whitespace-nowrap hover:text-gray-700 transition-colors duration-200">Check Delivery Time</a>
+              <button 
+                onClick={() => setIsLocationModalOpen(true)}
+                className="text-xs text-black font-medium whitespace-nowrap hover:text-gray-700 transition-colors duration-200"
+              >
+                {deliveryTime ? `Delivery in ${deliveryTime} mins` : 'Check Delivery Time'}
+              </button>
             </div>
           </div>
         </div>
@@ -79,7 +120,7 @@ export default function NewHomeNavbar() {
           
           <button className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white">
             <FiUser className="h-5 w-5" />
-            <span className="text-sm font-medium">Account</span>
+            <span className="text-sm font-medium">{user ? user.mobileNo : 'Account'}</span>
           </button>
         </div>
 
@@ -99,7 +140,7 @@ export default function NewHomeNavbar() {
                  <BsArrowRepeat className="h-4 w-4" /> Reorder
                </Link>
                <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
-                 <FiUser className="h-4 w-4" /> Account
+                 <FiUser className="h-4 w-4" /> {user ? user.mobileNo : 'Account'}
                </button>
              </div>
            )}
@@ -165,6 +206,27 @@ export default function NewHomeNavbar() {
           </button>
         </div>
       </div>
+
+      {/* Mobile Delivery Time Bar */}
+      <div className="md:hidden bg-black px-4 py-2.5 flex items-center justify-between text-white shadow-sm z-30 relative">
+        <div className="flex items-center gap-2">
+          <FiMapPin className="text-[#FFD000] h-4 w-4 shrink-0" />
+          <span className="text-xs font-medium truncate max-w-[200px]">
+            {deliveryTime ? `Delivery in ${deliveryTime} mins to your location` : 'Want to check delivery time?'}
+          </span>
+        </div>
+        <button 
+          onClick={() => setIsLocationModalOpen(true)}
+          className="bg-[#FFD000] text-black px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wide transition-transform active:scale-95 shrink-0"
+        >
+          {deliveryTime ? 'Change' : 'Check Now'}
+        </button>
+      </div>
+
+      <DeliveryLocationModal 
+        isOpen={isLocationModalOpen} 
+        onClose={() => setIsLocationModalOpen(false)} 
+      />
     </div>
   );
 }

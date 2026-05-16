@@ -7,7 +7,7 @@ import NewHome from './pages/NewHome';
 import AllBrands from './pages/AllBrands';
 import AllCategories from './pages/AllCategories';
 import Reorder from './pages/Reorder';
-import Sample from './pages/Sample';
+import ProductDetails from './pages/ProductDetails';
 
 function App() {
   return (
@@ -18,7 +18,7 @@ function App() {
         <Route path="/all-brands" element={<AllBrands />} />
         <Route path="/all-categories" element={<AllCategories />} />
         <Route path="/reorder" element={<Reorder />} />
-        <Route path="/sample" element={<Sample />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/*" element={<MainLayout />} />
       </Routes>
       <WhatsAppStickyButton />

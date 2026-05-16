@@ -1,10 +1,10 @@
 import React from 'react';
 import { FiShoppingCart } from 'react-icons/fi';
 
-export default function CartFloatingButton({ cartItems = [], isCartOpen = false, onClick }) {
+export default function CartFloatingButton({ cartItems = [], isCartOpen = false, isOrdersOpen = false, onClick }) {
   const itemCount = cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
 
-  if (itemCount < 1 || isCartOpen) {
+  if (itemCount < 1 || isCartOpen || isOrdersOpen) {
     return null;
   }
 

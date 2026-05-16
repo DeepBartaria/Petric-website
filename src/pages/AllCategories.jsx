@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
@@ -7,81 +8,109 @@ import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
+import { get, post } from '../helper/api';
 
 import headerbg from '../assets/petsproductherobg.png';
 
-import product1 from '../assets/product1.png';
-import product2 from '../assets/product2.png';
-import product3 from '../assets/product3.png';
-import product4 from '../assets/product4.png';
-
-const products = [
-  { id: 1, img: product1, name: "Pedigree Adult Dry Dog Food", weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%" },
-  { id: 2, img: product2, name: "Royal Canin Mini Adult", weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%" },
-  { id: 3, img: product3, name: "Whiskas Adult Dry Cat Food", weight: "1.2 kg", price: "₹450", oldPrice: "₹500", discount: "10%" },
-  { id: 4, img: product4, name: "Drools Chicken and Egg Adult", weight: "3 kg", price: "₹650", oldPrice: "₹750", discount: "13%" },
-  { id: 5, img: product1, name: "Pedigree Adult Dry Dog Food", weight: "3 kg", price: "₹850", oldPrice: "₹999", discount: "15%" },
-  { id: 6, img: product2, name: "Royal Canin Mini Adult", weight: "2 kg", price: "₹1,200", oldPrice: "₹1,400", discount: "14%" },
-  { id: 7, img: product3, name: "Whiskas Adult Dry Cat Food", weight: "1.2 kg", price: "₹450", oldPrice: "₹500", discount: "10%" },
-  { id: 8, img: product4, name: "Drools Chicken and Egg Adult", weight: "3 kg", price: "₹650", oldPrice: "₹750", discount: "13%" },
-];
-
-const categoriesData = [
-  {
-    title: "Dog Food",
-    subcategories: ["Dog Dry Food", "Dry Food", "Dog Wet Food", "Wet Food", "Dog Treats", "Fresh Food", "Puppy Food"]
-  },
-  {
-    title: "Cat Food",
-    subcategories: ["Cat Dry Food", "Dry Food", "Cat Wet Food", "Wet Food", "Cat Treats", "Kitten Food"]
-  },
-  {
-    title: "Treats",
-    subcategories: ["Dog Treats", "Cat Treats", "Biscuits"]
-  },
-  {
-    title: "Vet Food",
-    subcategories: ["Dog Vet Diet", "Cat Vet Diet"]
-  },
-  {
-    title: "Pharmacy",
-    subcategories: ["Medicines", "Vitamins & Supplements", "Deworming", "Tick & Fleas", "Gut & Digestion", "Eye & Ear Care", "Cerelac", "Joint Care", "Liver Care", "Skin & Coat Care", "Antibiotics", "Pain & Inflammation", "Cardiac Care", "First Aid", "Urinary & Kidney Care", "Reproductive Care"]
-  },
-  {
-    title: "Cat Litter",
-    subcategories: ["Scented Litter", "Unscented Litter", "Odourlock", "Boxes & Scoopers"]
-  },
-  {
-    title: "Essentials",
-    subcategories: ["Training Pads", "Bowls", "Hygiene Essentials"]
-  },
-  {
-    title: "Toys",
-    subcategories: ["Chew Toys", "Plush Toys", "Squeaky Toys", "Cat Toys"]
-  },
-  {
-    title: "Walking Gears",
-    subcategories: ["Harness", "Leash", "Collars"]
-  },
-  {
-    title: "Grooming Products",
-    subcategories: ["Dog Shampoos", "Cat Shampoos", "Slicker Brushes", "Medicated Shampoos", "Towels & Wipes"]
-  },
-  {
-    title: "Fish, Birds & more",
-    subcategories: ["Aquatic Care", "Small Pets", "Small Feeds"]
-  }
-];
-
 export default function AllCategories() {
-  const [activeCategory, setActiveCategory] = useState("Dog Food");
-  const [activeSubcategory, setActiveSubcategory] = useState("Dog Dry Food");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const searchQuery = searchParams.get('search');
+  const brandId = searchParams.get('brandId');
+  const brandName = searchParams.get('brandName');
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
 
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeSubcategory, setActiveSubcategory] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchInitialData();
   }, []);
+
+  const fetchInitialData = async () => {
+    try {
+      const [catRes, subRes] = await Promise.all([
+        get('product/category'),
+        get('product/subCategory')
+      ]);
+      
+      if (catRes?.categories && subRes?.subCategories) {
+        const combined = catRes.categories.map(c => ({
+          _id: c._id,
+          name: c.name,
+          subcategories: subRes.subCategories.filter(s => s.category?._id === c._id)
+        }));
+        
+        setCategoriesData(combined);
+        if (combined.length > 0) {
+          setActiveCategory(combined[0]);
+          setActiveSubcategory(combined[0].subcategories[0] || null);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeCategory || searchQuery || brandId) {
+      fetchProducts();
+    }
+  }, [activeCategory, activeSubcategory, searchQuery, brandId]);
+
+  const fetchProducts = async () => {
+    try {
+      const body = { page: 1, limit: 20 };
+      
+      if (searchQuery) {
+        body.search = searchQuery;
+      } else if (brandId) {
+        body.brand = [brandId];
+      }
+      
+      if (!searchQuery && !brandId) {
+        if (activeSubcategory && activeSubcategory.name !== "ALL") {
+          body.productSubCategory = [activeSubcategory._id];
+        } else if (activeCategory) {
+          body.productCategory = [activeCategory._id];
+        }
+      }
+
+      const res = await post('product/list/all/forUser', body);
+      if (res && res.products) {
+        setTotalProducts(res.totalProducts || 0);
+        const formatted = res.products.map(p => {
+          const variant = p.variants?.[0] || {};
+          return {
+            id: p._id,
+            img: p.productImage,
+            name: p.name,
+            weight: variant.name || '',
+            price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
+            oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+            discount: (variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice) 
+              ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%' 
+              : ''
+          };
+        });
+        setProducts(formatted);
+      } else {
+        setProducts([]);
+        setTotalProducts(0);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setProducts([]);
+      setTotalProducts(0);
+    }
+  };
 
   const handleAddToCart = (product) => {
     setCartItems(prev => {
@@ -139,25 +168,26 @@ export default function AllCategories() {
             {categoriesData.map((category, idx) => (
               <button 
                 key={idx}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold border transition-colors shrink-0 ${activeCategory === category.title ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200'}`}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold border transition-colors shrink-0 ${activeCategory?._id === category._id ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200'}`}
                 onClick={() => {
-                  setActiveCategory(category.title);
-                  setActiveSubcategory(category.subcategories[0] || "");
+                  if (searchQuery || brandId) navigate('/all-categories');
+                  setActiveCategory(category);
+                  setActiveSubcategory(category.subcategories[0] || null);
                 }}
               >
-                {category.title}
+                {category.name}
               </button>
             ))}
           </div>
           {/* Mobile Subcategories Selector */}
           <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-            {categoriesData.find(c => c.title === activeCategory)?.subcategories.map((sub, i) => (
+            {categoriesData.find(c => c._id === activeCategory?._id)?.subcategories.map((sub, i) => (
               <button 
                 key={i}
-                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${activeSubcategory === sub ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-600'}`}
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${activeSubcategory?._id === sub._id ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-600'}`}
                 onClick={() => setActiveSubcategory(sub)}
               >
-                {sub}
+                {sub.name}
               </button>
             ))}
           </div>
@@ -168,25 +198,27 @@ export default function AllCategories() {
           {categoriesData.map((category, idx) => (
             <div key={idx} className="mb-8">
               <h3 
-                className={`text-[13px] font-extrabold uppercase tracking-widest mb-4 cursor-pointer transition-colors ${activeCategory === category.title ? 'text-black' : 'text-gray-800 hover:text-black'}`}
+                className={`text-[13px] font-extrabold uppercase tracking-widest mb-4 cursor-pointer transition-colors ${activeCategory?._id === category._id ? 'text-black' : 'text-gray-800 hover:text-black'}`}
                 onClick={() => {
-                  setActiveCategory(category.title);
-                  setActiveSubcategory(category.subcategories[0] || "");
+                  if (searchQuery || brandId) navigate('/all-categories');
+                  setActiveCategory(category);
+                  setActiveSubcategory(category.subcategories[0] || null);
                 }}
               >
-                {category.title}
+                {category.name}
               </h3>
               <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
                 {category.subcategories.map((sub, i) => (
                   <span 
                     key={i} 
                     onClick={() => {
-                      setActiveCategory(category.title);
+                      if (searchQuery || brandId) navigate('/all-categories');
+                      setActiveCategory(category);
                       setActiveSubcategory(sub);
                     }}
-                    className={`text-sm cursor-pointer transition-colors ${activeCategory === category.title && activeSubcategory === sub ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'}`}
+                    className={`text-sm cursor-pointer transition-colors ${activeCategory?._id === category._id && activeSubcategory?._id === sub._id ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'}`}
                   >
-                    {sub}
+                    {sub.name}
                   </span>
                 ))}
               </div>
@@ -202,15 +234,27 @@ export default function AllCategories() {
             <div className="text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex flex-wrap items-center gap-1.5 md:gap-2">
                <span className="cursor-pointer hover:text-black transition-colors">HOMEPAGE</span>
                <span>&gt;</span>
-               <span className="cursor-pointer hover:text-black transition-colors">{activeCategory}</span>
-               <span>&gt;</span>
-               <span className="text-black">{activeSubcategory}</span>
+               <span className="cursor-pointer hover:text-black transition-colors">{activeCategory?.name}</span>
+               {activeSubcategory && (
+                 <>
+                   <span>&gt;</span>
+                   <span className="text-black">{activeSubcategory.name}</span>
+                 </>
+               )}
             </div>
             
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight">{activeSubcategory}</h1>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight">
+                {searchQuery 
+                  ? `Search Results for "${searchQuery}"` 
+                  : brandName 
+                    ? `Brand: ${brandName}` 
+                    : (activeSubcategory?.name || activeCategory?.name)}
+              </h1>
               <div className="flex items-center gap-4">
-                 <span className="text-xs text-gray-400 font-bold tracking-wide">PRODUCTS IN CATEGORY: 1365</span>
+                 <span className="text-xs text-gray-400 font-bold tracking-wide">
+                   {searchQuery || brandName ? `FOUND: ${totalProducts}` : `PRODUCTS IN CATEGORY: ${totalProducts}`}
+                 </span>
               </div>
             </div>
           </div>
@@ -222,22 +266,29 @@ export default function AllCategories() {
              </span>
           </div>
 
-          {/* Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map((product, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm">
+              <div 
+                key={i} 
+                onClick={() => navigate(`/product/${product.id}`)}
+                className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
+              >
                 <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
                    <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                   <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
-                      {product.discount} Off
-                   </div>
+                   {product.discount && product.discount !== '0%' && (
+                     <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                        {product.discount} Off
+                     </div>
+                   )}
                 </div>
                 <div className="flex flex-col flex-grow">
                    <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
                    <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
                    <div className="mt-auto flex items-center justify-between">
                       <div className="flex flex-col">
-                         <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                         {product.oldPrice && product.oldPrice !== product.price && (
+                           <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                         )}
                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
                       <button 
