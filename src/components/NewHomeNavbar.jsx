@@ -223,7 +223,15 @@ export default function NewHomeNavbar() {
 
         {/* Actions (Desktop) */}
         <div className="hidden lg:flex items-center gap-4 md:gap-8 flex-shrink-0">
-          <button className="bg-[#FFD000] hover:bg-[#ffdb33] text-black font-medium py-2 md:py-2.5 px-4 md:px-6 rounded-full text-sm md:text-base transition-all duration-300 hover:scale-105 hover:shadow-md">
+          <button
+            onClick={() =>
+              window.open(
+                'https://play.google.com/store/apps/details?id=com.petric.app&hl=en_IN',
+                '_blank'
+              )
+            }
+            className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2.5 rounded-full font-bold transition-all shadow-sm transform hover:scale-105"
+          >
             Download App
           </button>
           <Link to="/reorder" className="group flex flex-row items-center gap-1.5 text-gray-800 hover:text-black transition-all duration-300 hover:scale-105">

@@ -49,13 +49,13 @@ export default function Reorder() {
                  if (!productMap.has(uniqueKey)) {
                    productMap.add(uniqueKey);
                    fetchedProducts.push({
-                     id: uniqueKey,
-                     img: p.productId?.productImage?.[0] || product1,
-                     name: p.productName || p.productId?.name,
-                     weight: p.variantName || p.unit || '',
-                     price: `₹${p.originalAmount || p.discountAmount || 0}`,
-                     qty: 1
-                   });
+                    id: uniqueKey,
+                    img: p.productId?.productImage || product1,
+                    name: p.productName || p.productId?.name,
+                    weight: p.variantName || p.unit || '',
+                    price: `₹${p.discountAmount || p.originalAmount || 0}`,
+                    qty: 1
+                  });
                  }
                });
              }
@@ -63,7 +63,7 @@ export default function Reorder() {
            setReorderProducts(fetchedProducts);
         }
       } catch (e) {
-        console.error("Error fetching past orders", e);
+        console.error("Error fetching past orders", e.response?.data || e);
       } finally {
         setIsLoading(false);
       }

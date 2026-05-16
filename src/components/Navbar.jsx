@@ -57,12 +57,14 @@ export default function Navbar() {
           >
             Contact Us
           </NavLink>
-          <NavLink
-            to="/download"
+          <a
+            href="https://play.google.com/store/apps/details?id=com.petric.app&hl=en_IN"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2.5 rounded-full font-bold transition-all shadow-sm transform hover:scale-105"
           >
             Download App
-          </NavLink>
+          </a>
         </div>
 
         {/* Mobile Menu Button - Align right on mobile */}
@@ -124,13 +126,15 @@ export default function Navbar() {
                 >
                   Contact Us
                 </NavLink>
-                <NavLink
-                  to="/download"
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.petric.app&hl=en_IN"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="block text-center bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-full font-bold transition-all shadow-sm"
                   onClick={closeMobileMenu}
                 >
                   Download App
-                </NavLink>
+                </a>
               </li>
             </ul>
           </div>
