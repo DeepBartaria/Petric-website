@@ -4,6 +4,8 @@ import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin } from 'reac
 import { BsArrowRepeat } from 'react-icons/bs';
 import logo from '../assets/logo.png'; 
 import DeliveryLocationModal from './DeliveryLocationModal';
+import Fuse from "fuse.js";
+import { getHomePageProductsApi,getCategoriesApi, getHomePageCategoriesApi, getBrandsApi, getAllProductsApi } from '../api/homeApi';
 
 export default function NewHomeNavbar() {
   const placeholders = ['Type "pedigree"', 'Type "milk"', 'Type "nutrition"'];
@@ -11,15 +13,26 @@ export default function NewHomeNavbar() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [allProducts, setAllProducts] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const navigate = useNavigate();
+  
 
-  const handleSearch = (e) => {
-    if (e.key === 'Enter' && inputValue.trim()) {
-      navigate(`/all-categories?search=${encodeURIComponent(inputValue.trim())}`);
+  const handleEnterSearch = (e) => {
+    if (
+      e.key === "Enter" &&
+      inputValue.trim()
+    ) {
+      navigate(
+        `/all-categories?search=${encodeURIComponent(
+          inputValue.trim()
+        )}`
+      );
+      setSearchResults([]);
     }
   };
 
@@ -32,6 +45,88 @@ export default function NewHomeNavbar() {
         console.error("Error parsing user data", e);
       }
     }
+    const fetchSearchData = async () => {
+      try {
+        const [
+          homeProductsRes,
+          categoriesRes,
+          homeCategoriesRes,
+          brandsRes,
+          allProductsRes
+        ] = await Promise.all([
+          getHomePageProductsApi(),
+          getCategoriesApi(),
+          getHomePageCategoriesApi(),
+          getBrandsApi(),
+          getAllProductsApi()
+
+        ]);
+        let mergedProducts = [];
+        // 1. HOMEPAGE PRODUCTS
+        if (
+          homeProductsRes?.type === "success"
+        ) {
+          const homeProducts =
+            homeProductsRes.homePageProductsData
+              ?.flatMap(
+                section => section.products || []
+              ) || [];
+          mergedProducts.push(...homeProducts);
+        }
+        // 2. ALL PRODUCTS
+        if (allProductsRes?.products) {
+          mergedProducts.push(
+            ...allProductsRes.products
+          );
+        }
+        // REMOVE DUPLICATES
+        const uniqueProducts =
+          Array.from(
+            new Map(
+              mergedProducts.map(item => [
+                item._id,
+                item
+              ])
+            ).values()
+          );
+        setAllProducts(uniqueProducts);
+        console.log(
+          "ALL SEARCH PRODUCTS",
+          uniqueProducts
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchSearchData();
+    const fetchProducts = async () => {
+      try {
+
+        const response = await getHomePageProductsApi();
+
+        console.log("SEARCH PRODUCTS", response);
+
+        if (response?.type === "success") {
+
+          const sections =
+            response.homePageProductsData || [];
+
+          const flattenedProducts =
+            sections.flatMap(
+              section => section.products || []
+            );
+
+          setAllProducts(flattenedProducts);
+
+        }
+
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchProducts();
 
     const storedDeliveryTime = localStorage.getItem('petric_delivery_time');
     if (storedDeliveryTime) {
@@ -53,6 +148,36 @@ export default function NewHomeNavbar() {
       window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
     };
   }, []);
+  useEffect(() => {
+    if (!inputValue.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const fuse = new Fuse(allProducts, {
+      keys: [
+        "name",
+        "description",
+        "brand.name",
+        "productCategory.name",
+        "productSubCategory.name",
+        "petType",
+        "flavour",
+        "lifeStage"
+      ],
+      threshold: 0.25,
+      includeScore: true,
+    });
+
+    const results =
+      fuse.search(inputValue);
+
+    setSearchResults(
+      results
+        .sort((a, b) => a.score - b.score)
+        .map(result => result.item)
+    );
+
+  }, [inputValue, allProducts]);
 
   return (
     <div className="w-full flex flex-col font-sans">
@@ -69,17 +194,19 @@ export default function NewHomeNavbar() {
             <div className="pl-3 md:pl-4 pr-2 md:pr-3 text-[#FFD000]">
               <FiSearch className="h-5 w-5 md:h-6 md:w-6 transition-transform duration-200 group-hover:scale-110" strokeWidth={3} />
             </div>
+
             <div className="flex-1 h-full relative pr-[10px] md:pr-[120px]">
               <input 
                 type="text"
+                autoComplete='off'
                 className="absolute inset-0 w-full h-full outline-none px-1 text-xs md:text-sm text-gray-700 bg-transparent z-10"
                 placeholder=""
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                onKeyDown={handleSearch}
               />
+
               {/* Animated Placeholder */}
               {!isFocused && !inputValue && (
                 <div className="absolute inset-0 pointer-events-none flex flex-col overflow-hidden">
@@ -96,6 +223,7 @@ export default function NewHomeNavbar() {
                 </div>
               )}
             </div>
+
             <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block border-b border-black hover:border-[#FFD000] transition-colors duration-200 z-20">
               <button 
                 onClick={() => setIsLocationModalOpen(true)}
@@ -105,6 +233,69 @@ export default function NewHomeNavbar() {
               </button>
             </div>
           </div>
+
+          {
+            searchResults.length > 0 && (
+              <div className="absolute top-full left-0 w-full bg-white shadow-2xl rounded-2xl mt-2 z-50 max-h-[500px] overflow-y-auto border border-gray-100">
+
+                {
+                  searchResults.slice(0, 6).map((product) => {
+
+                    const variant =
+                      product.variants?.[0];
+
+                    const price =
+                      variant?.discountedPrice ||
+                      variant?.originalPrice ||
+                      0;
+
+                    return (
+                      <div
+                        key={product._id}
+                        onClick={() => {
+
+                          navigate(`/product/${product._id}`);
+
+                          setInputValue("");
+                          setSearchResults([]);
+
+                        }}
+                        className="flex items-center gap-4 p-4 hover:bg-gray-50 cursor-pointer transition-all border-b border-gray-100 last:border-b-0"
+                      >
+
+                        <img
+                          src={product.productImage}
+                          alt={product.name}
+                          className="w-16 h-16 object-contain bg-gray-50 rounded-xl p-1"
+                        />
+
+                        <div className="flex-1">
+
+                          <h3 className="font-semibold text-sm line-clamp-1">
+                            {product.name}
+                          </h3>
+
+                          <p className="text-xs text-gray-500">
+                            {
+                              product.brand?.name ||
+                              "Petric"
+                            }
+                          </p>
+
+                          <p className="font-bold text-sm mt-1">
+                            ₹{price}
+                          </p>
+
+                        </div>
+
+                      </div>
+                    );
+                  })
+                }
+
+              </div>
+            )
+          }
         </div>
 
         {/* Actions (Desktop) */}
