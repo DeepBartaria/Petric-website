@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
 import WhatsAppStickyButton from './components/WhatsAppStickyButton';
 import BottomPopup from './components/BottomPopup';
-
+import CategoryPage from './pages/CategoryPage';
 import NewHome from './pages/NewHome';
 import AllBrands from './pages/AllBrands';
 import AllCategories from './pages/AllCategories';
@@ -20,6 +20,7 @@ function App() {
         <Route path="/reorder" element={<Reorder />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/*" element={<MainLayout />} />
+        <Route path="/category/:categoryId" element={<CategoryPage />} />
       </Routes>
       <WhatsAppStickyButton />
     </>
