@@ -86,7 +86,19 @@ export default function AllCategories() {
       const res = await post('product/list/all/forUser', body);
       if (res && res.products) {
         setTotalProducts(res.totalProducts || 0);
-        const formatted = res.products.map(p => {
+        const formatted = [...res.products]
+          .sort((a, b) => {
+            // Best Seller first
+            if (a.isBestSeller && !b.isBestSeller) return -1;
+            if (!a.isBestSeller && b.isBestSeller) return 1;
+
+            // Then Best Available
+            if (a.isBestAvailable && !b.isBestAvailable) return -1;
+            if (!a.isBestAvailable && b.isBestAvailable) return 1;
+
+            // Remaining old -> new
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          }).map(p => {
           const variant = p.variants?.[0] || {};
           return {
             id: p._id,
@@ -97,7 +109,10 @@ export default function AllCategories() {
             oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
             discount: (variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice) 
               ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%' 
-              : ''
+              : '',
+            isBestSeller: p.isBestSeller,
+            isBestAvailable: p.isBestAvailable,
+            createdAt: p.createdAt  
           };
         });
         setProducts(formatted);
@@ -274,12 +289,33 @@ export default function AllCategories() {
                 className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
               >
                 <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
-                   <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                   {product.discount && product.discount !== '0%' && (
-                     <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                  <img
+                    src={product.img}
+                    alt={product.name}
+                    className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+                  />
+
+                  <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
+
+                    {product.isBestSeller && (
+                      <div className="bg-black text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                        Best Seller
+                      </div>
+                    )}
+
+                    {!product.isBestSeller && product.isBestAvailable && (
+                      <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                        Best Available
+                      </div>
+                    )}
+
+                    {product.discount && product.discount !== '0%' && (
+                      <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                         {product.discount} Off
-                     </div>
-                   )}
+                      </div>
+                    )}
+
+                  </div>
                 </div>
                 <div className="flex flex-col flex-grow">
                    <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>

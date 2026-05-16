@@ -61,7 +61,19 @@ export default function NewHome() {
         if (response && response.type === 'success' && response.homePageProductsData) {
           const parsedSections = response.homePageProductsData.map(section => ({
             title: section.title,
-            products: section.products.map(p => {
+            products: [...section.products]
+              .sort((a, b) => {
+                // Best Seller first
+                if (a.isBestSeller && !b.isBestSeller) return -1;
+                if (!a.isBestSeller && b.isBestSeller) return 1;
+
+                // Then Best Available
+                if (a.isBestAvailable && !b.isBestAvailable) return -1;
+                if (!a.isBestAvailable && b.isBestAvailable) return 1;
+
+                // Remaining products old -> new
+                return new Date(a.createdAt) - new Date(b.createdAt);
+              }).map(p => {
               const variants = p.variants?.map(v => ({
                 id: v._id,
                 weight: v.name,
@@ -80,7 +92,10 @@ export default function NewHome() {
                 price: defaultVariant.price || '',
                 oldPrice: defaultVariant.oldPrice || '',
                 discount: defaultVariant.discount || '',
-                variants: variants
+                variants: variants,
+                isBestSeller: p.isBestSeller,
+                isBestAvailable: p.isBestAvailable,
+                createdAt: p.createdAt
               };
             })
           }));
@@ -256,14 +271,37 @@ export default function NewHome() {
                   onClick={() => navigate(`/product/${product.id}`)}
                   className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
                 >
+                  
                   <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
-                     <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
-                     {product.discount && product.discount !== '0%' && (
-                       <div className="absolute top-2 right-2 bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                    <img
+                      src={product.img}
+                      alt={product.name}
+                      className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+                    />
+
+                    <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+
+                      {product.isBestSeller && (
+                        <div className="bg-black text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          Best Seller
+                        </div>
+                      )}
+
+                      {!product.isBestSeller && product.isBestAvailable && (
+                        <div className="bg-green-600 text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          Best Available
+                        </div>
+                      )}
+
+                      {product.discount && product.discount !== '0%' && (
+                        <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                           {product.discount} Off
-                       </div>
-                     )}
+                        </div>
+                      )}
+
+                    </div>
                   </div>
+
                   <div className="flex flex-col flex-grow">
                      <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
                      <div 
