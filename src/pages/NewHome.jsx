@@ -16,8 +16,8 @@ import { FiChevronRight, FiChevronDown, FiGift, FiShield } from 'react-icons/fi'
 import { get } from '../helper/api';
 
 import banner1 from '../assets/banner/homepage.png';
-import banner2 from '../assets/banner/banner2.jpg';
-import banner3 from '../assets/banner/banner3.jpg';
+import banner2 from '../assets/banner/oldimg.png';
+import banner3 from '../assets/banner/newimg.png';
 
 import pedigree from '../assets/pedigree.png';
 import drools from '../assets/drools.png';
@@ -82,9 +82,9 @@ export default function NewHome() {
                 oldPrice: `₹${v.originalPrice}`,
                 discount: Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
               })) || [];
-              
+
               const defaultVariant = variants[0] || {};
-              
+
               return {
                 id: p._id,
                 img: p.productImage,
@@ -100,7 +100,7 @@ export default function NewHome() {
               };
             })
           }));
-          
+
           setHomePageSections(parsedSections);
         }
       } catch (error) {
@@ -157,10 +157,10 @@ export default function NewHome() {
     <div className="min-h-screen bg-white font-sans relative">
       <BottomPopup />
       <NewHomeNavbar />
-      
-      <CartSidebar 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+
+      <CartSidebar
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
       />
@@ -183,13 +183,13 @@ export default function NewHome() {
         onClick={() => setIsOrdersOpen(true)}
       />
 
-      <VariantPopup 
-        isOpen={isVariantPopupOpen} 
-        onClose={() => setIsVariantPopupOpen(false)} 
-        product={variantPopupProduct} 
-        onAddToCart={handleAddToCart} 
+      <VariantPopup
+        isOpen={isVariantPopupOpen}
+        onClose={() => setIsVariantPopupOpen(false)}
+        product={variantPopupProduct}
+        onAddToCart={handleAddToCart}
       />
-      
+
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-10">
         {/* Top Banners Section */}
         {/* Desktop View */}
@@ -251,7 +251,7 @@ export default function NewHome() {
 
         {/* Personalized Welcome Banner */}
         <div className="mb-14 bg-gradient-to-r from-[#FFF9E5] to-[#F8F9FA] border border-[#FFE880] rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-          
+
           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full lg:w-auto shrink-0">
             <h2 className="text-2xl md:text-3xl font-extrabold text-black whitespace-nowrap">
               Hello, Pet Parent! 👋
@@ -264,24 +264,24 @@ export default function NewHome() {
           <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-auto">
             {/* Autoship Card */}
             <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm border border-transparent hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-[280px]">
-               <div className="bg-blue-50 border border-blue-100 text-blue-600 p-3 rounded-xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                 <FiGift className="w-6 h-6" />
-               </div>
-               <div className="flex flex-col">
-                 <span className="font-extrabold text-black text-[13px] md:text-sm">Save 35% on first order</span>
-                 <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Set up an Autoship →</span>
-               </div>
+              <div className="bg-blue-50 border border-blue-100 text-blue-600 p-3 rounded-xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <FiGift className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-black text-[13px] md:text-sm">Save 35% on first order</span>
+                <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Set up an Autoship →</span>
+              </div>
             </div>
 
             {/* Pharmacy Card */}
             <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm border border-transparent hover:border-[#FF5757] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-[280px]">
-               <div className="bg-red-50 border border-red-100 text-[#FF5757] p-3 rounded-xl group-hover:scale-110 group-hover:bg-[#FF5757] group-hover:text-white transition-all duration-300">
-                 <FiShield className="w-6 h-6" />
-               </div>
-               <div className="flex flex-col">
-                 <span className="font-extrabold text-black text-[13px] md:text-sm">Save 50% on first Pharmacy order</span>
-                 <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Explore Pharmacy →</span>
-               </div>
+              <div className="bg-red-50 border border-red-100 text-[#FF5757] p-3 rounded-xl group-hover:scale-110 group-hover:bg-[#FF5757] group-hover:text-white transition-all duration-300">
+                <FiShield className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-black text-[13px] md:text-sm">Save 50% on first Pharmacy order</span>
+                <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Explore Pharmacy →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -292,13 +292,14 @@ export default function NewHome() {
             <h2 className="text-2xl font-bold text-black mb-6">{section.title}</h2>
             <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
               {section.products.map((product, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   onClick={() => navigate(`/product/${product.id}`)}
                   className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
                 >
                   
                   <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
+
                     <img
                       src={product.img}
                       alt={product.name}
@@ -329,42 +330,42 @@ export default function NewHome() {
                   </div>
 
                   <div className="flex flex-col flex-grow">
-                     <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                     <div 
-                       className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
-                       onClick={(e) => { 
-                         if (product.variants && product.variants.length > 1) {
-                           e.stopPropagation();
-                           setVariantPopupProduct(product);
-                           setIsVariantPopupOpen(true);
-                         }
-                       }}
-                     >
-                       {product.weight}
-                       {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
-                     </div>
-                     <div className="mt-auto flex items-center justify-between">
-                        <div className="flex flex-col">
-                           {product.oldPrice && product.oldPrice !== product.price && (
-                             <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                           )}
-                           <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
-                        </div>
-                        <button
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            if (product.variants && product.variants.length > 1) {
-                              setVariantPopupProduct(product);
-                              setIsVariantPopupOpen(true);
-                            } else {
-                              handleAddToCart(product); 
-                            }
-                          }}
-                          className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                        >
-                           ADD
-                        </button>
-                     </div>
+                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                    <div
+                      className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
+                      onClick={(e) => {
+                        if (product.variants && product.variants.length > 1) {
+                          e.stopPropagation();
+                          setVariantPopupProduct(product);
+                          setIsVariantPopupOpen(true);
+                        }
+                      }}
+                    >
+                      {product.weight}
+                      {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
+                    </div>
+                    <div className="mt-auto flex items-center justify-between">
+                      <div className="flex flex-col">
+                        {product.oldPrice && product.oldPrice !== product.price && (
+                          <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                        )}
+                        <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (product.variants && product.variants.length > 1) {
+                            setVariantPopupProduct(product);
+                            setIsVariantPopupOpen(true);
+                          } else {
+                            handleAddToCart(product);
+                          }
+                        }}
+                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                      >
+                        ADD
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -373,14 +374,14 @@ export default function NewHome() {
         ))}
 
       </main>
-      
+
       <div className="w-full">
         <Benefit />
         <WhyTrustUs />
         <OffersBanner />
         <Testimonials />
       </div>
-      
+
       <Footer />
     </div>
   );

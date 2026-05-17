@@ -182,12 +182,57 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       name: 'Petric',
       description: 'Test Transaction',
       image: '/logo.png', // Assuming a logo is available
-      handler: function (response) {
-        setPaymentSuccess(true);
-        setTimeout(() => {
-           setPaymentSuccess(false);
-           onClose(); // Close the cart after successful payment
-        }, 3000);
+      handler: async function (response) {
+        try {
+          const bookingData = {
+            type: "3", // FoodShop / products
+            typeOfBooking: "Order",
+            totalPayable: totalPayable,
+            totalPrice: itemsTotal,
+            couponDiscountedAmount: couponDiscount,
+            paymentId: response.razorpay_payment_id,
+            isLivePaymentTest: true,
+            lat: 28.6139, // Default Delhi coordinate, since backend requires it
+            lng: 77.2090,
+            products: cartItems.map(item => ({
+              productId: item.id,
+              productName: item.name,
+              variantId: item.variantId || null,
+              variantName: item.weight || null,
+              quantity: item.quantity,
+              originalAmount: parseInt(item.oldPrice?.toString().replace(/\\D/g, '')) || 0,
+              discountAmount: (parseInt(item.oldPrice?.toString().replace(/\\D/g, '')) || 0) - (parseInt(item.price?.toString().replace(/\\D/g, '')) || 0),
+            })),
+          };
+          
+          const backendRes = await post('booking/add', bookingData, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('petric_token')}` }
+          });
+
+          if (backendRes && backendRes.type === 'success') {
+            try {
+              await post('logs/add', {
+                description: `Placed an order of ₹${totalPayable}`,
+                type: "Order"
+              }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('petric_token')}` }
+              });
+            } catch (logErr) {
+              console.error("Failed to log order:", logErr);
+            }
+
+            setPaymentSuccess(true);
+            setTimeout(() => {
+               setPaymentSuccess(false);
+               onClose(); // Close the cart after successful payment
+               // Ideally empty the cart here as well
+            }, 3000);
+          } else {
+            alert(backendRes?.message || 'Payment completed, but failed to create order in database.');
+          }
+        } catch (error) {
+          alert('Error creating order in database: ' + error.message);
+        }
       },
       prefill: {
         name: 'Petric User',

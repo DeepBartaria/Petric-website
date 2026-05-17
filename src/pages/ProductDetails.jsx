@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FiChevronDown, FiMinus, FiPlus, FiShoppingBag, FiStar, FiCheck, FiHelpCircle } from 'react-icons/fi';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
+import CartSidebar from '../components/CartSidebar';
+import CartFloatingButton from '../components/CartFloatingButton';
 import { get, post } from '../helper/api';
 
 function ProductCard({ product }) {
@@ -52,6 +54,42 @@ export default function ProductDetails() {
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [mainImage, setMainImage] = useState(null);
+
+  const [cartItems, setCartItems] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    // Map product format to cart format
+    const cartProduct = {
+       id: product._id,
+       img: product.productImage,
+       brand: product.brand?.name || 'Petric',
+       name: product.name,
+       weight: selectedSize ? selectedSize.name : '',
+       price: (selectedSize?.discountedPrice || selectedSize?.originalPrice || product.originalPrice || 0).toString(),
+       oldPrice: (selectedSize?.originalPrice || product.originalPrice || 0).toString(),
+       variantId: selectedSize ? selectedSize._id : null
+    };
+
+    setCartItems(prev => {
+      const existing = prev.find(item => item.id === cartProduct.id && item.variantId === cartProduct.variantId);
+      if (existing) {
+        return prev.map(item => (item.id === cartProduct.id && item.variantId === cartProduct.variantId) ? { ...item, quantity: item.quantity + quantity } : item);
+      }
+      return [...prev, { ...cartProduct, quantity: quantity }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const handleUpdateQuantity = (id, newQuantity) => {
+    if (newQuantity < 1) {
+      setCartItems(prev => prev.filter(item => item.id !== id));
+      return;
+    }
+    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
+  };
 
   const [similarProducts, setSimilarProducts] = useState([]);
 
@@ -200,8 +238,21 @@ export default function ProductDetails() {
   const galleryImages = [product.productImage, ...(product.productGallery || [])].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-white font-sans text-black">
+    <div className="min-h-screen bg-white font-sans text-black relative">
       <NewHomeNavbar />
+
+      <CartSidebar 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+      />
+      
+      <CartFloatingButton 
+        cartItems={cartItems}
+        isCartOpen={isCartOpen}
+        onClick={() => setIsCartOpen(true)}
+      />
 
       <main className="mx-auto max-w-[1400px] px-3 md:px-8 py-4 md:py-10">
         {/* Breadcrumb */}
@@ -305,7 +356,10 @@ export default function ProductDetails() {
                   <FiPlus className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <button className="flex-1 flex h-9 md:h-10 items-center justify-center gap-1.5 rounded-full bg-[#FFD000] px-4 text-xs md:text-sm font-extrabold hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all">
+              <button 
+                onClick={handleAddToCart}
+                className="flex-1 flex h-9 md:h-10 items-center justify-center gap-1.5 rounded-full bg-[#FFD000] px-4 text-xs md:text-sm font-extrabold hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+              >
                 <FiShoppingBag className="h-4 w-4" />
                 <span>Add to Cart</span>
               </button>
