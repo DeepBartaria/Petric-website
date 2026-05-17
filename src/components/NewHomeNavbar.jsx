@@ -1,12 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin, FiChevronDown } from 'react-icons/fi';
+import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin, FiChevronDown, FiX, FiTrendingUp } from 'react-icons/fi';
 import { BsArrowRepeat } from 'react-icons/bs';
-import logo from '../assets/logo.png'; 
+import logo from '../assets/logo.png';
 import DeliveryLocationModal from './DeliveryLocationModal';
 import Fuse from "fuse.js";
-import { getHomePageProductsApi, getCategoriesApi, getHomePageCategoriesApi, getBrandsApi, getAllProductsApi } from '../api/homeApi';
+import { getHomePageProductsApi, getAllProductsApi } from '../api/homeApi';
 import { get } from '../helper/api';
+
+// Popular/trending searches shown when input is focused but empty
+const TRENDING_SEARCHES = [
+  'Pedigree dog food',
+  'Royal Canin',
+  'Cat wet food',
+  'Drools chicken',
+  'Dog treats',
+  'Puppy food',
+];
 
 export default function NewHomeNavbar() {
   const placeholders = ['Type "pedigree"', 'Type "milk"', 'Type "nutrition"'];
@@ -15,49 +25,93 @@ export default function NewHomeNavbar() {
   const [inputValue, setInputValue] = useState("");
   const [allProducts, setAllProducts] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [fuseInstance, setFuseInstance] = useState(null);
 
-  // Dynamic categories state
   const [navCategories, setNavCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [categorySubcategories, setCategorySubcategories] = useState({});
   const hoverTimeoutRef = useRef(null);
   const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
+  const searchContainerRef = useRef(null);
 
   const navigate = useNavigate();
 
-  const handleEnterSearch = (e) => {
-    if (e.key === "Enter" && inputValue.trim()) {
-      navigate(`/all-categories?search=${encodeURIComponent(inputValue.trim())}`);
-      setSearchResults([]);
+  const showDropdown = isFocused && (inputValue.trim().length > 0 ? searchResults.length > 0 : true);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setIsFocused(false);
+        setHighlightedIndex(-1);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Keyboard navigation inside dropdown
+  const handleKeyDown = (e) => {
+    const items = inputValue.trim() ? searchResults : [];
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex(prev => Math.min(prev + 1, items.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(prev => Math.max(prev - 1, -1));
+    } else if (e.key === 'Escape') {
+      setIsFocused(false);
+      setHighlightedIndex(-1);
+      inputRef.current?.blur();
+    } else if (e.key === 'Enter') {
+      if (highlightedIndex >= 0 && items[highlightedIndex]) {
+        // Navigate to highlighted product
+        navigateToProduct(items[highlightedIndex]);
+      } else if (inputValue.trim()) {
+        // Search results page
+        navigateToSearch(inputValue.trim());
+      }
     }
   };
 
-  // Fetch dynamic categories for navbar
+  const navigateToProduct = (product) => {
+    navigate(`/product/${product._id}`);
+    setInputValue("");
+    setSearchResults([]);
+    setIsFocused(false);
+    setHighlightedIndex(-1);
+  };
+
+  const navigateToSearch = (query) => {
+    navigate(`/all-categories?search=${encodeURIComponent(query)}`);
+    setInputValue("");
+    setSearchResults([]);
+    setIsFocused(false);
+    setHighlightedIndex(-1);
+  };
+
   const fetchNavCategories = async () => {
     try {
       const res = await get('product/category');
-      if (res?.categories) {
-        setNavCategories(res.categories);
-      }
+      if (res?.categories) setNavCategories(res.categories);
     } catch (error) {
       console.error("Error fetching nav categories:", error);
     }
   };
 
-  // Fetch subcategories for a category (cached)
   const fetchSubcategories = async (categoryId) => {
-    if (categorySubcategories[categoryId]) return; // already fetched
+    if (categorySubcategories[categoryId]) return;
     try {
       const res = await get(`product/subCategory?categoryId=${categoryId}`);
       if (res?.subCategories) {
-        setCategorySubcategories(prev => ({
-          ...prev,
-          [categoryId]: res.subCategories
-        }));
+        setCategorySubcategories(prev => ({ ...prev, [categoryId]: res.subCategories }));
       }
     } catch (error) {
       console.error("Error fetching subcategories:", error);
@@ -71,9 +125,7 @@ export default function NewHomeNavbar() {
   };
 
   const handleCategoryLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredCategory(null);
-    }, 200);
+    hoverTimeoutRef.current = setTimeout(() => setHoveredCategory(null), 200);
   };
 
   const handleDropdownEnter = () => {
@@ -81,9 +133,7 @@ export default function NewHomeNavbar() {
   };
 
   const handleDropdownLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredCategory(null);
-    }, 200);
+    hoverTimeoutRef.current = setTimeout(() => setHoveredCategory(null), 200);
   };
 
   useEffect(() => {
@@ -102,14 +152,32 @@ export default function NewHomeNavbar() {
         ]);
         let mergedProducts = [];
         if (homeProductsRes?.type === "success") {
-          const homeProducts = homeProductsRes.homePageProductsData?.flatMap(section => section.products || []) || [];
+          const homeProducts = homeProductsRes.homePageProductsData?.flatMap(s => s.products || []) || [];
           mergedProducts.push(...homeProducts);
         }
-        if (allProductsRes?.products) {
-          mergedProducts.push(...allProductsRes.products);
-        }
-        const uniqueProducts = Array.from(new Map(mergedProducts.map(item => [item._id, item])).values());
-        setAllProducts(uniqueProducts);
+        if (allProductsRes?.products) mergedProducts.push(...allProductsRes.products);
+
+        const unique = Array.from(new Map(mergedProducts.map(p => [p._id, p])).values());
+        setAllProducts(unique);
+
+        // Build Fuse index once
+        const fuse = new Fuse(unique, {
+          keys: [
+            { name: 'name', weight: 0.5 },
+            { name: 'brand.name', weight: 0.2 },
+            { name: 'productCategory.name', weight: 0.1 },
+            { name: 'productSubCategory.name', weight: 0.1 },
+            { name: 'petType', weight: 0.05 },
+            { name: 'description', weight: 0.05 },
+          ],
+          threshold: 0.4,        // More lenient: catches typos and partial matches
+          distance: 100,         // Allow matches further into string
+          minMatchCharLength: 2, // Start matching from 2 chars
+          includeScore: true,
+          ignoreLocation: true,  // Don't penalize matches at end of string
+          useExtendedSearch: true, // Enables prefix matching with ^
+        });
+        setFuseInstance(fuse);
       } catch (error) {
         console.log(error);
       }
@@ -134,16 +202,47 @@ export default function NewHomeNavbar() {
     };
   }, []);
 
+  // Search with deduplication and best-match scoring
   useEffect(() => {
-    if (!inputValue.trim()) { setSearchResults([]); return; }
-    const fuse = new Fuse(allProducts, {
-      keys: ["name", "description", "brand.name", "productCategory.name", "productSubCategory.name", "petType", "flavour", "lifeStage"],
-      threshold: 0.25,
-      includeScore: true,
-    });
-    const results = fuse.search(inputValue);
-    setSearchResults(results.sort((a, b) => a.score - b.score).map(r => r.item));
-  }, [inputValue, allProducts]);
+    const query = inputValue.trim();
+    if (!query || !fuseInstance) {
+      setSearchResults([]);
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    // Run both a prefix search (^query) and a fuzzy search, merge results
+    const prefixResults = fuseInstance.search(`^${query}`);
+    const fuzzyResults = fuseInstance.search(query);
+
+    // Merge: prefix results first, then fuzzy, deduplicated by _id
+    const seen = new Set();
+    const merged = [];
+    for (const r of [...prefixResults, ...fuzzyResults]) {
+      if (!seen.has(r.item._id)) {
+        seen.add(r.item._id);
+        merged.push(r);
+      }
+    }
+
+    // Sort by score (lower = better match)
+    merged.sort((a, b) => (a.score ?? 1) - (b.score ?? 1));
+
+    setSearchResults(merged.map(r => r.item).slice(0, 8));
+    setHighlightedIndex(-1);
+  }, [inputValue, fuseInstance]);
+
+  // Highlight matching text in product name
+  const highlightMatch = (text, query) => {
+    if (!query.trim() || !text) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part)
+        ? <mark key={i} className="bg-[#FFD000]/60 text-black rounded-sm px-0.5 not-italic">{part}</mark>
+        : part
+    );
+  };
 
   return (
     <div className="w-full flex flex-col font-sans">
@@ -155,23 +254,25 @@ export default function NewHomeNavbar() {
         </Link>
 
         {/* Search */}
-        <div className="flex-1 max-w-3xl relative group">
-          <div className="relative flex items-center w-full h-10 md:h-12 rounded-full border border-gray-400 bg-white overflow-hidden transition-colors duration-200 group-hover:border-black">
+        <div className="flex-1 max-w-3xl relative group" ref={searchContainerRef}>
+          <div className={`relative flex items-center w-full h-10 md:h-12 rounded-full border bg-white overflow-hidden transition-colors duration-200 ${isFocused ? 'border-black shadow-md' : 'border-gray-400 group-hover:border-black'}`}>
             <div className="pl-3 md:pl-4 pr-2 md:pr-3 text-[#FFD000]">
               <FiSearch className="h-5 w-5 md:h-6 md:w-6 transition-transform duration-200 group-hover:scale-110" strokeWidth={3} />
             </div>
-            <div className="flex-1 h-full relative pr-[10px] md:pr-[120px]">
+
+            <div className="flex-1 h-full relative pr-2 md:pr-[130px]">
               <input
+                ref={inputRef}
                 type="text"
-                autoComplete='off'
+                autoComplete="off"
                 className="absolute inset-0 w-full h-full outline-none px-1 text-xs md:text-sm text-gray-700 bg-transparent z-10"
                 placeholder=""
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                onKeyDown={handleEnterSearch}
+                onKeyDown={handleKeyDown}
               />
+              {/* Animated placeholder */}
               {!isFocused && !inputValue && (
                 <div className="absolute inset-0 pointer-events-none flex flex-col overflow-hidden">
                   <div
@@ -187,6 +288,17 @@ export default function NewHomeNavbar() {
                 </div>
               )}
             </div>
+
+            {/* Clear button */}
+            {inputValue && (
+              <button
+                onClick={() => { setInputValue(""); setSearchResults([]); inputRef.current?.focus(); }}
+                className="mr-2 text-gray-400 hover:text-black transition-colors p-1 rounded-full hover:bg-gray-100 z-10 hidden md:flex"
+              >
+                <FiX className="h-4 w-4" />
+              </button>
+            )}
+
             <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block border-b border-black hover:border-[#FFD000] transition-colors duration-200 z-20">
               <button
                 onClick={() => setIsLocationModalOpen(true)}
@@ -197,26 +309,113 @@ export default function NewHomeNavbar() {
             </div>
           </div>
 
-          {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 w-full bg-white shadow-2xl rounded-2xl mt-2 z-50 max-h-[500px] overflow-y-auto border border-gray-100">
-              {searchResults.slice(0, 6).map((product) => {
-                const variant = product.variants?.[0];
-                const price = variant?.discountedPrice || variant?.originalPrice || 0;
-                return (
-                  <div
-                    key={product._id}
-                    onClick={() => { navigate(`/product/${product._id}`); setInputValue(""); setSearchResults([]); }}
-                    className="flex items-center gap-4 p-4 hover:bg-gray-50 cursor-pointer transition-all border-b border-gray-100 last:border-b-0"
-                  >
-                    <img src={product.productImage} alt={product.name} className="w-16 h-16 object-contain bg-gray-50 rounded-xl p-1" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm line-clamp-1">{product.name}</h3>
-                      <p className="text-xs text-gray-500">{product.brand?.name || "Petric"}</p>
-                      <p className="font-bold text-sm mt-1">₹{price}</p>
-                    </div>
+          {/* Search Dropdown */}
+          {showDropdown && (
+            <div className="absolute top-full left-0 w-full bg-white shadow-2xl rounded-2xl mt-2 z-50 border border-gray-100 overflow-hidden">
+
+              {/* Trending / empty state */}
+              {!inputValue.trim() && (
+                <div className="p-3">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2 flex items-center gap-1.5">
+                    <FiTrendingUp className="h-3 w-3" /> Trending Searches
+                  </p>
+                  <div className="flex flex-wrap gap-2 px-1">
+                    {TRENDING_SEARCHES.map((term, i) => (
+                      <button
+                        key={i}
+                        onMouseDown={(e) => { e.preventDefault(); navigateToSearch(term); }}
+                        className="bg-gray-50 hover:bg-[#FFF9CC] border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+                      >
+                        {term}
+                      </button>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              )}
+
+              {/* Product suggestions */}
+              {inputValue.trim() && searchResults.length > 0 && (
+                <div className="max-h-[420px] overflow-y-auto">
+                  {/* "Search for X" row */}
+                  <button
+                    onMouseDown={(e) => { e.preventDefault(); navigateToSearch(inputValue.trim()); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-[#FFD000]/20 flex items-center justify-center shrink-0">
+                      <FiSearch className="h-4 w-4 text-black" strokeWidth={2.5} />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-sm font-semibold text-black">Search for "</span>
+                      <span className="text-sm font-bold text-[#E65A00]">{inputValue.trim()}</span>
+                      <span className="text-sm font-semibold text-black">"</span>
+                    </div>
+                    <FiChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:text-black transition-colors" />
+                  </button>
+
+                  {/* Product cards */}
+                  {searchResults.map((product, idx) => {
+                    const variant = product.variants?.[0];
+                    const price = variant?.discountedPrice;
+                    const originalPrice = variant?.originalPrice;
+                    const discount = price && originalPrice && originalPrice > price
+                      ? Math.round(((originalPrice - price) / originalPrice) * 100)
+                      : null;
+                    const isHighlighted = idx === highlightedIndex;
+
+                    return (
+                      <div
+                        key={product._id}
+                        onMouseDown={(e) => { e.preventDefault(); navigateToProduct(product); }}
+                        onMouseEnter={() => setHighlightedIndex(idx)}
+                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all border-b border-gray-50 last:border-b-0 ${isHighlighted ? 'bg-[#FFFBEA]' : 'hover:bg-gray-50'}`}
+                      >
+                        {/* Product image */}
+                        <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center p-1 shrink-0 border border-gray-100">
+                          <img
+                            src={product.productImage}
+                            alt={product.name}
+                            className="w-full h-full object-contain mix-blend-multiply"
+                          />
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 line-clamp-1">
+                            {highlightMatch(product.name, inputValue.trim())}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5 truncate">
+                            {product.brand?.name || ''}
+                            
+                          </p>
+                        </div>
+
+                        {/* Price */}
+                        <div className="flex flex-col items-end shrink-0">
+                          {price ? (
+                            <>
+                              <span className="text-sm font-bold text-black">₹{price}</span>
+                              {discount && (
+                                <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 px-1.5 py-0.5 rounded-full mt-0.5">
+                                  {discount}% off
+                                </span>
+                              )}
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* No results */}
+              {inputValue.trim() && searchResults.length === 0 && (
+                <div className="py-8 text-center">
+                  <div className="text-3xl mb-2">🐾</div>
+                  <p className="text-sm font-semibold text-gray-600">No products found for "{inputValue}"</p>
+                  <p className="text-xs text-gray-400 mt-1">Try a different keyword</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -224,12 +423,7 @@ export default function NewHomeNavbar() {
         {/* Actions (Desktop) */}
         <div className="hidden lg:flex items-center gap-4 md:gap-8 flex-shrink-0">
           <button
-            onClick={() =>
-              window.open(
-                'https://play.google.com/store/apps/details?id=com.petric.app&hl=en_IN',
-                '_blank'
-              )
-            }
+            onClick={() => window.open('https://play.google.com/store/apps/details?id=com.petric.app&hl=en_IN', '_blank')}
             className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2.5 rounded-full font-bold transition-all shadow-sm transform hover:scale-105"
           >
             Download App
@@ -323,7 +517,6 @@ export default function NewHomeNavbar() {
                 <FiChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:rotate-180" />
               </Link>
 
-              {/* Dropdown on hover */}
               {hoveredCategory?._id === category._id && categorySubcategories[category._id]?.length > 0 && (
                 <div
                   ref={dropdownRef}
