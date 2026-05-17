@@ -113,6 +113,10 @@ export default function AllCategories() {
         }
       }
 
+      // Tell the backend to sort: bestSeller first, then bestAvailable, then oldest→newest
+      // Your backend should apply: .sort({ isBestSeller: -1, isBestAvailable: -1, createdAt: 1 })
+      body.sort = { isBestSeller: -1, isBestAvailable: -1, createdAt: 1 };
+
       const res = await post('product/list/all/forUser', body);
 
       // Discard if a newer fetch has been kicked off
@@ -122,18 +126,8 @@ export default function AllCategories() {
         setTotalProducts(res.totalProducts || 0);
         setTotalPages(res.totalPages || 1);
 
-        const formatted = [...res.products]
-          .sort((a, b) => {
-            // Best Seller first
-            if (a.isBestSeller && !b.isBestSeller) return -1;
-            if (!a.isBestSeller && b.isBestSeller) return 1;
-            // Then Best Available
-            if (a.isBestAvailable && !b.isBestAvailable) return -1;
-            if (!a.isBestAvailable && b.isBestAvailable) return 1;
-            // Remaining: oldest → newest
-            return new Date(a.createdAt) - new Date(b.createdAt);
-          })
-          .map(p => {
+        // No client-side sort — backend returns data pre-sorted across the full dataset
+        const formatted = res.products.map(p => {
             const variant = p.variants?.[0] || {};
             return {
               id: p._id,

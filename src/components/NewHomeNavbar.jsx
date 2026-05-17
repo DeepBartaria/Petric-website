@@ -4,7 +4,6 @@ import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin, FiChevronDo
 import { BsArrowRepeat } from 'react-icons/bs';
 import logo from '../assets/logo.png';
 import DeliveryLocationModal from './DeliveryLocationModal';
-import Fuse from "fuse.js";
 import { getHomePageProductsApi, getAllProductsApi } from '../api/homeApi';
 import { get } from '../helper/api';
 
@@ -18,6 +17,21 @@ const TRENDING_SEARCHES = [
   'Puppy food',
 ];
 
+// Levenshtein distance for typo tolerance (Strategy 4 fallback)
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
 export default function NewHomeNavbar() {
   const placeholders = ['Type "pedigree"', 'Type "milk"', 'Type "nutrition"'];
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,7 +44,8 @@ export default function NewHomeNavbar() {
   const [user, setUser] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [fuseInstance, setFuseInstance] = useState(null);
+  // Prebuilt search index: array of { product, tokens }
+  const searchIndexRef = useRef([]);
 
   const [navCategories, setNavCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
@@ -160,24 +175,21 @@ export default function NewHomeNavbar() {
         const unique = Array.from(new Map(mergedProducts.map(p => [p._id, p])).values());
         setAllProducts(unique);
 
-        // Build Fuse index once
-        const fuse = new Fuse(unique, {
-          keys: [
-            { name: 'name', weight: 0.5 },
-            { name: 'brand.name', weight: 0.2 },
-            { name: 'productCategory.name', weight: 0.1 },
-            { name: 'productSubCategory.name', weight: 0.1 },
-            { name: 'petType', weight: 0.05 },
-            { name: 'description', weight: 0.05 },
-          ],
-          threshold: 0.4,        // More lenient: catches typos and partial matches
-          distance: 100,         // Allow matches further into string
-          minMatchCharLength: 2, // Start matching from 2 chars
-          includeScore: true,
-          ignoreLocation: true,  // Don't penalize matches at end of string
-          useExtendedSearch: true, // Enables prefix matching with ^
+        // Build search index: tokenize all searchable fields per product
+        searchIndexRef.current = unique.map(p => {
+          const fields = [
+            p.name || '',
+            p.brand?.name || '',
+            ...(p.petType || []),
+            ...(Array.isArray(p.productCategory) ? p.productCategory.map(c => c?.name || '') : []),
+            ...(Array.isArray(p.productSubCategory) ? p.productSubCategory.map(s => s?.name || '') : []),
+          ];
+          // Store lowercased full strings for substring matching
+          const searchableText = fields.join(' ').toLowerCase();
+          // Store word tokens for token-level prefix matching
+          const tokens = searchableText.split(/\s+/).filter(Boolean);
+          return { product: p, searchableText, tokens };
         });
-        setFuseInstance(fuse);
       } catch (error) {
         console.log(error);
       }
@@ -202,35 +214,80 @@ export default function NewHomeNavbar() {
     };
   }, []);
 
-  // Search with deduplication and best-match scoring
+  // Custom multi-strategy search engine
   useEffect(() => {
-    const query = inputValue.trim();
-    if (!query || !fuseInstance) {
+    const raw = inputValue.trim();
+    if (!raw || searchIndexRef.current.length === 0) {
       setSearchResults([]);
       setHighlightedIndex(-1);
       return;
     }
 
-    // Run both a prefix search (^query) and a fuzzy search, merge results
-    const prefixResults = fuseInstance.search(`^${query}`);
-    const fuzzyResults = fuseInstance.search(query);
+    const q = raw.toLowerCase();
+    const queryTokens = q.split(/\s+/).filter(Boolean); // e.g. ["royal", "canin"]
 
-    // Merge: prefix results first, then fuzzy, deduplicated by _id
-    const seen = new Set();
-    const merged = [];
-    for (const r of [...prefixResults, ...fuzzyResults]) {
-      if (!seen.has(r.item._id)) {
-        seen.add(r.item._id);
-        merged.push(r);
+    const scored = [];
+
+    for (const entry of searchIndexRef.current) {
+      const { product, searchableText, tokens } = entry;
+      let score = 0;
+
+      // ── Strategy 1: exact substring match in full text (highest weight) ──
+      // Catches "fatipet" inside "Goofy Tails Fatipet Chicken"
+      if (searchableText.includes(q)) {
+        score += 100;
+        // Bonus if it matches at the very start of the product name
+        if (product.name.toLowerCase().startsWith(q)) score += 50;
+        // Bonus if it matches at the start of any word in the name
+        else if (tokens.some(t => t.startsWith(q))) score += 30;
       }
+
+      // ── Strategy 2: all query tokens are substrings of the full text ──
+      // "royal can" → both "royal" and "can" exist somewhere → strong match
+      if (score === 0 && queryTokens.every(qt => searchableText.includes(qt))) {
+        score += 70;
+        // Bonus: each token starts a word in the product name
+        const nameTokens = product.name.toLowerCase().split(/\s+/);
+        const prefixMatches = queryTokens.filter(qt => nameTokens.some(nt => nt.startsWith(qt))).length;
+        score += prefixMatches * 15;
+      }
+
+      // ── Strategy 3: any query token is a prefix of a product word ──
+      // Partial credit when only some tokens match
+      if (score === 0) {
+        let tokenScore = 0;
+        for (const qt of queryTokens) {
+          if (tokens.some(t => t.startsWith(qt))) tokenScore += 40;
+          else if (searchableText.includes(qt)) tokenScore += 20;
+        }
+        score += tokenScore;
+      }
+
+      // ── Strategy 4: fuzzy single-token match (typo tolerance) ──
+      // Only kicks in when nothing else matched, handles "pedigee" → "pedigree"
+      if (score === 0 && q.length >= 3) {
+        for (const token of tokens) {
+          if (token.length < 3) continue;
+          const shorter = Math.min(q.length, token.length);
+          const longer = Math.max(q.length, token.length);
+          // Allow 1 typo per 4 chars
+          const allowedEdits = Math.floor(shorter / 4);
+          if (allowedEdits > 0 && levenshtein(q, token.slice(0, shorter)) <= allowedEdits) {
+            score += 10;
+            break;
+          }
+        }
+      }
+
+      if (score > 0) scored.push({ product, score });
     }
 
-    // Sort by score (lower = better match)
-    merged.sort((a, b) => (a.score ?? 1) - (b.score ?? 1));
+    // Sort: highest score first, then by name length (shorter = more relevant)
+    scored.sort((a, b) => b.score - a.score || a.product.name.length - b.product.name.length);
 
-    setSearchResults(merged.map(r => r.item).slice(0, 8));
+    setSearchResults(scored.map(s => s.product).slice(0, 8));
     setHighlightedIndex(-1);
-  }, [inputValue, fuseInstance]);
+  }, [inputValue]);
 
   // Highlight matching text in product name
   const highlightMatch = (text, query) => {
@@ -385,7 +442,7 @@ export default function NewHomeNavbar() {
                           </p>
                           <p className="text-xs text-gray-400 mt-0.5 truncate">
                             {product.brand?.name || ''}
-                            
+                            {product.petType?.length ? ` · ${product.petType.join(', ')}` : ''}
                           </p>
                         </div>
 
