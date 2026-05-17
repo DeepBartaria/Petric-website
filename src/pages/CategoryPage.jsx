@@ -240,18 +240,18 @@ export default function CategoryPage() {
 
       {/* Hero Banner */}
       <section
-        className="w-full bg-white bg-cover bg-center bg-no-repeat min-h-[40vh] sm:h-[60vh] md:h-[70vh] flex items-center"
-        style={{ backgroundImage: `url(${headerbg})` }}
-      >
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-4 max-w-3xl drop-shadow-sm">
-            {categoryName || 'Category'}
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
-            Everything your pet needs in one place
-          </p>
-        </div>
-      </section>
+              className="w-full bg-white bg-cover bg-center bg-no-repeat h-[20vh] sm:h-[25vh] md:h-[30vh] flex items-center"
+              style={{ backgroundImage: `url(${headerbg})` }}
+            >
+              <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
+                <h1 className="text-4xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-4 max-w-3xl drop-shadow-sm">
+                  All Categories
+                </h1>
+                <p className="text-lg sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
+                  Everything your pet needs in one place
+                </p>
+              </div>
+            </section>
 
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-10">
 
