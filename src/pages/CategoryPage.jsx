@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import CartSidebar from '../components/CartSidebar';
@@ -12,6 +12,8 @@ import { get, post } from '../helper/api';
 
 import headerbg from '../assets/petsproductherobg.png';
 
+const LIMIT = 20;
+
 export default function CategoryPage() {
   const { categoryId } = useParams();
   const location = useLocation();
@@ -19,7 +21,6 @@ export default function CategoryPage() {
   const searchParams = new URLSearchParams(location.search);
   const subCategoryParam = searchParams.get('subCategory');
 
-  // Category name passed via router state, or fetched
   const [categoryName, setCategoryName] = useState(location.state?.categoryName || '');
   const [subcategories, setSubcategories] = useState([]);
   const [activeSubcategory, setActiveSubcategory] = useState(null);
@@ -29,11 +30,17 @@ export default function CategoryPage() {
 
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isInitialLoading, setIsInitialLoading] = useState(false);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  // Also fetch all categories for left sidebar navigation
   const [allCategories, setAllCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(null);
+
+  // Sentinel ref for infinite scroll
+  const sentinelRef = useRef(null);
+  // Track fetch key to discard stale responses
+  const fetchKeyRef = useRef(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -42,7 +49,6 @@ export default function CategoryPage() {
 
   const fetchPageData = async () => {
     try {
-      // Fetch subcategories for this category
       const [subRes, catRes] = await Promise.all([
         get(`product/subCategory?categoryId=${categoryId}`),
         get('product/category')
@@ -51,21 +57,16 @@ export default function CategoryPage() {
       if (catRes?.categories) {
         setAllCategories(catRes.categories);
         const currentCat = catRes.categories.find(c => c._id === categoryId);
-        if (currentCat) {
-          setCategoryName(currentCat.name);
-          setActiveCategory(currentCat);
-        }
+        if (currentCat) setCategoryName(currentCat.name);
       }
 
       if (subRes?.subCategories) {
         setSubcategories(subRes.subCategories);
-
-        // If a subCategory was passed in the URL, pre-select it
         if (subCategoryParam) {
           const found = subRes.subCategories.find(s => s._id === subCategoryParam);
           setActiveSubcategory(found || null);
         } else {
-          setActiveSubcategory(null); // show all for this category
+          setActiveSubcategory(null);
         }
       }
     } catch (error) {
@@ -73,14 +74,31 @@ export default function CategoryPage() {
     }
   };
 
+  // Reset and refetch when category or subcategory filter changes
   useEffect(() => {
-    fetchProducts();
+    setProducts([]);
+    setCurrentPage(1);
+    setTotalPages(1);
+    fetchKeyRef.current += 1;
+    fetchProducts(1, true, fetchKeyRef.current);
   }, [categoryId, activeSubcategory]);
 
-  const fetchProducts = async () => {
-    setIsLoadingProducts(true);
+  // Fetch additional pages
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchProducts(currentPage, false, fetchKeyRef.current);
+    }
+  }, [currentPage]);
+
+  const fetchProducts = async (page, isReset, fetchKey) => {
+    if (isReset) {
+      setIsInitialLoading(true);
+    } else {
+      setIsFetchingMore(true);
+    }
+
     try {
-      const body = { page: 1, limit: 20 };
+      const body = { page, limit: LIMIT };
 
       if (activeSubcategory) {
         body.productSubCategory = [activeSubcategory._id];
@@ -90,50 +108,83 @@ export default function CategoryPage() {
 
       const res = await post('product/list/all/forUser', body);
 
+      // Discard stale response
+      if (fetchKey !== fetchKeyRef.current) return;
+
       if (res?.products) {
         setTotalProducts(res.totalProducts || 0);
+        setTotalPages(res.totalPages || 1);
+
         const formatted = [...res.products]
-            .sort((a, b) => {
-                // Best Seller first
-                if (a.isBestSeller && !b.isBestSeller) return -1;
-                if (!a.isBestSeller && b.isBestSeller) return 1;
+          .sort((a, b) => {
+            // Best Seller first
+            if (a.isBestSeller && !b.isBestSeller) return -1;
+            if (!a.isBestSeller && b.isBestSeller) return 1;
+            // Then Best Available
+            if (a.isBestAvailable && !b.isBestAvailable) return -1;
+            if (!a.isBestAvailable && b.isBestAvailable) return 1;
+            // Remaining: oldest → newest
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          })
+          .map(p => {
+            const variant = p.variants?.[0] || {};
+            return {
+              id: p._id,
+              img: p.productImage,
+              name: p.name,
+              weight: variant.name || '',
+              price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
+              oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+              discount:
+                variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
+                  ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
+                  : '',
+              isBestSeller: p.isBestSeller,
+              isBestAvailable: p.isBestAvailable,
+              createdAt: p.createdAt,
+            };
+          });
 
-                // Then Best Available
-                if (a.isBestAvailable && !b.isBestAvailable) return -1;
-                if (!a.isBestAvailable && b.isBestAvailable) return 1;
-
-                // Remaining old -> new
-                return new Date(a.createdAt) - new Date(b.createdAt);
-            }).map(p => {
-          const variant = p.variants?.[0] || {};
-          return {
-            id: p._id,
-            img: p.productImage,
-            name: p.name,
-            weight: variant.name || '',
-            price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
-            oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
-            discount: (variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice)
-              ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
-              : '',
-            isBestSeller: p.isBestSeller,
-            isBestAvailable: p.isBestAvailable,
-            createdAt: p.createdAt
-          };
-        });
-        setProducts(formatted);
+        setProducts(prev => (isReset ? formatted : [...prev, ...formatted]));
       } else {
-        setProducts([]);
-        setTotalProducts(0);
+        if (isReset) {
+          setProducts([]);
+          setTotalProducts(0);
+        }
       }
     } catch (error) {
       console.error("Error fetching products:", error);
-      setProducts([]);
-      setTotalProducts(0);
+      if (isReset) {
+        setProducts([]);
+        setTotalProducts(0);
+      }
     } finally {
-      setIsLoadingProducts(false);
+      if (fetchKey !== fetchKeyRef.current) return;
+      setIsInitialLoading(false);
+      setIsFetchingMore(false);
     }
   };
+
+  // Intersection Observer for infinite scroll
+  const observerRef = useRef(null);
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !isFetchingMore && !isInitialLoading && currentPage < totalPages) {
+          setCurrentPage(prev => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
+
+    return () => observerRef.current?.disconnect();
+  }, [isFetchingMore, isInitialLoading, currentPage, totalPages]);
 
   const handleAddToCart = (product) => {
     setCartItems(prev => {
@@ -156,7 +207,6 @@ export default function CategoryPage() {
 
   const handleSubcategoryClick = (sub) => {
     setActiveSubcategory(sub);
-    // Update URL without full navigation
     const params = sub ? `?subCategory=${sub._id}` : '';
     navigate(`/category/${categoryId}${params}`, {
       state: { categoryName, subCategoryName: sub?.name },
@@ -167,6 +217,15 @@ export default function CategoryPage() {
   const handleCategoryNavClick = (cat) => {
     navigate(`/category/${cat._id}`, { state: { categoryName: cat.name } });
   };
+
+  const SkeletonCard = () => (
+    <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-2.5 md:p-4 shadow-sm animate-pulse">
+      <div className="w-full h-24 md:h-40 bg-gray-100 rounded-xl mb-3"></div>
+      <div className="h-3 bg-gray-100 rounded mb-2 w-3/4"></div>
+      <div className="h-3 bg-gray-100 rounded mb-2 w-1/2"></div>
+      <div className="h-4 bg-gray-100 rounded w-1/3 mt-4"></div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#FCFCFC] font-sans flex flex-col relative">
@@ -215,7 +274,6 @@ export default function CategoryPage() {
               </button>
             ))}
           </div>
-          {/* Mobile Subcategory pills */}
           {subcategories.length > 0 && (
             <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
               <button
@@ -249,8 +307,6 @@ export default function CategoryPage() {
                 >
                   {cat.name}
                 </h3>
-
-                {/* Show subcategories only for the active category */}
                 {isActive && subcategories.length > 0 && (
                   <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
                     <span
@@ -321,17 +377,10 @@ export default function CategoryPage() {
             </span>
           </div>
 
-          {/* Loading state */}
-          {isLoadingProducts ? (
+          {/* Product Grid */}
+          {isInitialLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-2.5 md:p-4 shadow-sm animate-pulse">
-                  <div className="w-full h-24 md:h-40 bg-gray-100 rounded-xl mb-3"></div>
-                  <div className="h-3 bg-gray-100 rounded mb-2 w-3/4"></div>
-                  <div className="h-3 bg-gray-100 rounded mb-2 w-1/2"></div>
-                  <div className="h-4 bg-gray-100 rounded w-1/3 mt-auto"></div>
-                </div>
-              ))}
+              {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -340,63 +389,73 @@ export default function CategoryPage() {
               <p className="text-gray-400 text-sm">Try selecting a different subcategory</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-              {products.map((product, i) => (
-                <div
-                  key={i}
-                  onClick={() => navigate(`/product/${product.id}`)}
-                  className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
-                >
-                  <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
-                    <img
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                {products.map((product, i) => (
+                  <div
+                    key={`${product.id}-${i}`}
+                    onClick={() => navigate(`/product/${product.id}`)}
+                    className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
+                  >
+                    <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
+                      <img
                         src={product.img}
                         alt={product.name}
                         className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
-                    />
-
-                    <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
-
+                      />
+                      <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
                         {product.isBestSeller && (
-                        <div className="bg-black text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-black text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             Best Seller
-                        </div>
+                          </div>
                         )}
-
                         {!product.isBestSeller && product.isBestAvailable && (
-                        <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             Best Available
-                        </div>
+                          </div>
                         )}
-
                         {product.discount && product.discount !== '0%' && (
-                        <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             {product.discount} Off
-                        </div>
+                          </div>
                         )}
-
-                    </div>
-                    </div>
-                  <div className="flex flex-col flex-grow">
-                    <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
-                    <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
-                    <div className="mt-auto flex items-center justify-between">
-                      <div className="flex flex-col">
-                        {product.oldPrice && product.oldPrice !== product.price && (
-                          <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                        )}
-                        <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                       </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                      >
-                        ADD
-                      </button>
+                    </div>
+                    <div className="flex flex-col flex-grow">
+                      <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
+                      <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
+                      <div className="mt-auto flex items-center justify-between">
+                        <div className="flex flex-col">
+                          {product.oldPrice && product.oldPrice !== product.price && (
+                            <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
+                          )}
+                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                          className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                        >
+                          ADD
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+
+                {/* Skeleton cards while fetching more */}
+                {isFetchingMore && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={`skel-${i}`} />)}
+              </div>
+
+              {/* Sentinel element for IntersectionObserver */}
+              <div ref={sentinelRef} className="h-10 mt-4" />
+
+              {/* End of results */}
+              {!isFetchingMore && currentPage >= totalPages && products.length > 0 && (
+                <p className="text-center text-gray-400 text-sm font-bold py-6 tracking-wide">
+                  — You've seen all {totalProducts} products —
+                </p>
+              )}
+            </>
           )}
         </div>
       </main>
