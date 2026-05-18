@@ -200,26 +200,12 @@ export default function NewHomeNavbar() {
           return '';
         };
 
-        searchIndexRef.current = unique.map(p => {
-          const nameText = p.name.toLowerCase();
-
-          const fields = [
-            p.name,
-            str(p.brand),
-            ...(Array.isArray(p.petType) ? p.petType : [str(p.petType)]),
-            p.description || '',
-            ...(Array.isArray(p.flavour) ? p.flavour.map(str).filter(Boolean) : []),
-            ...(Array.isArray(p.productType) ? p.productType.map(str).filter(Boolean) : []),
-            p.vegNonVeg || '',
-            ...(Array.isArray(p.variants) ? p.variants.map(v => v?.name || '') : []),
-          ];
-
-          const fullText = fields.join(' ').toLowerCase();
-          const nameTokens = nameText.split(/[\s()\-,./]+/).filter(t => t.length > 1);
-          const tokens = fullText.split(/[\s()\-,./]+/).filter(t => t.length > 1);
-
-          return { product: p, nameText, fullText, nameTokens, tokens };
-        });
+        // Build search index — name only
+          searchIndexRef.current = unique.map(p => {
+            const nameText = p.name.toLowerCase();
+            const nameTokens = nameText.split(/[\s()\-,./]+/).filter(t => t.length > 1);
+            return { product: p, nameText, nameTokens };
+          });
 
         console.log('[Search] First entry sample:', searchIndexRef.current[0]);
       } catch (error) {
@@ -250,16 +236,9 @@ export default function NewHomeNavbar() {
   
   useEffect(() => {
     const raw = inputValue.trim();
-    if (!raw) {
+    if (!raw || searchIndexRef.current.length === 0) {
       setSearchResults([]);
       setHighlightedIndex(-1);
-      return;
-    }
-
-    // If index isn't ready yet, bail gracefully
-    if (searchIndexRef.current.length === 0) {
-      console.warn('[Search] Index is empty — products may still be loading');
-      setSearchResults([]);
       return;
     }
 
@@ -269,39 +248,14 @@ export default function NewHomeNavbar() {
     const scored = [];
 
     for (const entry of searchIndexRef.current) {
-      const { product, nameText, fullText, nameTokens, tokens } = entry;
+      const { product, nameText, nameTokens } = entry;
       let score = 0;
 
       for (const qt of queryTokens) {
         if (nameText.includes(qt)) {
-          // Substring found anywhere in name — core match
           score += 80;
           if (nameText.startsWith(qt)) score += 20;
           else if (nameTokens.some(t => t.startsWith(qt))) score += 10;
-        } else if (fullText.includes(qt)) {
-          // Found in description, brand, petType, etc.
-          score += 40;
-        } else if (qt.length >= 3) {
-          // Last resort: typo tolerance
-          const allowedEdits = qt.length <= 5 ? 1 : 2;
-          let fuzzyHit = false;
-          for (const token of nameTokens) {
-            if (Math.abs(token.length - qt.length) > allowedEdits) continue;
-            if (levenshtein(qt, token) <= allowedEdits) {
-              score += 12;
-              fuzzyHit = true;
-              break;
-            }
-          }
-          if (!fuzzyHit) {
-            for (const token of tokens) {
-              if (Math.abs(token.length - qt.length) > allowedEdits) continue;
-              if (levenshtein(qt, token) <= allowedEdits) {
-                score += 6;
-                break;
-              }
-            }
-          }
         }
       }
 
@@ -309,13 +263,10 @@ export default function NewHomeNavbar() {
     }
 
     scored.sort((a, b) => b.score - a.score || a.product.name.length - b.product.name.length);
-
-    const results = scored.map(s => s.product).slice(0, 8);
-    console.log(`[Search] "${raw}" → ${results.length} results`, results.map(p => p.name));
-    setSearchResults(results);
+    setSearchResults(scored.map(s => s.product).slice(0, 8));
     setHighlightedIndex(-1);
   }, [inputValue]);
-  
+
   // Highlight matching text in product name
   const highlightMatch = (text, query) => {
     if (!query.trim() || !text) return text;
