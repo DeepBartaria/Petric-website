@@ -1,133 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FiArrowLeft, FiMoreHorizontal } from 'react-icons/fi';
-<<<<<<< HEAD
-=======
 import { get } from '../helper/api';
->>>>>>> 9196e12 (orders)
 
 import product1 from '../assets/product1.png';
 import product2 from '../assets/product2.png';
-
-<<<<<<< HEAD
-const MOCK_ORDERS = [
-  {
-    id: "1464",
-    date: "14 May 2026, 12:09 PM",
-    total: 82,
-    status: "Delivered",
-    items: [
-      {
-        id: 1,
-        name: "Himalaya Scavon Vet Cream For Dog & Cats",
-        quantity: 1,
-        weight: "1 Tube (50g)",
-        price: 82,
-        oldPrice: 82,
-        img: product1
-      }
-    ],
-    billing: {
-      totalMRP: 82,
-      couponDiscount: 0,
-      deliveryFee: 0,
-      platformFee: 0,
-      amountPaid: 82
-    },
-    deliveryDetails: "new address it is"
-  },
-  {
-    id: "1460",
-    date: "13 May 2026, 05:45 PM",
-    total: 82,
-    status: "Delivered",
-    items: [
-      {
-        id: 2,
-        name: "Royal Canin Mini Adult",
-        quantity: 1,
-        weight: "2 kg",
-        price: 1200,
-        oldPrice: 1400,
-        img: product2
-      },
-      {
-        id: 1,
-        name: "Himalaya Scavon Vet Cream For Dog & Cats",
-        quantity: 1,
-        weight: "1 Tube (50g)",
-        price: 82,
-        oldPrice: 82,
-        img: product1
-      }
-    ],
-    billing: {
-      totalMRP: 1282,
-      couponDiscount: 0,
-      deliveryFee: 0,
-      platformFee: 0,
-      amountPaid: 1282
-    },
-    deliveryDetails: "new address it is"
-  },
-  {
-    id: "1199",
-    date: "20 April 2026, 06:57 PM",
-    total: 82,
-    status: "Delivered",
-    items: [
-      {
-        id: 1,
-        name: "Himalaya Scavon Vet Cream For Dog & Cats",
-        quantity: 1,
-        weight: "1 Tube (50g)",
-        price: 82,
-        oldPrice: 82,
-        img: product1
-      }
-    ],
-    billing: {
-      totalMRP: 82,
-      couponDiscount: 0,
-      deliveryFee: 0,
-      platformFee: 0,
-      amountPaid: 82
-    },
-    deliveryDetails: "new address it is"
-  },
-  {
-    id: "1128",
-    date: "13 April 2026, 07:09 PM",
-    total: 1,
-    status: "Delivered",
-    items: [
-      {
-        id: 1,
-        name: "Himalaya Scavon Vet Cream For Dog & Cats",
-        quantity: 1,
-        weight: "1 Tube (50g)",
-        price: 1,
-        oldPrice: 82,
-        img: product1
-      }
-    ],
-    billing: {
-      totalMRP: 82,
-      couponDiscount: 81,
-      deliveryFee: 0,
-      platformFee: 0,
-      amountPaid: 1
-    },
-    deliveryDetails: "new address it is"
-  }
-];
-
-export default function OrdersSidebar({ isOpen, onClose }) {
-  const [selectedOrder, setSelectedOrder] = useState(null);
-
-  useEffect(() => {
-    if (!isOpen) {
-=======
-
 
 export default function OrdersSidebar({ isOpen, onClose }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -188,7 +64,6 @@ export default function OrdersSidebar({ isOpen, onClose }) {
       
       fetchOrders();
     } else {
->>>>>>> 9196e12 (orders)
       setSelectedOrder(null);
     }
   }, [isOpen]);
@@ -235,9 +110,6 @@ export default function OrdersSidebar({ isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 pb-8">
           
           {/* Order List View */}
-<<<<<<< HEAD
-          {!selectedOrder && MOCK_ORDERS.map((order) => (
-=======
           {!selectedOrder && isLoading && (
             <div className="flex justify-center items-center py-10">
               <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#FFD000] border-t-transparent"></div>
@@ -249,7 +121,6 @@ export default function OrdersSidebar({ isOpen, onClose }) {
             </div>
           )}
           {!selectedOrder && !isLoading && orders.map((order) => (
->>>>>>> 9196e12 (orders)
             <div 
               key={order.id} 
               className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3 cursor-pointer hover:shadow-md transition-shadow"
@@ -344,11 +215,7 @@ export default function OrdersSidebar({ isOpen, onClose }) {
                       <span className="text-black font-bold">₹ {selectedOrder.billing.platformFee}</span>
                     </div>
                   </div>
-<<<<<<< HEAD
-                  <div className="p-4 flex justify-between font-bold text-black text-base">
-=======
                   <div className="p-4 flex justify-between font-bold text-black text-base bg-gray-50 rounded-b-xl">
->>>>>>> 9196e12 (orders)
                     <span>Amount Paid</span>
                     <span>₹ {selectedOrder.billing.amountPaid}</span>
                   </div>
@@ -365,9 +232,6 @@ export default function OrdersSidebar({ isOpen, onClose }) {
 
               {/* Request Invoice Button */}
               <div className="mt-2">
-<<<<<<< HEAD
-                <button className="bg-[#FFD000] text-black font-bold py-3 px-6 rounded-xl hover:bg-[#ffdb33] transition-colors inline-block">
-=======
                 <button 
                   onClick={() => {
                     const message = `Hello Petric, I would like to request an invoice for my Order ID: ${selectedOrder.id}`;
@@ -375,7 +239,6 @@ export default function OrdersSidebar({ isOpen, onClose }) {
                   }}
                   className="bg-[#FFD000] text-black font-bold py-3 px-6 rounded-xl hover:bg-[#ffdb33] transition-colors inline-block"
                 >
->>>>>>> 9196e12 (orders)
                   Request For Invoice
                 </button>
               </div>

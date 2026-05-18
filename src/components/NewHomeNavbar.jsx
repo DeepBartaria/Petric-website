@@ -17,11 +17,7 @@ const TRENDING_SEARCHES = [
   'Puppy food',
 ];
 
-<<<<<<< HEAD
 // Levenshtein distance for typo tolerance (last-resort fallback)
-=======
-// Levenshtein distance for typo tolerance (Strategy 4 fallback)
->>>>>>> 9196e12 (orders)
 function levenshtein(a, b) {
   const m = a.length, n = b.length;
   const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
@@ -48,11 +44,7 @@ export default function NewHomeNavbar() {
   const [user, setUser] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-<<<<<<< HEAD
   // Prebuilt search index: array of { product, nameText, fullText, tokens, nameTokens }
-=======
-  // Prebuilt search index: array of { product, tokens }
->>>>>>> 9196e12 (orders)
   const searchIndexRef = useRef([]);
 
   const [navCategories, setNavCategories] = useState([]);
@@ -95,15 +87,8 @@ export default function NewHomeNavbar() {
       inputRef.current?.blur();
     } else if (e.key === 'Enter') {
       if (highlightedIndex >= 0 && items[highlightedIndex]) {
-<<<<<<< HEAD
         navigateToProduct(items[highlightedIndex]);
       } else if (inputValue.trim()) {
-=======
-        // Navigate to highlighted product
-        navigateToProduct(items[highlightedIndex]);
-      } else if (inputValue.trim()) {
-        // Search results page
->>>>>>> 9196e12 (orders)
         navigateToSearch(inputValue.trim());
       }
     }
@@ -178,7 +163,6 @@ export default function NewHomeNavbar() {
           getHomePageProductsApi(),
           getAllProductsApi()
         ]);
-<<<<<<< HEAD
 
         let mergedProducts = [];
 
@@ -226,64 +210,6 @@ export default function NewHomeNavbar() {
         console.log('[Search] First entry sample:', searchIndexRef.current[0]);
       } catch (error) {
         console.error('[Search] fetchSearchData error:', error);
-=======
-        let mergedProducts = [];
-        if (homeProductsRes?.type === "success") {
-          const homeProducts = homeProductsRes.homePageProductsData?.flatMap(s => s.products || []) || [];
-          mergedProducts.push(...homeProducts);
-        }
-        if (allProductsRes?.products) mergedProducts.push(...allProductsRes.products);
-
-        const unique = Array.from(new Map(mergedProducts.map(p => [p._id, p])).values());
-        setAllProducts(unique);
-
-        // Build search index: extract every meaningful text field
-        searchIndexRef.current = unique.map(p => {
-          // Helper: safely extract string from a field that may be string | object | array
-          const str = (v) => {
-            if (!v) return '';
-            if (typeof v === 'string') return v;
-            if (typeof v === 'object' && v.name) return v.name;
-            return '';
-          };
-
-          const fields = [
-            // Product name — highest importance, always a string
-            p.name || '',
-
-            // Brand — may be a populated object or a plain ID string (ignore IDs)
-            str(p.brand),
-
-            // Pet types: ["dog"], ["cat"], ["dog","cat"]
-            ...(Array.isArray(p.petType) ? p.petType : []),
-
-            // Description — contains breed names like "rottweiler", ingredient names, etc.
-            // We include it but only use the first 300 chars to keep scoring fast
-            (p.description || '').slice(0, 300),
-
-            // Flavour, productType arrays — may be populated objects or ID strings
-            ...(Array.isArray(p.flavour) ? p.flavour.map(str).filter(Boolean) : []),
-            ...(Array.isArray(p.productType) ? p.productType.map(str).filter(Boolean) : []),
-
-            // vegNonVeg: "veg" / "non-veg"
-            p.vegNonVeg || '',
-
-            // Variant names: "7 KG", "1 x 100ml" — helps match weight searches
-            ...(Array.isArray(p.variants) ? p.variants.map(v => v?.name || '') : []),
-          ];
-
-          const searchableText = fields.join(' ').toLowerCase();
-          const tokens = searchableText.split(/[\s()\-,/]+/).filter(t => t.length > 1);
-
-          // Separate high-priority name tokens for boosted scoring
-          const nameText = (p.name || '').toLowerCase();
-          const nameTokens = nameText.split(/[\s()\-,/]+/).filter(t => t.length > 1);
-
-          return { product: p, searchableText, tokens, nameText, nameTokens };
-        });
-      } catch (error) {
-        console.log(error);
->>>>>>> 9196e12 (orders)
       }
     };
 
@@ -306,12 +232,8 @@ export default function NewHomeNavbar() {
     };
   }, []);
 
-<<<<<<< HEAD
   // ─── Search Engine ────────────────────────────────────────────────────────────
   
-=======
-  // Custom multi-strategy search engine
->>>>>>> 9196e12 (orders)
   useEffect(() => {
     const raw = inputValue.trim();
     if (!raw || searchIndexRef.current.length === 0) {
@@ -321,17 +243,11 @@ export default function NewHomeNavbar() {
     }
 
     const q = raw.toLowerCase();
-<<<<<<< HEAD
     const queryTokens = q.split(/[\s()\-,./]+/).filter(t => t.length > 0);
-=======
-    // Split query on spaces and punctuation, e.g. "royal canin" → ["royal","canin"]
-    const queryTokens = q.split(/[\s()\-,/]+/).filter(t => t.length > 0);
->>>>>>> 9196e12 (orders)
 
     const scored = [];
 
     for (const entry of searchIndexRef.current) {
-<<<<<<< HEAD
       const { product, nameText, nameTokens } = entry;
       let score = 0;
 
@@ -340,86 +256,13 @@ export default function NewHomeNavbar() {
           score += 80;
           if (nameText.startsWith(qt)) score += 20;
           else if (nameTokens.some(t => t.startsWith(qt))) score += 10;
-=======
-      const { product, searchableText, tokens, nameText, nameTokens } = entry;
-      let score = 0;
-
-      // ── Strategy 1: exact substring anywhere in full text ──────────────────
-      // "finapet" → finds "Vivaldis Finapet 5mg Tablets" because nameText contains it
-      if (nameText.includes(q)) {
-        score += 120;
-        if (nameText.startsWith(q)) score += 40;           // "pedigree" at name start
-        else if (nameTokens.some(t => t.startsWith(q))) score += 25; // word prefix in name
-      } else if (searchableText.includes(q)) {
-        // Matched in brand / description / petType etc but not name
-        score += 60;
-      }
-
-      // ── Strategy 2: all query tokens found in name ──────────────────────────
-      // "royal canin" → both words in name → strong
-      if (score === 0 || true) { // always run to add bonus points
-        if (queryTokens.length > 1) {
-          const allInName = queryTokens.every(qt => nameText.includes(qt));
-          if (allInName) score += 80;
-          else {
-            const allInFull = queryTokens.every(qt => searchableText.includes(qt));
-            if (allInFull) score += 50;
-          }
-        }
-      }
-
-      // ── Strategy 3: each query token prefix-matches a word in name/text ────
-      // "rott" → nameTokens has no "rott*" but searchableText (description) has "rottweiler"
-      if (score === 0) {
-        let tokenScore = 0;
-        for (const qt of queryTokens) {
-          if (nameTokens.some(t => t.startsWith(qt))) {
-            tokenScore += 50; // prefix match in product name — strong signal
-          } else if (tokens.some(t => t.startsWith(qt))) {
-            tokenScore += 25; // prefix match in description/brand/etc
-          } else if (nameText.includes(qt)) {
-            tokenScore += 35; // substring in name (not at word boundary)
-          } else if (searchableText.includes(qt)) {
-            tokenScore += 15; // substring anywhere else
-          }
-        }
-        score += tokenScore;
-      }
-
-      // ── Strategy 4: typo tolerance (Levenshtein fallback) ──────────────────
-      // Only when nothing matched — "pedigee" → "pedigree"
-      if (score === 0 && q.length >= 3) {
-        const allowedEdits = q.length <= 5 ? 1 : 2;
-        for (const token of nameTokens) {
-          if (Math.abs(token.length - q.length) > allowedEdits) continue;
-          if (levenshtein(q, token) <= allowedEdits) {
-            score += 12;
-            break;
-          }
-        }
-        // Also check full searchable text tokens if name had no typo match
-        if (score === 0) {
-          for (const token of tokens) {
-            if (Math.abs(token.length - q.length) > allowedEdits) continue;
-            if (levenshtein(q, token) <= allowedEdits) {
-              score += 6;
-              break;
-            }
-          }
->>>>>>> 9196e12 (orders)
         }
       }
 
       if (score > 0) scored.push({ product, score });
     }
 
-<<<<<<< HEAD
     scored.sort((a, b) => b.score - a.score || a.product.name.length - b.product.name.length);
-=======
-    // Sort: highest score first; tie-break by name length (shorter = more specific)
-    scored.sort((a, b) => b.score - a.score || a.product.name.length - b.product.name.length);
-
->>>>>>> 9196e12 (orders)
     setSearchResults(scored.map(s => s.product).slice(0, 8));
     setHighlightedIndex(-1);
   }, [inputValue]);
@@ -624,12 +467,6 @@ export default function NewHomeNavbar() {
             <BsArrowRepeat className="h-5 w-5 transition-transform duration-300 group-hover:rotate-180" />
             <span className="text-sm font-medium">Reorder</span>
           </Link>
-<<<<<<< HEAD
-          <button className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white">
-            <FiUser className="h-5 w-5" />
-            <span className="text-sm font-medium">{user ? user.mobileNo : 'Account'}</span>
-          </button>
-=======
           <div className="relative group flex items-center h-full">
             <button className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white">
               <FiUser className="h-5 w-5" />
@@ -653,7 +490,6 @@ export default function NewHomeNavbar() {
               </div>
             )}
           </div>
->>>>>>> 9196e12 (orders)
         </div>
 
         {/* Hamburger (Mobile) */}
@@ -672,8 +508,6 @@ export default function NewHomeNavbar() {
               <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
                 <FiUser className="h-4 w-4" /> {user ? user.mobileNo : 'Account'}
               </button>
-<<<<<<< HEAD
-=======
               {user && (
                 <button
                   onClick={() => {
@@ -687,7 +521,6 @@ export default function NewHomeNavbar() {
                   Logout
                 </button>
               )}
->>>>>>> 9196e12 (orders)
             </div>
           )}
         </div>

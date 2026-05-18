@@ -154,11 +154,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     if (!isOtpValid) return;
 
     try {
-<<<<<<< HEAD
-      const res = await post('user/verifyOtp', { mobileNo: mobileNumber, otp: otpValue });
-=======
       const res = await post('user/verifyOtp', { mobileNo: mobileNumber, otp: otpValue, type: 'user' });
->>>>>>> 9196e12 (orders)
       if (res && res.type === 'success') {
         localStorage.setItem('petric_token', res.token);
         localStorage.setItem('petric_user', JSON.stringify({ _id: res._id, name: res.name, mobileNo: res.mobileNo }));
