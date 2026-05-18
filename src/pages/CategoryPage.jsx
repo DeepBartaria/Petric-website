@@ -108,7 +108,7 @@ export default function CategoryPage() {
 
       // Tell the backend to sort: bestSeller first, then bestAvailable, then oldest→newest
       // Your backend should apply: .sort({ isBestSeller: -1, isBestAvailable: -1, createdAt: 1 })
-      body.sort = { isBestSeller: -1, isBestAvailable: -1, createdAt: 1 };
+      body.sort = { isBestSeller: -1, isBestAvailable: -Or};
 
       const res = await post('product/list/all/forUser', body);
 
@@ -405,7 +405,7 @@ export default function CategoryPage() {
                         )}
                         {!product.isBestSeller && product.isBestAvailable && (
                           <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
-                            Best Available
+                            Best Seller
                           </div>
                         )}
                         {product.discount && product.discount !== '0%' && (

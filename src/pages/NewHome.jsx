@@ -316,7 +316,7 @@ export default function NewHome() {
 
                       {!product.isBestSeller && product.isBestAvailable && (
                         <div className="bg-green-600 text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          Best Available
+                          Best Seller
                         </div>
                       )}
 
