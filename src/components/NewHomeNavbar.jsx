@@ -17,7 +17,7 @@ const TRENDING_SEARCHES = [
   'Puppy food',
 ];
 
-// Levenshtein distance for typo tolerance (Strategy 4 fallback)
+// Levenshtein distance for typo tolerance (last-resort fallback)
 function levenshtein(a, b) {
   const m = a.length, n = b.length;
   const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
@@ -44,7 +44,7 @@ export default function NewHomeNavbar() {
   const [user, setUser] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  // Prebuilt search index: array of { product, tokens }
+  // Prebuilt search index: array of { product, nameText, fullText, tokens, nameTokens }
   const searchIndexRef = useRef([]);
 
   const [navCategories, setNavCategories] = useState([]);
@@ -87,10 +87,8 @@ export default function NewHomeNavbar() {
       inputRef.current?.blur();
     } else if (e.key === 'Enter') {
       if (highlightedIndex >= 0 && items[highlightedIndex]) {
-        // Navigate to highlighted product
         navigateToProduct(items[highlightedIndex]);
       } else if (inputValue.trim()) {
-        // Search results page
         navigateToSearch(inputValue.trim());
       }
     }
@@ -175,49 +173,39 @@ export default function NewHomeNavbar() {
         const unique = Array.from(new Map(mergedProducts.map(p => [p._id, p])).values());
         setAllProducts(unique);
 
-        // Build search index: extract every meaningful text field
+        // Helper: safely extract a string from a field that may be string | object | array
+        const str = (v) => {
+          if (!v) return '';
+          if (typeof v === 'string') return v;
+          if (typeof v === 'object' && v.name) return v.name;
+          return '';
+        };
+
+        // Build search index
         searchIndexRef.current = unique.map(p => {
-          // Helper: safely extract string from a field that may be string | object | array
-          const str = (v) => {
-            if (!v) return '';
-            if (typeof v === 'string') return v;
-            if (typeof v === 'object' && v.name) return v.name;
-            return '';
-          };
+          // Product name — highest priority
+          const nameText = (p.name || '').toLowerCase();
 
+          // All searchable fields combined
           const fields = [
-            // Product name — highest importance, always a string
             p.name || '',
-
-            // Brand — may be a populated object or a plain ID string (ignore IDs)
             str(p.brand),
-
-            // Pet types: ["dog"], ["cat"], ["dog","cat"]
             ...(Array.isArray(p.petType) ? p.petType : []),
-
-            // Description — contains breed names like "rottweiler", ingredient names, etc.
-            // We include it but only use the first 300 chars to keep scoring fast
-            (p.description || '').slice(0, 300),
-
-            // Flavour, productType arrays — may be populated objects or ID strings
+            // Include full description for deep matching (breed names, ingredients, etc.)
+            p.description || '',
             ...(Array.isArray(p.flavour) ? p.flavour.map(str).filter(Boolean) : []),
             ...(Array.isArray(p.productType) ? p.productType.map(str).filter(Boolean) : []),
-
-            // vegNonVeg: "veg" / "non-veg"
             p.vegNonVeg || '',
-
-            // Variant names: "7 KG", "1 x 100ml" — helps match weight searches
             ...(Array.isArray(p.variants) ? p.variants.map(v => v?.name || '') : []),
           ];
 
-          const searchableText = fields.join(' ').toLowerCase();
-          const tokens = searchableText.split(/[\s()\-,/]+/).filter(t => t.length > 1);
+          const fullText = fields.join(' ').toLowerCase();
 
-          // Separate high-priority name tokens for boosted scoring
-          const nameText = (p.name || '').toLowerCase();
+          // Word-boundary tokens for token-level matching
           const nameTokens = nameText.split(/[\s()\-,/]+/).filter(t => t.length > 1);
+          const tokens = fullText.split(/[\s()\-,/]+/).filter(t => t.length > 1);
 
-          return { product: p, searchableText, tokens, nameText, nameTokens };
+          return { product: p, nameText, fullText, nameTokens, tokens };
         });
       } catch (error) {
         console.log(error);
@@ -243,7 +231,17 @@ export default function NewHomeNavbar() {
     };
   }, []);
 
-  // Custom multi-strategy search engine
+  // ─── Search Engine ────────────────────────────────────────────────────────────
+  // Scoring philosophy:
+  //   100+ → full query found as substring in product name         (e.g. "pedigree" in "Pedigree Adult")
+  //    60+ → full query found somewhere in description/brand/etc
+  //    40+ → all query tokens found as substrings in name
+  //    20+ → all query tokens found somewhere in full text
+  //    10+ → at least some tokens matched (partial)
+  //     1+ → typo-tolerance fallback (Levenshtein)
+  //
+  // "Substring anywhere" means "edigree" WILL match "Pedigree" because
+  // nameText.includes("edigree") is true — no word-boundary restriction.
   useEffect(() => {
     const raw = inputValue.trim();
     if (!raw || searchIndexRef.current.length === 0) {
@@ -253,61 +251,66 @@ export default function NewHomeNavbar() {
     }
 
     const q = raw.toLowerCase();
-    // Split query on spaces and punctuation, e.g. "royal canin" → ["royal","canin"]
+    // Multi-word query: split on whitespace/punctuation
     const queryTokens = q.split(/[\s()\-,/]+/).filter(t => t.length > 0);
 
     const scored = [];
 
     for (const entry of searchIndexRef.current) {
-      const { product, searchableText, tokens, nameText, nameTokens } = entry;
+      const { product, nameText, fullText, nameTokens, tokens } = entry;
       let score = 0;
 
-      // ── Strategy 1: exact substring anywhere in full text ──────────────────
-      // "finapet" → finds "Vivaldis Finapet 5mg Tablets" because nameText contains it
+      // ── Level 1: full query string as substring in name ────────────────────
+      // Catches "edigree" → "Pedigree", "royal canin" → "Royal Canin Adult"
       if (nameText.includes(q)) {
-        score += 120;
-        if (nameText.startsWith(q)) score += 40;           // "pedigree" at name start
-        else if (nameTokens.some(t => t.startsWith(q))) score += 25; // word prefix in name
-      } else if (searchableText.includes(q)) {
-        // Matched in brand / description / petType etc but not name
+        score += 100;
+        // Bonus if it starts at the very beginning of the name
+        if (nameText.startsWith(q)) score += 30;
+        // Bonus if it starts at a word boundary within the name
+        else if (nameTokens.some(t => t.startsWith(q) || nameText.includes(' ' + q))) score += 15;
+      }
+
+      // ── Level 2: full query string as substring anywhere in full text ───────
+      // Catches brand names, description keywords, variant labels
+      if (score === 0 && fullText.includes(q)) {
         score += 60;
       }
 
-      // ── Strategy 2: all query tokens found in name ──────────────────────────
-      // "royal canin" → both words in name → strong
-      if (score === 0 || true) { // always run to add bonus points
-        if (queryTokens.length > 1) {
-          const allInName = queryTokens.every(qt => nameText.includes(qt));
-          if (allInName) score += 80;
-          else {
-            const allInFull = queryTokens.every(qt => searchableText.includes(qt));
-            if (allInFull) score += 50;
-          }
+      // ── Level 3: ALL query tokens as substrings in name ────────────────────
+      // "royal canin" → nameText contains "royal" AND "canin" (handles multi-word)
+      // Each token can appear ANYWHERE in the name — no word-start restriction
+      if (score === 0 && queryTokens.length > 1) {
+        const allInName = queryTokens.every(qt => nameText.includes(qt));
+        if (allInName) {
+          score += 80;
+        } else {
+          const allInFull = queryTokens.every(qt => fullText.includes(qt));
+          if (allInFull) score += 45;
         }
       }
 
-      // ── Strategy 3: each query token prefix-matches a word in name/text ────
-      // "rott" → nameTokens has no "rott*" but searchableText (description) has "rottweiler"
+      // ── Level 4: partial token matching (some tokens hit) ──────────────────
+      // Each query token checked as substring in name or full text
+      // This also handles single-token queries not caught above (score still 0)
       if (score === 0) {
-        let tokenScore = 0;
+        let partialScore = 0;
         for (const qt of queryTokens) {
-          if (nameTokens.some(t => t.startsWith(qt))) {
-            tokenScore += 50; // prefix match in product name — strong signal
-          } else if (tokens.some(t => t.startsWith(qt))) {
-            tokenScore += 25; // prefix match in description/brand/etc
-          } else if (nameText.includes(qt)) {
-            tokenScore += 35; // substring in name (not at word boundary)
-          } else if (searchableText.includes(qt)) {
-            tokenScore += 15; // substring anywhere else
+          if (nameText.includes(qt)) {
+            // substring anywhere in name
+            partialScore += 40;
+            // extra weight if it aligns with a word boundary
+            if (nameTokens.some(t => t.startsWith(qt))) partialScore += 15;
+          } else if (fullText.includes(qt)) {
+            partialScore += 18;
           }
         }
-        score += tokenScore;
+        score += partialScore;
       }
 
-      // ── Strategy 4: typo tolerance (Levenshtein fallback) ──────────────────
-      // Only when nothing matched — "pedigee" → "pedigree"
+      // ── Level 5: typo tolerance (Levenshtein) — only if nothing matched ────
       if (score === 0 && q.length >= 3) {
         const allowedEdits = q.length <= 5 ? 1 : 2;
+        // Check against each word token in the name
         for (const token of nameTokens) {
           if (Math.abs(token.length - q.length) > allowedEdits) continue;
           if (levenshtein(q, token) <= allowedEdits) {
@@ -315,7 +318,7 @@ export default function NewHomeNavbar() {
             break;
           }
         }
-        // Also check full searchable text tokens if name had no typo match
+        // Fallback: check all tokens (description, brand, etc.)
         if (score === 0) {
           for (const token of tokens) {
             if (Math.abs(token.length - q.length) > allowedEdits) continue;
