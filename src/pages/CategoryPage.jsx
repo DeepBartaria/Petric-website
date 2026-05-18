@@ -9,7 +9,7 @@ import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import { get, post } from '../helper/api';
-
+import { getAllCategoryProductsTemp } from '../api/categoryProductsApi';
 import headerbg from '../assets/petsproductherobg.png';
 
 const LIMIT = 20;
@@ -80,7 +80,9 @@ export default function CategoryPage() {
     setCurrentPage(1);
     setTotalPages(1);
     fetchKeyRef.current += 1;
-    fetchProducts(1, true, fetchKeyRef.current);
+    // TEMPORARY: using fetchAllProductsTemp instead of fetchProducts until backend velocity sort is deployed.
+    // To restore paginated behavior: change the next line back to:  fetchProducts(1, true, fetchKeyRef.current); 
+    fetchAllProductsTemp(fetchKeyRef.current);
   }, [categoryId, activeSubcategory]);
 
   // Fetch additional pages
@@ -89,6 +91,60 @@ export default function CategoryPage() {
       fetchProducts(currentPage, false, fetchKeyRef.current);
     }
   }, [currentPage]);
+
+  // === TEMPORARY: fetch all products + sort on frontend ===
+  // Replaces the paginated fetchProducts below until the backend supports a required sortBy without login.
+  const fetchAllProductsTemp = async (fetchKey) => {
+    setIsInitialLoading(true);
+    setProducts([]);
+
+    const res = await getAllCategoryProductsTemp({
+      categoryId,
+      subCategoryId: activeSubcategory?._id,
+    });
+
+    // Discard if a newer fetch was triggered in the meantime
+    if (fetchKey !== fetchKeyRef.current) {
+      setIsInitialLoading(false);
+      return;
+    }
+
+    if (res?.products) {
+      // Sort: bestSeller first, then bestAvailable, then oldest createdAt first
+      const sorted = [...res.products].sort((a, b) => {
+        return new Date(a.createdAt) - new Date(b.createdAt); // oldest first
+      });
+
+      const formatted = sorted.map((p) => {
+        const variant = p.variants?.[0] || {};
+        return {
+          id: p._id,
+          img: p.productImage,
+          name: p.name,
+          weight: variant.name || '',
+          price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
+          oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+          discount:
+            variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
+              ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
+              : '',
+          isBestSeller: p.isBestSeller,
+          isBestAvailable: p.isBestAvailable,
+          createdAt: p.createdAt,
+        };
+      });
+
+      setProducts(formatted);
+      setTotalProducts(res.totalProducts || formatted.length);
+      setTotalPages(1);   // single fetch — no further pagination
+      setCurrentPage(1);
+    } else {
+      setProducts([]);
+      setTotalProducts(0);
+    }
+
+    setIsInitialLoading(false);
+  };
 
   const fetchProducts = async (page, isReset, fetchKey) => {
     if (isReset) {
@@ -108,7 +164,8 @@ export default function CategoryPage() {
 
       // Tell the backend to sort: bestSeller first, then bestAvailable, then oldest→newest
       // Your backend should apply: .sort({ isBestSeller: -1, isBestAvailable: -1, createdAt: 1 })
-      body.sort = { isBestSeller: -1, isBestAvailable: -1};
+
+      body.sort = { isBestSeller: -1, isBestAvailable: -1, createdAt: 1 };
 
       const res = await post('product/list/all/forUser', body);
 
@@ -408,6 +465,7 @@ export default function CategoryPage() {
                             Best Seller
                           </div>
                         )}
+
                         {product.discount && product.discount !== '0%' && (
                           <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             {product.discount} Off
