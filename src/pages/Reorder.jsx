@@ -27,7 +27,7 @@ export default function Reorder() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPreviousOrders = async () => {
+    const fetchReorderProducts = async () => {
       const token = localStorage.getItem('petric_token');
       if (!token) {
         setReorderProducts([]);
@@ -35,40 +35,37 @@ export default function Reorder() {
         return;
       }
       try {
-        const res = await get('booking/list/forUser', {
-          headers: { Authorization: `Bearer ${token}` }
+        const res = await get('product/list/reorder/products', {
+          headers: { Authorization: token }
         });
-        if (res && res.type === 'success' && res.bookings) {
-           const fetchedProducts = [];
-           const productMap = new Set();
-           
-           res.bookings.forEach(booking => {
-             if (booking.products && Array.isArray(booking.products)) {
-               booking.products.forEach(p => {
-                 const uniqueKey = p.productId?._id || p.productName;
-                 if (!productMap.has(uniqueKey)) {
-                   productMap.add(uniqueKey);
-                   fetchedProducts.push({
-                    id: uniqueKey,
-                    img: p.productId?.productImage || product1,
-                    name: p.productName || p.productId?.name,
-                    weight: p.variantName || p.unit || '',
-                    price: `₹${p.discountAmount || p.originalAmount || 0}`,
-                    qty: 1
-                  });
-                 }
-               });
-             }
-           });
-           setReorderProducts(fetchedProducts);
+
+        if (res && res.type === 'success' && Array.isArray(res.products)) {
+          const formatted = res.products.map((p) => {
+            const firstVariant = p.variants?.[0];
+            const price = firstVariant?.discountedPrice
+              ?? firstVariant?.originalPrice
+              ?? p.originalPrice;
+            return {
+              id: p._id,
+              img: p.productImage || product1,
+              name: p.name,
+              weight: firstVariant?.name || '',
+              price: price != null ? `₹${price}` : '',
+              qty: 1,
+            };
+          });
+          setReorderProducts(formatted);
+        } else {
+          setReorderProducts([]);
         }
       } catch (e) {
-        console.error("Error fetching past orders", e.response?.data || e);
+        console.error("Error fetching reorder products", e.response?.data || e);
+        setReorderProducts([]);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPreviousOrders();
+    fetchReorderProducts();
   }, []);
 
   const handleAddToCart = (product) => {
