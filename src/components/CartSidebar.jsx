@@ -206,7 +206,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
           };
           
           const backendRes = await post('booking/add', bookingData, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('petric_token')}` }
+            headers: { Authorization: localStorage.getItem('petric_token') }
           });
 
           if (backendRes && backendRes.type === 'success') {
@@ -215,7 +215,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                 description: `Placed an order of ₹${totalPayable}`,
                 type: "Order"
               }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('petric_token')}` }
+                headers: { Authorization: localStorage.getItem('petric_token') }
               });
             } catch (logErr) {
               console.error("Failed to log order:", logErr);
@@ -260,7 +260,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
         setCouponError('Please login to apply coupon');
         return;
       }
-      const res = await get('coupon?type=3', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await get('coupon?type=3', { headers: { Authorization: token } });
       if (res && res.coupons) {
         const found = res.coupons.find(c => c.couponPromoCode && c.couponPromoCode.toLowerCase() === couponCode.toLowerCase());
         if (found) {
