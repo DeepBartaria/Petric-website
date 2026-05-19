@@ -241,8 +241,8 @@ export default function NewHome() {
             <Link to="/all-brands" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</Link>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Back button — only when scrolled */}
+          {/* ── DESKTOP: single scrollable row ── */}
+          <div className="hidden md:flex items-center gap-2">
             {brandsScrollPos > 0 && (
               <button
                 onClick={() => brandsScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
@@ -252,44 +252,34 @@ export default function NewHome() {
               </button>
             )}
 
-            {/* Scrollable brands with fade edges */}
             <div className="relative flex-1 overflow-hidden">
-              {/* Right fade */}
               <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10" />
-              {/* Left fade — only when scrolled */}
               {brandsScrollPos > 0 && (
                 <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
               )}
-
               <div
                 ref={brandsScrollRef}
                 onScroll={(e) => setBrandsScrollPos(e.target.scrollLeft)}
-                className="flex items-center gap-4 overflow-x-hidden [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2"
+                className="flex items-center gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2"
               >
                 {brands.map((brand, i) => (
                   <Link
                     key={i}
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                    className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-20 md:w-24 cursor-pointer group"
+                    className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-24 cursor-pointer group"
                   >
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
-                      <img
-                        src={brand.img}
-                        alt={brand.alt}
-                        className="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 group-hover:scale-110"
-                      />
+                    <div className="w-24 h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                      <img src={brand.img} alt={brand.alt} className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110" />
                     </div>
                     {brand.alt && (
                       <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
                     )}
                   </Link>
                 ))}
-                {/* Right padding so last item clears the fade */}
                 <div className="shrink-0 w-10" />
               </div>
             </div>
 
-            {/* Forward scroll button */}
             <button
               onClick={() => brandsScrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
               className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
@@ -297,8 +287,47 @@ export default function NewHome() {
               <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
             </button>
           </div>
-        </div>
 
+          {/* ── MOBILE: two scrollable rows ── */}
+          <div className="md:hidden overflow-x-auto [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-col gap-4 pb-2" style={{ width: 'max-content' }}>
+              {/* Row 1 — odd-indexed brands */}
+              <div className="flex gap-4 px-2">
+                {brands.filter((_, i) => i % 2 === 0).map((brand, i) => (
+                  <Link
+                    key={i}
+                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    className="flex flex-col items-center gap-1.5 w-[72px] shrink-0 cursor-pointer group"
+                  >
+                    <div className="w-[72px] h-[72px] rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center transition-all duration-300 group-active:scale-95">
+                      <img src={brand.img} alt={brand.alt} className="w-11 h-11 object-contain" />
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[10px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+              {/* Row 2 — even-indexed brands */}
+              <div className="flex gap-4 px-2">
+                {brands.filter((_, i) => i % 2 === 1).map((brand, i) => (
+                  <Link
+                    key={i}
+                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    className="flex flex-col items-center gap-1.5 w-[72px] shrink-0 cursor-pointer group"
+                  >
+                    <div className="w-[72px] h-[72px] rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center transition-all duration-300 group-active:scale-95">
+                      <img src={brand.img} alt={brand.alt} className="w-11 h-11 object-contain" />
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[10px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Personalized Welcome Banner */}
         <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full lg:w-auto shrink-0">
@@ -373,8 +402,9 @@ export default function NewHome() {
                       )}
 
                       {product.discount && product.discount !== '0%' && (
-                        <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          {product.discount} Off
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide leading-none">save</span>
+                          <span className="text-base md:text-lg font-black text-[#FF5757] leading-none">{product.discount}</span>
                         </div>
                       )}
 
