@@ -293,11 +293,11 @@ export default function ProductDetails() {
           <aside className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 p-4 md:p-6 shadow-sm flex flex-col gap-4">
 
             {/* Assurance tag */}
-            <div>
+            {/* <div>
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-600 border border-blue-100">
                 <FiCheck className="h-3 w-3" /> Petric Assured
               </span>
-            </div>
+            </div> */}
 
             {/* Title & Brand */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -443,7 +443,18 @@ export default function ProductDetails() {
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
               
               <h2 className="text-xl md:text-2xl font-extrabold text-black">
-                More by <span className="text-[#B8860B]">{brandName}</span>
+                More by{' '}
+                {brandId ? (
+                  <Link
+                    to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-[#B8860B] hover:text-[#F5C400] underline underline-offset-2 decoration-[#B8860B]/40 hover:decoration-[#F5C400] transition-colors duration-200"
+                  >
+                    {brandName}
+                  </Link>
+                ) : (
+                  <span className="text-[#B8860B]">{brandName}</span>
+                )}
               </h2>
 
               {brandId && (

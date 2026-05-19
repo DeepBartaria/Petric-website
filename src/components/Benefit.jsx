@@ -52,8 +52,8 @@ export default function Benefit() {
               key={index}
               className="shrink-0 snap-center w-36 bg-white rounded-2xl shadow-md p-3 flex flex-col items-center text-center cursor-pointer hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="bg-white border border-black/10 rounded-xl p-2 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 mb-2">
-                <img src={benefit.icon} alt={benefit.title} className="w-10 h-10 object-contain" />
+              <div className="mb-2 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <img src={benefit.icon} alt={benefit.title} className="w-18 h-18 object-contain transition-transform duration-300 group-hover:scale-110" />
               </div>
               <h3 className="text-sm font-bold text-black group-hover:text-[#FF5757] transition-colors leading-tight mb-1">
                 {benefit.title}
@@ -73,8 +73,8 @@ export default function Benefit() {
               className="relative bg-white  p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:shadow-2xl hover:-translate-y-2 md:hover:-translate-y-3 transition-all duration-300 group cursor-pointer overflow-hidden"
             >
               <div className="flex flex-col items-center text-center relative z-10">
-                <div className="bg-white border border-black/10 rounded-xl md:rounded-2xl p-2.5 md:p-3 shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:shadow-xl mb-2 md:mb-3">
-                  <img src={benefit.icon} alt={benefit.title} className="w-10 h-10 md:w-14 md:h-14 object-contain" />
+                <div className="mb-2 md:mb-3 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                  <img src={benefit.icon} alt={benefit.title} className="w-16 h-16 md:w-20 md:h-20 object-contain transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <h3 className="text-sm md:text-xl font-bold text-black group-hover:text-[#FF5757] transition-colors duration-300 leading-tight mb-1">
                   {benefit.title}

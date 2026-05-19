@@ -340,6 +340,7 @@ export default function NewHomeNavbar() {
                 onClick={() => setIsLocationModalOpen(true)}
                 className="text-xs text-black font-medium whitespace-nowrap hover:text-gray-700 transition-colors duration-200"
               >
+                <FiMapPin className="inline-block h-3 w-3 mr-1" />
                 {deliveryTime ? `Delivery in ${deliveryTime} mins` : 'Check Delivery Time'}
               </button>
             </div>
