@@ -5,6 +5,44 @@ import { get } from '../helper/api';
 import product1 from '../assets/product1.png';
 import product2 from '../assets/product2.png';
 
+// Robust address resolver — handles multiple possible backend field shapes
+function resolveAddress(booking) {
+  // Try plain string fields first
+  const candidates = [
+    booking.deliveryAddress,
+    booking.address,
+    booking.userAddress,
+    booking.dropAddress,
+    booking.location,
+  ];
+
+  for (const val of candidates) {
+    if (!val) continue;
+    if (typeof val === 'string' && val.trim()) return val.trim();
+    if (typeof val === 'object') {
+      // Build a human-readable string from known sub-fields
+      const parts = [
+        val.houseNo || val.house || val.flatNo,
+        val.building || val.apartment,
+        val.street || val.streetAddress || val.line1 || val.address1,
+        val.area || val.locality || val.line2 || val.address2,
+        val.landmark,
+        val.city,
+        val.state,
+        val.pincode || val.zip || val.postalCode,
+      ].filter(Boolean);
+      if (parts.length) return parts.join(', ');
+    }
+  }
+
+  // Last resort: reverse-geocode label if lat/lng were stored
+  if (booking.lat && booking.lng) {
+    return `Near (${Number(booking.lat).toFixed(4)}, ${Number(booking.lng).toFixed(4)})`;
+  }
+
+  return 'Address not available';
+}
+
 export default function OrdersSidebar({ isOpen, onClose }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -36,13 +74,13 @@ export default function OrdersSidebar({ isOpen, onClose }) {
               total: b.totalPayable,
               status: b.status || "Delivered",
               items: b.products?.map(p => ({
-                id: p.productId,
-                name: p.productName,
+                id: p.productId?._id || p.productId,
+                name: p.productName || p.productId?.name,
                 quantity: p.quantity,
                 weight: p.variantName || 'N/A',
                 price: (p.originalAmount - (p.discountAmount || 0)),
                 oldPrice: p.originalAmount,
-                img: p.productImage || product1
+                img: p.productId?.productImage || p.productImage || product1
               })) || [],
               billing: {
                 totalMRP: b.totalPrice,
@@ -51,7 +89,7 @@ export default function OrdersSidebar({ isOpen, onClose }) {
                 platformFee: b.platformFee || 0,
                 amountPaid: b.totalPayable
               },
-              deliveryDetails: b.deliveryAddress || "new address it is"
+              deliveryDetails: resolveAddress(b)
             }));
             setOrders(formatted.reverse());
           }

@@ -4,6 +4,7 @@ import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin, FiChevronDo
 import { BsArrowRepeat } from 'react-icons/bs';
 import logo from '../assets/logo.png';
 import DeliveryLocationModal from './DeliveryLocationModal';
+import ProfileSidebar from './ProfileSidebar';
 import { getHomePageProductsApi, getAllProductsApi } from '../api/homeApi';
 import { get } from '../helper/api';
 
@@ -44,6 +45,7 @@ export default function NewHomeNavbar() {
   const [user, setUser] = useState(null);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   // Prebuilt search index: array of { product, nameText, fullText, tokens, nameTokens }
   const searchIndexRef = useRef([]);
   const categoryScrollRef = useRef(null);
@@ -485,13 +487,19 @@ export default function NewHomeNavbar() {
               <div className="absolute right-0 top-full pt-2 w-32 hidden group-hover:block z-50">
                 <div className="bg-white rounded-xl shadow-xl border border-gray-100 py-2">
                   <button
+                    onClick={() => setIsProfileOpen(true)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Your Profile
+                  </button>
+                  <button
                     onClick={() => {
                       localStorage.removeItem('petric_user');
                       localStorage.removeItem('petric_token');
                       setUser(null);
                       window.location.reload();
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 font-medium transition-colors"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 font-medium transition-colors border-t border-gray-50 mt-1 pt-1"
                   >
                     Logout
                   </button>
@@ -526,17 +534,28 @@ export default function NewHomeNavbar() {
                 <FiUser className="h-4 w-4" /> {user ? user.mobileNo : 'Account'}
               </button>
               {user && (
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('petric_user');
-                    localStorage.removeItem('petric_token');
-                    setUser(null);
-                    window.location.reload();
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100"
-                >
-                  Logout
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsProfileOpen(true);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Your Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('petric_user');
+                      localStorage.removeItem('petric_token');
+                      setUser(null);
+                      window.location.reload();
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Logout
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -685,6 +704,11 @@ export default function NewHomeNavbar() {
       <DeliveryLocationModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
+      />
+
+      <ProfileSidebar
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
       />
     </div>
   );
