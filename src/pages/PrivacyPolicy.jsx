@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Footer from '../components/Footer';
-
+import NewHomeNavbar from '../components/NewHomeNavbar';
 export default function PrivacyPolicy() {
     useEffect(() => {
         if (!window.location.hash) {
@@ -14,8 +14,9 @@ export default function PrivacyPolicy() {
 
     return (
         <div className="w-full flex flex-col min-h-screen bg-white">
+          <NewHomeNavbar />
             {/* Header */}
-            <div className="w-full bg-[#FFD000] py-12 px-4 text-center">
+            <div className="w-full bg-[#FFF2B8] py-12 px-4 text-center">
                 <h1 className="text-4xl md:text-6xl text-black font-normal balsamiq-sans-bold tracking-tight mb-4">Privacy Policy</h1>
                 <p className="text-black text-lg">Last Updated: 19 March 2026</p>
             </div>
