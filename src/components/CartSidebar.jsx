@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { FiArrowLeft, FiShare2, FiInfo, FiPlus, FiMinus, FiChevronRight, FiCheck } from 'react-icons/fi';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { FiArrowLeft, FiShare2, FiInfo, FiPlus, FiMinus, FiChevronRight, FiCheck, FiMapPin, FiNavigation } from 'react-icons/fi';
 import { BsClockHistory } from 'react-icons/bs';
-import { post, get } from '../helper/api';
+import { post, get, put } from '../helper/api';
+import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
+
+const GMAPS_LIBRARIES = ['places'];
+const DEFAULT_MAP_CENTER = { lat: 28.6139, lng: 77.2090 };
 
 export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuantity }) {
   const totalMrp = cartItems.reduce((total, item) => {
@@ -29,6 +33,22 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [isCouponsLoading, setIsCouponsLoading] = useState(false);
 
+  // Address state
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    fullName: '', petName: '', petType: '', fullAddress: '',
+    landmark: '', pincode: '', mobileNumber: '', addressType: 'Home'
+  });
+  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
+  const [markerPos, setMarkerPos] = useState(null);
+  const [isFetchingGPS, setIsFetchingGPS] = useState(false);
+  const mapRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const addressInputRef = useRef(null);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement('script');
@@ -42,6 +62,12 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalPayable = itemsTotal - couponDiscount;
   const [deliveryTime, setDeliveryTime] = useState(16);
+
+  const { isLoaded: isMapsLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: GMAPS_LIBRARIES,
+  });
 
   const isMobileValid = mobileNumber.length === 10;
   const isOtpValid = otpValue.length === 4;
@@ -95,16 +121,11 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   }, [checkoutStep, resendTimer]);
 
   const handleBack = () => {
-    if (checkoutStep === 'otp') {
-      setCheckoutStep('mobile');
-      return;
-    }
-
-    if (checkoutStep === 'mobile') {
-      setCheckoutStep('cart');
-      return;
-    }
-
+    if (checkoutStep === 'addAddress') { setCheckoutStep('selectAddress'); return; }
+    if (checkoutStep === 'selectAddress') { setCheckoutStep('cart'); return; }
+    if (checkoutStep === 'otp') { setCheckoutStep('mobile'); return; }
+    if (checkoutStep === 'mobile') { setCheckoutStep('cart'); return; }
+    if (checkoutStep === 'coupons') { setCheckoutStep('cart'); return; }
     onClose();
   };
 
@@ -318,6 +339,110 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const handleApplyCoupon = () => applySpecificCoupon(couponCode);
   // (handleApplyCoupon contents moved to applySpecificCoupon)
 
+  const fetchAddresses = async () => {
+    setIsAddressLoading(true);
+    try {
+      const token = localStorage.getItem('petric_token');
+      if (!token) return;
+      const res = await get('address/list/forUser', { headers: { Authorization: token } });
+      if (res && res.type === 'success' && res.addresses) {
+        setSavedAddresses(res.addresses);
+        if (res.addresses.length > 0 && !selectedAddressId) {
+          setSelectedAddressId(res.addresses[0]._id);
+        }
+      }
+    } catch (e) { console.error('fetchAddresses', e); }
+    setIsAddressLoading(false);
+  };
+
+  const reverseGeocode = (lat, lng) => {
+    if (!window.google) return;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const comps = results[0].address_components;
+        let landmark = '', pincode = '', fullAddress = results[0].formatted_address;
+        comps.forEach(c => {
+          if (c.types.includes('sublocality_level_1') || c.types.includes('neighborhood')) landmark = c.long_name;
+          if (c.types.includes('postal_code')) pincode = c.long_name;
+        });
+        setNewAddress(prev => ({
+          ...prev,
+          fullAddress: prev.fullAddress || fullAddress,
+          landmark: prev.landmark || landmark,
+          pincode: prev.pincode || pincode,
+        }));
+        if (addressInputRef.current && !addressInputRef.current.value) {
+          addressInputRef.current.value = fullAddress;
+        }
+      }
+    });
+  };
+
+  const handleMapClick = useCallback((e) => {
+    const lat = e.latLng.lat(), lng = e.latLng.lng();
+    setMarkerPos({ lat, lng });
+    reverseGeocode(lat, lng);
+  }, []);
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setIsFetchingGPS(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setMarkerPos(loc);
+        setMapCenter(loc);
+        if (mapRef.current) { mapRef.current.panTo(loc); mapRef.current.setZoom(15); }
+        reverseGeocode(loc.lat, loc.lng);
+        setIsFetchingGPS(false);
+      },
+      () => setIsFetchingGPS(false),
+      { timeout: 10000 }
+    );
+  };
+
+  const handlePlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.geometry?.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const loc = { lat, lng };
+        setMarkerPos(loc);
+        setMapCenter(loc);
+        if (mapRef.current) { mapRef.current.panTo(loc); mapRef.current.setZoom(15); }
+        reverseGeocode(lat, lng);
+      }
+    }
+  };
+
+  const handleSaveAddress = async () => {
+    if (!newAddress.fullName || !newAddress.fullAddress) {
+      alert('Full Name and Full Address are required.');
+      return;
+    }
+    setIsSavingAddress(true);
+    try {
+      const token = localStorage.getItem('petric_token');
+      const payload = {
+        ...newAddress,
+        lat: markerPos?.lat,
+        lng: markerPos?.lng,
+      };
+      const res = await post('address/add', payload, { headers: { Authorization: token } });
+      if (res && res.type === 'success') {
+        await fetchAddresses();
+        setNewAddress({ fullName: '', petName: '', petType: '', fullAddress: '', landmark: '', pincode: '', mobileNumber: '', addressType: 'Home' });
+        setMarkerPos(null);
+        setCheckoutStep('selectAddress');
+      } else {
+        alert(res?.message || 'Failed to save address');
+      }
+    } catch (e) { alert('Error saving address'); }
+    setIsSavingAddress(false);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -469,6 +594,40 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                     <span>₹{totalPayable}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Select Address */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-black flex items-center gap-2">
+                    <FiMapPin className="text-[#FFD000]" /> Deliver To
+                  </h3>
+                  <button
+                    onClick={() => { fetchAddresses(); setCheckoutStep('selectAddress'); }}
+                    className="text-blue-600 text-xs font-bold hover:underline"
+                  >
+                    Change
+                  </button>
+                </div>
+                {selectedAddressId && savedAddresses.length > 0 ? (
+                  (() => {
+                    const a = savedAddresses.find(x => x._id === selectedAddressId);
+                    return a ? (
+                      <div className="text-sm text-gray-700">
+                        <span className="bg-[#FFF9CC] text-black text-[10px] font-bold px-2 py-0.5 rounded-full mr-2">{a.addressType || 'Home'}</span>
+                        <span className="font-semibold">{a.fullName}</span>
+                        <p className="mt-1 text-gray-500 text-xs leading-snug">{a.fullAddress}{a.landmark ? `, ${a.landmark}` : ''}{a.pincode ? ` - ${a.pincode}` : ''}</p>
+                      </div>
+                    ) : null;
+                  })()
+                ) : (
+                  <button
+                    onClick={() => { fetchAddresses(); setCheckoutStep('selectAddress'); }}
+                    className="w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm font-bold text-gray-400 hover:border-[#FFD000] hover:text-black transition-colors"
+                  >
+                    + Add Delivery Address
+                  </button>
+                )}
               </div>
 
               {/* Cancellation Policy */}
@@ -644,6 +803,126 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   );
                 })
               )}
+            </div>
+          </div>
+        )}
+
+        {checkoutStep === 'selectAddress' && (
+          <div className="absolute inset-0 bg-[#f8f9fa] z-20 flex flex-col overflow-hidden">
+            <div className="flex items-center gap-3 p-4 bg-white border-b sticky top-0 z-10">
+              <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-full"><FiArrowLeft className="h-6 w-6" strokeWidth={2.5} /></button>
+              <h2 className="text-xl font-bold text-black">Select Address</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+              {isAddressLoading ? (
+                <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-4 border-[#FFD000] border-t-transparent" /></div>
+              ) : savedAddresses.length === 0 ? (
+                <p className="text-center text-gray-400 py-10 text-sm">No saved addresses yet.</p>
+              ) : (
+                savedAddresses.map(a => (
+                  <button
+                    key={a._id}
+                    onClick={() => { setSelectedAddressId(a._id); setCheckoutStep('cart'); }}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      selectedAddressId === a._id ? 'border-[#FFD000] bg-[#FFFDE8]' : 'border-gray-100 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="bg-[#FFF9CC] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{a.addressType || 'Home'}</span>
+                      {selectedAddressId === a._id && <FiCheck className="text-[#B8860B] h-4 w-4" />}
+                    </div>
+                    <p className="font-bold text-sm text-black">{a.fullName}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-snug">{a.fullAddress}{a.landmark ? `, ${a.landmark}` : ''}{a.pincode ? ` - ${a.pincode}` : ''}</p>
+                    {a.mobileNumber && <p className="text-xs text-gray-400 mt-1">{a.mobileNumber}</p>}
+                  </button>
+                ))
+              )}
+              <button
+                onClick={() => setCheckoutStep('addAddress')}
+                className="w-full border-2 border-dashed border-gray-200 rounded-xl py-4 text-sm font-bold text-gray-400 hover:border-[#FFD000] hover:text-black transition-colors mt-1"
+              >
+                + Add New Address
+              </button>
+            </div>
+          </div>
+        )}
+
+        {checkoutStep === 'addAddress' && (
+          <div className="absolute inset-0 bg-[#f8f9fa] z-20 flex flex-col overflow-hidden">
+            <div className="flex items-center gap-3 p-4 bg-white border-b sticky top-0 z-10">
+              <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-full"><FiArrowLeft className="h-6 w-6" strokeWidth={2.5} /></button>
+              <h2 className="text-xl font-bold text-black">Save Address</h2>
+            </div>
+
+            {/* Mini Map */}
+            <div className="h-44 w-full relative shrink-0">
+              {isMapsLoaded ? (
+                <>
+                  <GoogleMap
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    center={mapCenter}
+                    zoom={markerPos ? 15 : 11}
+                    onLoad={(m) => { mapRef.current = m; }}
+                    onClick={handleMapClick}
+                    options={{ disableDefaultUI: true, zoomControl: true }}
+                  >
+                    {markerPos && <Marker position={markerPos} draggable onDragEnd={(e) => { const lat=e.latLng.lat(),lng=e.latLng.lng(); setMarkerPos({lat,lng}); reverseGeocode(lat,lng); }} />}
+                  </GoogleMap>
+                  <button
+                    onClick={handleUseMyLocation}
+                    disabled={isFetchingGPS}
+                    className="absolute bottom-2 right-2 bg-white shadow border border-gray-200 rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 hover:bg-gray-50"
+                  >
+                    <FiNavigation className="h-3 w-3" />{isFetchingGPS ? 'Locating…' : 'Use my location'}
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gray-100 text-xs text-gray-400">Loading map…</div>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24">
+              {isMapsLoaded && (
+                <Autocomplete onLoad={(ac) => (autocompleteRef.current = ac)} onPlaceChanged={handlePlaceChanged}>
+                  <input ref={addressInputRef} type="text" placeholder="Search area or full address…" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000]" />
+                </Autocomplete>
+              )}
+              {[{key:'fullName',label:'Enter Full Name*',type:'text'},{key:'petName',label:'Enter Pet Name*',type:'text'}].map(({key,label,type}) => (
+                <input key={key} type={type} placeholder={label} value={newAddress[key]} onChange={e=>setNewAddress(p=>({...p,[key]:e.target.value}))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000]" />
+              ))}
+              <div className="relative">
+                <select value={newAddress.petType} onChange={e=>setNewAddress(p=>({...p,petType:e.target.value}))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000] bg-white appearance-none">
+                  <option value="" disabled hidden>Select Pet Type</option>
+                  {['Dog','Cat','Bird','Fish','Rabbit','Others'].map(t=><option key={t} value={t}>{t}</option>)}
+                </select>
+                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 fill-gray-500 pointer-events-none" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+              </div>
+              <input type="text" placeholder="Full Address*" value={newAddress.fullAddress} onChange={e=>setNewAddress(p=>({...p,fullAddress:e.target.value}))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000]" />
+              <div className="relative border border-gray-200 rounded-xl px-4 pt-5 pb-2">
+                <label className="absolute top-2 left-4 text-[10px] text-gray-400 font-semibold">Landmark</label>
+                <input type="text" value={newAddress.landmark} onChange={e=>setNewAddress(p=>({...p,landmark:e.target.value}))} className="w-full text-sm outline-none text-black bg-transparent" />
+              </div>
+              <div className="relative border border-gray-200 rounded-xl px-4 pt-5 pb-2">
+                <label className="absolute top-2 left-4 text-[10px] text-gray-400 font-semibold">Pincode</label>
+                <input type="text" inputMode="numeric" value={newAddress.pincode} onChange={e=>setNewAddress(p=>({...p,pincode:e.target.value}))} className="w-full text-sm outline-none text-black bg-transparent" />
+              </div>
+              <div className="relative border border-gray-200 rounded-xl px-4 pt-5 pb-2">
+                <label className="absolute top-2 left-4 text-[10px] text-gray-400 font-semibold">Enter Mobile Number</label>
+                <input type="tel" inputMode="numeric" maxLength={10} value={newAddress.mobileNumber} onChange={e=>setNewAddress(p=>({...p,mobileNumber:e.target.value.replace(/\D/g,'').slice(0,10)}))} className="w-full text-sm outline-none text-black bg-transparent" />
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                {['Home','Work','Others'].map(t => (
+                  <button key={t} onClick={()=>setNewAddress(p=>({...p,addressType:t}))} className={`flex items-center gap-1.5 px-4 py-2 rounded-full border-2 text-sm font-bold transition-all ${ newAddress.addressType===t ? 'bg-[#FFD000] border-[#FFD000] text-black' : 'border-gray-200 text-gray-500 bg-white' }`}>
+                    {t==='Home'&&'🏠'} {t==='Work'&&'💼'} {t==='Others'&&'📍'} {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 bg-white border-t sticky bottom-0">
+              <button onClick={handleSaveAddress} disabled={isSavingAddress} className="w-full bg-[#FFD000] text-black font-bold py-4 rounded-3xl text-[17px] hover:bg-[#E6BC00] transition-colors disabled:opacity-50">
+                {isSavingAddress ? 'Saving…' : 'Save Address'}
+              </button>
             </div>
           </div>
         )}
