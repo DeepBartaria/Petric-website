@@ -62,6 +62,13 @@ export default function NewHome() {
   const [brands, setBrands] = useState([]);
   const brandsScrollRef = useRef(null);
   const [brandsScrollPos, setBrandsScrollPos] = useState(0);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('petric_user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
   useEffect(() => {
     const fetchHomePageProducts = async () => {
       try {
@@ -276,9 +283,14 @@ export default function NewHome() {
             <h2 className="text-2xl md:text-3xl font-extrabold text-black whitespace-nowrap">
               Hello, Pet Parent! 👋
             </h2>
-            <button className="bg-black text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto">
-              Sign In / Sign Up
-            </button>
+            {!user && (
+              <button 
+                onClick={() => window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }))}
+                className="bg-black text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto"
+              >
+                Sign In / Sign Up
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-auto">

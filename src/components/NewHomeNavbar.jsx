@@ -472,7 +472,7 @@ export default function NewHomeNavbar() {
             <button 
               onClick={() => {
                 if (!user) {
-                  window.dispatchEvent(new CustomEvent('openCart'));
+                  window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
                 }
               }}
               className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white"
@@ -517,7 +517,7 @@ export default function NewHomeNavbar() {
                 onClick={() => {
                   if (!user) {
                     setIsMobileMenuOpen(false);
-                    window.dispatchEvent(new CustomEvent('openCart'));
+                    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
                   }
                 }}
                 className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2"
