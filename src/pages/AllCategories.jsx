@@ -398,7 +398,7 @@ export default function AllCategories() {
                       categoryName: activeCategory.name,
                       subCategoryName: activeSubcategory.name
                     }}
-                    className="underline underline-offset-2 text-black hover:text-gray-700 transition-colors"
+                    className="underline decoration-black underline-offset-2 decoration-[1.5px] text-black hover:text-gray-700 transition-colors"
                   >
                     {activeSubcategory.name}
                   </Link>
