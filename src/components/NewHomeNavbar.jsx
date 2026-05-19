@@ -563,7 +563,7 @@ export default function NewHomeNavbar() {
       </div>
 
       {/* Categories Sub-navbar */}
-      <div className="category-strip bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8 relative z-40 border-t border-black/10">
+      <div className="category-strip bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8 relative z-10 border-t border-black/10">
 
         {/* Mobile — same layout as desktop */}
         <div className="md:hidden flex items-center relative">
