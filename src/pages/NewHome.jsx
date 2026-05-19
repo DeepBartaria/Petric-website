@@ -402,9 +402,8 @@ export default function NewHome() {
                       )}
 
                       {product.discount && product.discount !== '0%' && (
-                        <div className="flex flex-col items-end gap-0.5">
-                          <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide leading-none">save</span>
-                          <span className="text-base md:text-lg font-black text-[#FF5757] leading-none">{product.discount}</span>
+                        <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          {product.discount} Off
                         </div>
                       )}
 
