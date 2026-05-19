@@ -9,7 +9,7 @@ import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import { get, post } from '../helper/api';
-
+import { FiChevronDown } from "react-icons/fi";
 import headerbg from '../assets/petsproductherobg.png';
 
 const LIMIT = 20;
@@ -35,6 +35,8 @@ export default function AllCategories() {
   const [totalPages, setTotalPages] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
+  
+  const [expandedCategory, setExpandedCategory] = useState(null);
 
   // Ref for the sentinel element at the bottom of the product grid
   const sentinelRef = useRef(null);
@@ -218,6 +220,8 @@ export default function AllCategories() {
     setActiveSubcategory(sub);
   };
 
+  
+
   // Skeleton card for loading state
   const SkeletonCard = () => (
     <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-2.5 md:p-4 shadow-sm animate-pulse">
@@ -260,58 +264,105 @@ export default function AllCategories() {
         </div>
       </section>
 
-      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-10">
+      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+
 
         {/* Mobile Category Selector */}
-        <div className="flex md:hidden flex-col gap-3">
-          <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-            {categoriesData.map((category, idx) => (
+       <div className="flex md:hidden flex-col gap-2">
+          {/* Main categories — horizontal scroll */}
+          <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+            {categoriesData.map((category) => (
               <button
-                key={idx}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold border transition-colors shrink-0 ${activeCategory?._id === category._id ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200'}`}
+                key={category._id}
                 onClick={() => handleCategoryClick(category)}
+                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+                  activeCategory?._id === category._id
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-gray-700 border-gray-200'
+                }`}
               >
                 {category.name}
               </button>
             ))}
           </div>
-          <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-            {categoriesData.find(c => c._id === activeCategory?._id)?.subcategories.map((sub, i) => (
-              <button
-                key={i}
-                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${activeSubcategory?._id === sub._id ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-600'}`}
-                onClick={() => setActiveSubcategory(sub)}
-              >
-                {sub.name}
-              </button>
-            ))}
-          </div>
+
+          {/* Subcategories — horizontal scroll, only shown when category is active */}
+          {activeCategory && (
+            <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+              {categoriesData
+                .find(c => c._id === activeCategory._id)
+                ?.subcategories.map((sub) => (
+                  <button
+                    key={sub._id}
+                    onClick={() => setActiveSubcategory(sub)}
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                      activeSubcategory?._id === sub._id
+                        ? 'bg-[#FFD000] text-black'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {sub.name}
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
 
         {/* Left Sidebar: Categories (Desktop) */}
-        <div className="hidden md:flex w-full md:w-1/4 lg:w-1/5 shrink-0 flex-col overflow-y-auto max-h-screen pr-2 sticky top-4 custom-scrollbar">
-          {categoriesData.map((category, idx) => (
-            <div key={idx} className="mb-8">
-              <h3
-                className={`text-[13px] font-extrabold uppercase tracking-widest mb-4 cursor-pointer transition-colors ${activeCategory?._id === category._id ? 'text-black' : 'text-gray-800 hover:text-black'}`}
-                onClick={() => handleCategoryClick(category)}
+        <aside className="hidden md:flex w-56 lg:w-64 shrink-0 flex-col gap-2 sticky top-6 self-start max-h-[calc(100vh-5rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden pb-6">
+          {categoriesData.map((category) => (
+            <div
+              key={category._id}
+              className="rounded-2xl border border-gray-100 bg-white shadow-sm"
+            >
+              {/* Category header button */}
+              <button
+                onClick={() => {
+                  setExpandedCategory(expandedCategory === category._id ? null : category._id);
+                  handleCategoryClick(category);
+                }}
+                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 ${
+                  activeCategory?._id === category._id
+                    ? 'bg-[#FFF4B8] border-l-4 border-l-[#FFD000] rounded-l-none'
+                    : 'hover:bg-gray-50 border-l-4 border-l-transparent rounded-l-none'
+                } ${expandedCategory === category._id ? 'rounded-b-none' : ''}`}
               >
-                {category.name}
-              </h3>
-              <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
-                {category.subcategories.map((sub, i) => (
-                  <span
-                    key={i}
-                    onClick={() => handleSubcategoryClick(category, sub)}
-                    className={`text-sm cursor-pointer transition-colors ${activeCategory?._id === category._id && activeSubcategory?._id === sub._id ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'}`}
-                  >
-                    {sub.name}
-                  </span>
-                ))}
-              </div>
+                <span className={`text-sm font-bold tracking-wide text-left leading-snug ${
+                  activeCategory?._id === category._id ? 'text-black' : 'text-gray-600'
+                }`}>
+                  {category.name}
+                </span>
+                <FiChevronDown
+                  className={`shrink-0 h-4 w-4 ml-2 text-gray-400 transition-transform duration-300 ${
+                    expandedCategory === category._id ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Subcategories — smooth animated expand, no overflow-hidden on parent */}
+              {expandedCategory === category._id && (
+                <div className="border-t border-gray-100 flex flex-col pb-1">
+                  {category.subcategories.map((sub) => (
+                    <button
+                      key={sub._id}
+                      onClick={() => handleSubcategoryClick(category, sub)}
+                      className={`w-full text-left px-5 py-2.5 text-sm transition-colors flex items-center gap-2.5 border-l-4 ${
+                        activeSubcategory?._id === sub._id
+                          ? 'text-black font-semibold bg-[#FFFBEA] border-l-[#FFD000]'
+                          : 'text-gray-500 hover:text-black hover:bg-gray-50 border-l-transparent'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                        activeSubcategory?._id === sub._id ? 'bg-[#FFD000]' : 'bg-gray-300'
+                      }`} />
+                      <span className="leading-snug">{sub.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
-        </div>
+        </aside>
 
         {/* Right Content: Products Grid */}
         <div className="w-full md:w-3/4 lg:w-4/5 flex flex-col">

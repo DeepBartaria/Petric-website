@@ -335,7 +335,7 @@ export default function NewHomeNavbar() {
               </button>
             )}
 
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block border-b border-black hover:border-[#FFD000] transition-colors duration-200 z-20">
+            <div className={`absolute right-4 top-1/2 -translate-y-1/2 hidden md:block border-b border-black hover:border-[#FFD000] transition-all duration-300 z-20 ${inputValue ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
               <button
                 onClick={() => setIsLocationModalOpen(true)}
                 className="text-xs text-black font-medium whitespace-nowrap hover:text-gray-700 transition-colors duration-200"
@@ -421,7 +421,7 @@ export default function NewHomeNavbar() {
                           </p>
                           <p className="text-xs text-gray-400 mt-0.5 truncate">
                             {product.brand?.name || ''}
-                            {product.petType?.length ? ` · ${product.petType.join(', ')}` : ''}
+                            
                           </p>
                         </div>
 
