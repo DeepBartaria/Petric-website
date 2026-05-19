@@ -110,8 +110,8 @@ export default function Footer() {
             <div className="mb-3 text-base sm:text-lg">Quick links</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
               <li><Link to="/story" className="hover:underline">Our Story</Link></li>
-              <li><Link to="/products" className="hover:underline">Pet Products</Link></li>
-              <li><Link to="/" className="hover:underline">Our Catalogue</Link></li>
+              <li><Link to="/all-categories" className="hover:underline">Pet Products</Link></li>
+              <li><Link to="/" className="hover:underline" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Our Catalogue</Link></li>
             </ul>
           </div>
           {/* Policies */}
@@ -141,7 +141,7 @@ export default function Footer() {
         <div className="w-full border-t border-dashed border-gray-300 my-2"></div>
         {/* Copyright */}
         <div className="text-center text-sm sm:text-lg primary-color font-medium py-3 sm:py-4 px-4">
-          © Copyright 2025 Petric. All rights Reserved.
+          © Copyright 2026 Petric. All rights Reserved.
         </div>
       </div>
     </footer>

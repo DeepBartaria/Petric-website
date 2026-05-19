@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import OffersBanner from '../components/Banner';
 import StatsBar from '../components/StatsBar';
-
+import NewHomeNavbar from '../components/NewHomeNavbar';
 // Use placeholder images that users can easily swap
 import dogsRow from '../assets/Rectangle.png'; 
 import missionImage from '../assets/about-us/about1.png';
@@ -17,7 +17,8 @@ export default function Story() {
   }, []);
 
   return (
-    <div className="w-full bg-white font-sans flex flex-col min-h-screen">
+    <div className="min-h-screen bg-white font-sans flex flex-col">
+      <NewHomeNavbar />
       
       {/* 1. Header Section */}
       <section className="w-full bg-white pt-10 md:pt-20 pb-4 flex flex-col items-center justify-center text-center px-4">

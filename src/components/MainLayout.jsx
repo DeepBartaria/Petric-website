@@ -8,8 +8,8 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* <Header /> */}
-      <Navbar />
-      <div className="h-24 sm:h-28 bg-white w-full"></div>
+      {/* <Navbar />
+      <div className="h-24 sm:h-28 bg-white w-full"></div> */}
 
       <main className="flex-1">
         <AppRoutes />
