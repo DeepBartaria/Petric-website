@@ -12,7 +12,7 @@ import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
-import { FiChevronRight, FiChevronDown, FiGift, FiShield } from 'react-icons/fi';
+import { FiChevronRight, FiChevronDown, FiGift, FiShield, FiStar} from 'react-icons/fi';
 import { get } from '../helper/api';
 
 import banner1 from '../assets/banner/homepage.png';
@@ -268,8 +268,8 @@ export default function NewHome() {
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
                     className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-24 cursor-pointer group"
                   >
-                    <div className="w-24 h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
-                      <img src={brand.img} alt={brand.alt} className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110" />
+                    <div className="w-24 h-24 rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                      <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                     </div>
                     {brand.alt && (
                       <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
@@ -304,8 +304,8 @@ export default function NewHome() {
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
                     className="flex flex-col items-center gap-1.5 w-[72px] shrink-0 cursor-pointer group"
                   >
-                    <div className="w-[72px] h-[72px] rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center transition-all duration-300 group-active:scale-95">
-                      <img src={brand.img} alt={brand.alt} className="w-11 h-11 object-contain" />
+                    <div className="w-[72px] h-[72px] rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95">
+                      <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
                     </div>
                     {brand.alt && (
                       <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
@@ -326,8 +326,8 @@ export default function NewHome() {
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
                     className="flex flex-col items-center gap-1.5 w-[72px] shrink-0 cursor-pointer group"
                   >
-                    <div className="w-[72px] h-[72px] rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center transition-all duration-300 group-active:scale-95">
-                      <img src={brand.img} alt={brand.alt} className="w-11 h-11 object-contain" />
+                    <div className="w-[72px] h-[72px] rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95">
+                      <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
                     </div>
                     {brand.alt && (
                       <span className="text-[10px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
@@ -345,25 +345,32 @@ export default function NewHome() {
         </div>
         {/* Personalized Welcome Banner */}
         <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
-          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full lg:w-auto shrink-0">
-            <h2 className="text-2xl md:text-4xl font-black text-black whitespace-nowrap leading-tight">
-              Hello, Pet Parent! 👋
+          <div className="flex flex-col xl:flex-row items-center gap-4 md:gap-6 w-full xl:w-auto shrink-0">
+            <h2 className="text-2xl md:text-4xl font-black text-black leading-tight text-center xl:text-left">
+              Hello, <br /> Pet Parent! 👋
             </h2>
-            {!user && (
+            {!user ? (
               <button 
                 onClick={() => window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }))}
-                className="bg-black text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto"
+                className="bg-black text-white px-6 md:px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto shrink-0"
               >
-                Sign In / Sign Up
+                Sign up and get...
               </button>
+            ) : (
+              <Link
+                to="/all-categories"
+                className="bg-black text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md inline-flex items-center justify-center"
+              >
+                Start Shopping
+              </Link>
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-[48%]">
+          <div className="flex flex-col md:flex-row items-stretch gap-4 w-full xl:w-auto">
             {/* Autoship Card */}
             <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
               <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                <FiGift className="w-6 h-6" />
+                <FiStar className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-black text-[13px] md:text-sm">upto 35% off on <br /> selected brands</span>
@@ -391,7 +398,7 @@ export default function NewHome() {
                 <div
                   key={i}
                   onClick={() => navigate(`/product/${product.id}`)}
-                  className="bg-white border border-gray-100 rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
+                  className="bg-white rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
                 >
                   
                   <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">

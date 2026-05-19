@@ -25,7 +25,7 @@ const BrandGrid = ({ title, brands, showName = false }) => (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 sm:gap-6">
       {brands.map((brand, i) => (
         <Link to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`} key={i} className="flex flex-col items-center group cursor-pointer">
-          <div className="w-full aspect-square bg-white border border-gray-100 rounded-3xl shadow-sm flex items-center justify-center p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+          <div className="w-full aspect-square rounded-3xl shadow-sm flex items-center justify-center p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
             <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" />
           </div>
           {showName && (
