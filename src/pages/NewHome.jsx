@@ -48,12 +48,6 @@ const brands = [
 export default function NewHome() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  useEffect(() => {
-    const handleOpenCart = () => setIsCartOpen(true);
-    window.addEventListener('openCart', handleOpenCart);
-    return () => window.removeEventListener('openCart', handleOpenCart);
-  }, []);
-
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
@@ -200,10 +194,39 @@ export default function NewHome() {
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-10">
         {/* Top Banners Section */}
         {/* Desktop View */}
-        
+        <div className="hidden md:grid grid-cols-3 gap-6 mb-12">
+          <div className="col-span-2 bg-[#D9D9D9] rounded-[2rem] h-[500px] w-full overflow-hidden relative cursor-pointer group">
+            <img src={banner1} alt="Banner 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          </div>
+          <div className="grid grid-rows-2 gap-6 h-[500px]">
+            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative cursor-pointer group">
+              <img src={banner2} alt="Banner 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            </div>
+            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative cursor-pointer group">
+              <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            </div>
+          </div>
+        </div>
 
         {/* Mobile View - Sliding Cards */}
-       
+        <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-4 mb-10 pb-2">
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
+            <img src={banner1} alt="Banner 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
+          </div>
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
+            <img src={banner2} alt="Banner 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
+          </div>
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
+            <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
+          </div>
+        </div>
+
         {/* Shop by Brands */}
         <div className="mb-14">
           <div className="flex justify-between items-end mb-6">
