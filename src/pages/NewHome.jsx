@@ -274,6 +274,11 @@ export default function NewHome() {
                     {brand.alt && (
                       <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
                     )}
+                    {brand.discount && (
+                      <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
+                        {brand.discount} off
+                      </span>
+                    )}
                   </Link>
                 ))}
                 <div className="shrink-0 w-10" />
@@ -303,7 +308,12 @@ export default function NewHome() {
                       <img src={brand.img} alt={brand.alt} className="w-11 h-11 object-contain" />
                     </div>
                     {brand.alt && (
-                      <span className="text-[10px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                      <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                    {brand.discount && (
+                      <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
+                        {brand.discount} off
+                      </span>
                     )}
                   </Link>
                 ))}
@@ -321,6 +331,11 @@ export default function NewHome() {
                     </div>
                     {brand.alt && (
                       <span className="text-[10px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                    {brand.discount && (
+                      <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
+                        {brand.discount} off
+                      </span>
                     )}
                   </Link>
                 ))}
