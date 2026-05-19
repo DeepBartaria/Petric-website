@@ -60,17 +60,7 @@ export default function WhyTrustUs() {
               ))}
             </div>
 
-            {/* Trust Features */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {trustFeatures.map((text, i) => (
-                <div key={i} className="flex items-center gap-2 bg-white/80 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full shadow-sm">
-                  <div className="bg-[#FFD000] text-white rounded-full p-0.5 sm:p-1 flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 shadow-sm">
-                    <FiCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={4} />
-                  </div>
-                  <span className="text-gray-800 font-medium text-[10px] sm:text-sm">{text}</span>
-                </div>
-              ))}
-            </div>
+            
           </div>
 
           {/* Right Image - hidden on very small screens, shown on sm+ */}
