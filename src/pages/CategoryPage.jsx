@@ -305,7 +305,7 @@ export default function CategoryPage() {
                   All Categories
                 </h1>
                 <p className="text-lg sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
-                  Everything your pet needs in one place
+                  Everything your pet needs 
                 </p>
               </div>
             </section>

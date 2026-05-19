@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiCheck, FiZap, FiPackage, FiClock } from 'react-icons/fi';
 import trustImg from '../assets/dog.png';
+import { Link } from 'react-router-dom';
 
 const trustPoints = [
   { icon: FiZap, title: 'Lightning Fast', subtitle: 'Delivery in 59 mins' },
@@ -18,14 +19,15 @@ export default function WhyTrustUs() {
   return (
     <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16 mb-8 sm:mb-12 md:mb-14 font-sans">
       <div className="text-center mb-6 sm:mb-8 md:mb-12">
-        <span className="inline-block bg-gradient-to-r from-[#FFD000] to-[#FFEC6E] text-black text-[10px] sm:text-xs md:text-sm font-bold px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4 shadow-sm">
+        <Link to= "/story"
+        className="inline-block bg-gradient-to-r from-[#FFD000] to-[#FFEC6E] text-black text-[10px] sm:text-xs md:text-sm font-bold px-3 sm:px-4 py-1 rounded-full mb-3 sm:mb-4 shadow-sm">
           ❤️ Why Choose Us
-        </span>
+        </Link>
         <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-2 sm:mb-3 md:mb-4">
           Why Pet Parents <span className="text-[#FF5757]">Trust Us</span>?
         </h2>
         <p className="text-gray-500 text-[11px] sm:text-sm md:text-base max-w-lg mx-auto px-4">
-          Not just a brand — we're fellow pet parents who understand what your furry friend needs
+          Not just a faceless brand. We're real pet parents who are facing the same issues that you are.
         </p>
       </div>
 

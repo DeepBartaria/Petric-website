@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
 import laptopImage from '../assets/laptop_hi.png';
-import mobileImage from '../assets/hi.jpg';
+import mobileImage from '../assets/hi.png';
 
 export default function BottomPopup() {
   const [isVisible, setIsVisible] = useState(false);

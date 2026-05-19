@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef ,useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
@@ -54,7 +54,8 @@ export default function NewHome() {
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
   const [homePageSections, setHomePageSections] = useState([]);
   const [brands, setBrands] = useState([]);
-
+  const brandsScrollRef = useRef(null);
+  const [brandsScrollPos, setBrandsScrollPos] = useState(0);
   useEffect(() => {
     const fetchHomePageProducts = async () => {
       try {
@@ -232,19 +233,61 @@ export default function NewHome() {
             <h2 className="text-2xl font-bold text-black transition-colors duration-300 hover:text-gray-700 cursor-pointer">Shop by Brands</h2>
             <Link to="/all-brands" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</Link>
           </div>
-          <div className="flex items-center gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
-            {brands.map((brand, i) => (
-              <Link
-                  key={i}
-                  to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                  className="relative shrink-0 flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300"
-                >
-                <img src={brand.img} alt={brand.alt} className="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 hover:scale-110" />
-                
-              </Link>
-            ))}
-            <button className="w-10 h-10 rounded-full bg-black flex items-center justify-center shrink-0 ml-2 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-md hover:bg-gray-800">
-              <FiChevronRight className="text-white h-6 w-6 transition-transform duration-300 hover:translate-x-0.5" strokeWidth={3} />
+
+          <div className="flex items-center gap-2">
+            {/* Back button — only when scrolled */}
+            {brandsScrollPos > 0 && (
+              <button
+                onClick={() => brandsScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+                className="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-black p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-200 hover:scale-110"
+              >
+                <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
+              </button>
+            )}
+
+            {/* Scrollable brands with fade edges */}
+            <div className="relative flex-1 overflow-hidden">
+              {/* Right fade */}
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10" />
+              {/* Left fade — only when scrolled */}
+              {brandsScrollPos > 0 && (
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
+              )}
+
+              <div
+                ref={brandsScrollRef}
+                onScroll={(e) => setBrandsScrollPos(e.target.scrollLeft)}
+                className="flex items-center gap-4 overflow-x-hidden [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2"
+              >
+                {brands.map((brand, i) => (
+                  <Link
+                    key={i}
+                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-20 md:w-24 cursor-pointer group"
+                  >
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                      <img
+                        src={brand.img}
+                        alt={brand.alt}
+                        className="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 group-hover:scale-110"
+                      />
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                  </Link>
+                ))}
+                {/* Right padding so last item clears the fade */}
+                <div className="shrink-0 w-10" />
+              </div>
+            </div>
+
+            {/* Forward scroll button */}
+            <button
+              onClick={() => brandsScrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+              className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
+            >
+              <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
             </button>
           </div>
         </div>
@@ -268,8 +311,8 @@ export default function NewHome() {
                 <FiGift className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-black text-[13px] md:text-sm">Save 35% on first order</span>
-                <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Set up an Autoship →</span>
+                <span className="font-extrabold text-black text-[13px] md:text-sm">Sign up & get <br /> upto 35% off on selected brands</span>
+                <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">exclusive offers just for you</span>
               </div>
             </div>
 

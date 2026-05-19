@@ -21,7 +21,7 @@ import playstore from "../assets/playstore.svg";
 import headerbg from "../assets/Homedesktop.png";
 import dogs from "../assets/Homedogs.png";
 import headerbgMobile from "../assets/homemobile.jpg";
-import hiImage from "../assets/hi.jpg";
+import hiImage from "../assets/hi.png";
 import heart from "../assets/clip.png";
 
 import StatsBar from "../components/StatsBar";

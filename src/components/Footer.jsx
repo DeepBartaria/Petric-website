@@ -14,7 +14,7 @@ import logo from '../assets/logo.png';
 import appstore from '../assets/appstore.svg';
 import playstore from '../assets/playstore.svg';
 import mobiles from "../assets/mobiles.png";
-import hi from '../assets/hi.jpg';
+import hi from '../assets/hi.png';
 import laptop_hi from '../assets/laptop_hi.png';
 
 export default function Footer() {
@@ -33,7 +33,7 @@ export default function Footer() {
               <br /> Pet Care In Minutes
             </h2>
             <p className="text-base md:text-2xl outfit-medium">
-              Everything your pet needs, all in one place.
+              Everything your pet needs
             </p>
             <div className="flex gap-4 mt-2">
               <a
@@ -62,20 +62,41 @@ export default function Footer() {
       >
         <img src={laptop_hi} alt="Hi" className="hidden md:block w-full mb-6 sm:mb-8" />
         <img src={hi} alt="Hi" className="md:hidden w-full mb-6 sm:mb-8" />
-        <div className="w-full flex flex-col justify-center items-center">
-          <h3 className="text-lg sm:text-xl primary-color mb-4 text-center">Have A Question ?</h3>
-          <div className="flex flex-row gap-3 sm:gap-4 w-full max-w-md justify-center">
-            <Link to="/faqs"><button className="bg-[#1D3557] text-white px-6 sm:px-8 py-2 rounded-lg font-semibold shadow transition text-sm sm:text-base">Explore FAQs</button></Link>
-            <Link to="/about/#contact"><button className="bg-[#1D3557] text-white px-6 sm:px-8 py-2 rounded-lg font-semibold shadow transition text-sm sm:text-base">Contact Us</button></Link>
+        <div className="w-full flex justify-center px-4">
+          <div className="w-full max-w-4xl rounded-[32px] bg-gradient-to-br from-[#FFD000] to-[#FFF1A6] border border-[#F5C400]/40 shadow-sm px-6 sm:px-10 py-8 sm:py-10 flex flex-col items-center text-center">
+            
+            {/* Heading */}
+            <h3 className="text-2xl sm:text-4xl font-black text-[#1D3557] leading-tight">
+              Have Questions? 
+            </h3>
+            {/* Subtext */}
+            <p className="text-[#5F6C7B] text-sm sm:text-lg mt-3 max-w-2xl leading-relaxed">
+              Get answers about orders, delivery, pet care, products,
+              and everything Petric.
+            </p>
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-7 w-full sm:w-auto">
+              <Link to="/faqs">
+                <button className="w-full sm:w-auto bg-[#1D3557] hover:bg-[#162944] text-white px-7 sm:px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.03] shadow-md">
+                  Explore FAQs
+                </button>
+              </Link>
+              <Link to="/about/#contact">
+                <button className="w-full sm:w-auto bg-white hover:bg-[#FFFBEA] border border-[#F5C400]/50 text-[#1D3557] px-7 sm:px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.03] shadow-sm">
+                  Contact Us
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-black px-4 sm:px-6 md:px-8 py-6 sm:py-8">
           {/* Logo & Address */}
 
           <div className="flex flex-col items-start gap-3 col-span-1">
-            <img src={logo} alt="Petric Logo" className="h-15 sm:h-15" />
+            <img src={logo} alt="Petric Logo" className="h-20 sm:h-24 object-contain" />
             <div className="text-sm sm:text-base w-full sm:w-[80%] leading-relaxed text-[#3D3D3D]">Petric: U-26/7, DLF Phase 3, Sector 24, Gurugram, Haryana 122002</div>
             <div className="flex gap-3 sm:gap-4 mt-2">
               <a href="https://www.facebook.com/profile.php?id=61574867466246&mibextid=rS40aB7S9Ucbxw6v" aria-label="Facebook" className=" text-white bg-[#1D3557] rounded-full p-2"><FaFacebookF size={16} className="sm:w-[18px] sm:h-[18px]" /></a>

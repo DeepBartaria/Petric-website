@@ -46,7 +46,8 @@ export default function NewHomeNavbar() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   // Prebuilt search index: array of { product, nameText, fullText, tokens, nameTokens }
   const searchIndexRef = useRef([]);
-
+  const categoryScrollRef = useRef(null);
+  const [categoryScrollPos, setCategoryScrollPos] = useState(0);
   const [navCategories, setNavCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [categorySubcategories, setCategorySubcategories] = useState({});
@@ -280,12 +281,12 @@ export default function NewHomeNavbar() {
   };
 
   return (
-    <div className="w-full flex flex-col font-sans">
+    <div className="w-full flex flex-col font-sans bg-white shadow-[0_4px_24px_0_rgba(0,0,0,0.18)] ring-2 ring-black/10">
       {/* Top Navbar */}
       <div className="bg-white py-3 px-4 md:px-8 flex items-center justify-between gap-3 md:gap-4">
         {/* Logo */}
         <Link to="/" className="flex-shrink-0">
-          <img src={logo} alt="Petric Logo" className="h-8 md:h-14 object-contain" />
+          <img src={logo} alt="Petric Logo" className="h-15 md:h-18 object-contain" />
         </Link>
 
         {/* Search */}
@@ -527,7 +528,7 @@ export default function NewHomeNavbar() {
       </div>
 
       {/* Categories Sub-navbar */}
-      <div className="bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8 relative z-40">
+      <div className="bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8 relative z-40 border-t border-black/10">
         {/* Mobile */}
         <div className="md:hidden">
           <div className="rounded-2xl border border-black/10 bg-white/90 p-2 shadow-sm">
@@ -558,57 +559,97 @@ export default function NewHomeNavbar() {
         </div>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-6 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-          <Link
-            to="/all-categories"
-            className="relative overflow-hidden group px-3 py-1 rounded-md text-black text-lg font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] shrink-0 isolate"
-          >
-            <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
-            All Categories
-          </Link>
-
-          {navCategories.map((category) => (
-            <div
-              key={category._id}
-              className="relative shrink-0"
-              onMouseEnter={() => handleCategoryHover(category)}
-              onMouseLeave={handleCategoryLeave}
+        <div className="hidden md:flex items-center relative">
+          {/* Pinned "All Categories" */}
+          <div className="shrink-0 z-10">
+            <Link
+              to="/all-categories"
+              className="relative overflow-hidden group px-4 py-1.5 rounded-md text-black text-base font-semibold whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex isolate"
             >
-              <Link
-                to={`/category/${category._id}`}
-                state={{ categoryName: category.name }}
-                className="relative overflow-hidden group px-3 py-1 rounded-md text-black text-lg font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex items-center gap-1 isolate"
-              >
-                <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
-                {category.name}
-                <FiChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:rotate-180" />
-              </Link>
+              <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
+              All Categories
+            </Link>
+          </div>
 
-              {hoveredCategory?._id === category._id && categorySubcategories[category._id]?.length > 0 && (
+          {/* Fade divider */}
+          <div className="w-px h-5 bg-black/20 mx-1 shrink-0" />
+
+          {/* Back button — only when scrolled */}
+          {categoryScrollPos > 0 && (
+            <button
+              onClick={() => {
+                categoryScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' });
+              }}
+              className="shrink-0 mr-1 bg-white/80 hover:bg-white border border-black/15 text-black p-1 rounded-full flex items-center justify-center h-7 w-7 shadow-sm transition-all duration-200 hover:scale-110"
+            >
+              <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
+            </button>
+          )}
+
+          {/* Scrollable categories with fade edges */}
+          <div className="relative flex-1 overflow-hidden">
+            {/* Right fade */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-[#C9A800] to-transparent z-10" />
+            {/* Left fade — only when scrolled */}
+            {categoryScrollPos > 0 && (
+              <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#C9A800] to-transparent z-10" />
+            )}
+
+            <div
+              ref={categoryScrollRef}
+              onScroll={(e) => setCategoryScrollPos(e.target.scrollLeft)}
+              className="flex items-center gap-1 overflow-x-hidden [&::-webkit-scrollbar]:hidden px-1"
+            >
+              {navCategories.map((category) => (
                 <div
-                  ref={dropdownRef}
-                  className="absolute top-full left-0 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[200px] py-2 z-50"
-                  onMouseEnter={handleDropdownEnter}
-                  onMouseLeave={handleDropdownLeave}
+                  key={category._id}
+                  className="relative shrink-0"
+                  onMouseEnter={() => handleCategoryHover(category)}
+                  onMouseLeave={handleCategoryLeave}
                 >
-                  {categorySubcategories[category._id].map((sub) => (
-                    <Link
-                      key={sub._id}
-                      to={`/category/${category._id}?subCategory=${sub._id}`}
-                      state={{ categoryName: category.name, subCategoryName: sub.name }}
-                      className="block px-5 py-2.5 text-sm text-gray-700 hover:bg-[#FFF9CC] hover:text-black font-medium transition-colors"
-                      onClick={() => setHoveredCategory(null)}
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                  <Link
+                    to={`/category/${category._id}`}
+                    state={{ categoryName: category.name }}
+                    className="relative overflow-hidden group px-4 py-1.5 rounded-md text-black text-base font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex items-center isolate"
+                  >
+                    <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
+                    {category.name}
+                  </Link>
 
-          <div className="flex-1 min-w-[20px]"></div>
-          <button className="bg-black text-white p-1 rounded-full shrink-0 flex items-center justify-center h-8 w-8 sticky right-0 transition-transform duration-300 hover:scale-110 hover:shadow-lg">
+                  {hoveredCategory?._id === category._id && categorySubcategories[category._id]?.length > 0 && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute top-full left-0 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[200px] py-2 z-50"
+                      onMouseEnter={handleDropdownEnter}
+                      onMouseLeave={handleDropdownLeave}
+                    >
+                      {categorySubcategories[category._id].map((sub) => (
+                        <Link
+                          key={sub._id}
+                          to={`/category/${category._id}?subCategory=${sub._id}`}
+                          state={{ categoryName: category.name, subCategoryName: sub.name }}
+                          className="block px-5 py-2.5 text-sm text-gray-700 hover:bg-[#FFF9CC] hover:text-black font-medium transition-colors"
+                          onClick={() => setHoveredCategory(null)}
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Right padding so last item clears the fade */}
+              <div className="shrink-0 w-10" />
+            </div>
+          </div>
+
+          {/* Forward scroll button */}
+          <button
+            onClick={() => {
+              categoryScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' });
+            }}
+            className="shrink-0 ml-1 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 transition-all duration-300 hover:scale-110 hover:shadow-lg"
+          >
             <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
           </button>
         </div>

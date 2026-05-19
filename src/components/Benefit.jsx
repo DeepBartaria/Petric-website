@@ -36,11 +36,14 @@ export default function Benefit() {
           <FiZap />
           <span>Complete Pet Care</span>
         </div>
-        <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl balsamiq-sans-bold text-center mb-6 text-[#1D3557]">
-          Everything your <span className="text-[#FF5757]">Pets need</span>...
-        </h2>
-        <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto">
-          From premium food to love — we have everything your furry companion deserves
+         <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight text-[#1D3557]">
+            Everything your 
+            
+            <span className="text-[#F5C400]"> pet needs</span>
+          </h2>
+        <p className="text-[#5F6C7B] text-base sm:text-lg max-w-2xl mx-auto mt-5 leading-relaxed font-medium">
+          Food, treats, medicines, toys, and essentials —
+          delivered to your doorstep in minutes.
         </p>
       </div>
 
