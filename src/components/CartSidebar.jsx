@@ -26,6 +26,8 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [isCouponsLoading, setIsCouponsLoading] = useState(false);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -58,7 +60,14 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       setDeliveryTime(e.detail);
     };
 
+    const handleOpenCart = (e) => {
+      if (e.detail?.step) {
+        setCheckoutStep(e.detail.step);
+      }
+    };
+
     window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+    window.addEventListener('openCart', handleOpenCart);
     
     if (!isOpen) {
       setCheckoutStep('cart');
@@ -69,6 +78,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     
     return () => {
       window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+      window.removeEventListener('openCart', handleOpenCart);
     };
   }, [isOpen]);
 
@@ -251,18 +261,34 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   };
 
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+  const fetchCoupons = async () => {
+    setIsCouponsLoading(true);
+    try {
+      const token = localStorage.getItem('petric_token');
+      const res = await get('coupon?type=3', { headers: token ? { Authorization: token } : {} });
+      if (res && res.coupons) {
+        setAvailableCoupons(res.coupons);
+      }
+    } catch (e) {
+      console.error("Failed to fetch coupons", e);
+    }
+    setIsCouponsLoading(false);
+  };
+
+  const applySpecificCoupon = async (codeToApply) => {
+    if (!codeToApply.trim()) return;
+    setCouponCode(codeToApply);
     setCouponError('');
     try {
       const token = localStorage.getItem('petric_token');
       if (!token) {
         setCouponError('Please login to apply coupon');
+        setCheckoutStep('mobile');
         return;
       }
       const res = await get('coupon?type=3', { headers: { Authorization: token } });
       if (res && res.coupons) {
-        const found = res.coupons.find(c => c.couponPromoCode && c.couponPromoCode.toLowerCase() === couponCode.toLowerCase());
+        const found = res.coupons.find(c => c.couponPromoCode && c.couponPromoCode.toLowerCase() === codeToApply.toLowerCase());
         if (found) {
           let discountAmt = 0;
           if (found.couponType === "0") { // Percentage
@@ -288,6 +314,9 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       setCouponError('Failed to apply coupon');
     }
   };
+
+  const handleApplyCoupon = () => applySpecificCoupon(couponCode);
+  // (handleApplyCoupon contents moved to applySpecificCoupon)
 
   if (!isOpen) return null;
 
@@ -360,6 +389,18 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
               {/* Coupon Section */}
               <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-sm text-black">Coupons</span>
+                  <button 
+                    onClick={() => {
+                      fetchCoupons();
+                      setCheckoutStep('coupons');
+                    }}
+                    className="text-blue-600 text-xs font-bold hover:underline"
+                  >
+                    View All Coupons
+                  </button>
+                </div>
                 <div className="flex items-center gap-2">
                   <input 
                     type="text" 
@@ -370,7 +411,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   />
                   <button 
                     onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); } : handleApplyCoupon}
-                    className="bg-[#FFD000] text-black px-4 py-2 rounded-lg text-sm font-bold"
+                    className="bg-[#FFD000] text-black px-4 py-2 rounded-lg text-sm font-bold shrink-0"
                   >
                     {appliedCoupon ? 'Remove' : 'Apply'}
                   </button>
@@ -551,6 +592,62 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
             </p>
           </div>
         )}
+        {checkoutStep === 'coupons' && (
+          <div className="flex flex-col h-full bg-[#f8f9fa]">
+            <div className="flex items-center gap-3 p-4 bg-white border-b sticky top-0 z-10">
+              <button onClick={() => setCheckoutStep('cart')} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                <FiArrowLeft className="h-6 w-6 text-black" strokeWidth={2.5} />
+              </button>
+              <h2 className="text-xl font-bold text-black">Select Promo Code</h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+              {isCouponsLoading ? (
+                <div className="flex justify-center items-center py-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#FFD000] border-t-transparent"></div>
+                </div>
+              ) : availableCoupons.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 font-medium">No coupons available at the moment.</div>
+              ) : (
+                availableCoupons.map((c) => {
+                  const isEligible = !c.couponMinimumAmount || itemsTotal >= c.couponMinimumAmount;
+                  
+                  let desc = "";
+                  if (c.couponType === "0") {
+                    desc = `Flat ${c.couponPrice}% off`;
+                    if (c.couponMaximumAmount) desc += ` upto ₹${c.couponMaximumAmount}`;
+                  } else {
+                    desc = `Flat ₹${c.couponPrice} off`;
+                  }
+                  if (c.couponMinimumAmount) desc += ` above ₹${c.couponMinimumAmount}`;
+
+                  return (
+                    <div key={c._id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div className="bg-[#FFF9CC] text-black text-xs font-bold px-3 py-1.5 rounded-md">
+                          {c.couponPromoCode}
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (isEligible) {
+                               setCheckoutStep('cart');
+                               applySpecificCoupon(c.couponPromoCode);
+                            }
+                          }}
+                          className={`text-sm font-bold px-5 py-1.5 rounded-lg transition-colors ${isEligible ? 'bg-[#FFD000] text-black hover:bg-[#E6BC00]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      <p className="text-sm font-medium text-black">{desc}</p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   );
