@@ -43,9 +43,7 @@ export default function CategoryPage() {
 
   const [allCategories, setAllCategories] = useState([]);
 
-  // Sentinel ref for infinite scroll
   const sentinelRef = useRef(null);
-  // Track fetch key to discard stale responses
   const fetchKeyRef = useRef(0);
 
   useEffect(() => {
@@ -80,26 +78,20 @@ export default function CategoryPage() {
     }
   };
 
-  // Reset and refetch when category or subcategory filter changes
   useEffect(() => {
     setProducts([]);
     setCurrentPage(1);
     setTotalPages(1);
     fetchKeyRef.current += 1;
-    // TEMPORARY: using fetchAllProductsTemp instead of fetchProducts until backend velocity sort is deployed.
-    // To restore paginated behavior: change the next line back to:  fetchProducts(1, true, fetchKeyRef.current); 
     fetchAllProductsTemp(fetchKeyRef.current);
   }, [categoryId, activeSubcategory]);
 
-  // Fetch additional pages
   useEffect(() => {
     if (currentPage > 1) {
       fetchProducts(currentPage, false, fetchKeyRef.current);
     }
   }, [currentPage]);
 
-  // === TEMPORARY: fetch all products + sort on frontend ===
-  // Replaces the paginated fetchProducts below until the backend supports a required sortBy without login.
   const fetchAllProductsTemp = async (fetchKey) => {
     setIsInitialLoading(true);
     setProducts([]);
@@ -109,16 +101,14 @@ export default function CategoryPage() {
       subCategoryId: activeSubcategory?._id,
     });
 
-    // Discard if a newer fetch was triggered in the meantime
     if (fetchKey !== fetchKeyRef.current) {
       setIsInitialLoading(false);
       return;
     }
 
     if (res?.products) {
-      // Sort: bestSeller first, then bestAvailable, then oldest createdAt first
       const sorted = [...res.products].sort((a, b) => {
-        return new Date(a.createdAt) - new Date(b.createdAt); // oldest first
+        return new Date(a.createdAt) - new Date(b.createdAt);
       });
 
       const formatted = sorted.map((p) => {
@@ -142,7 +132,7 @@ export default function CategoryPage() {
 
       setProducts(formatted);
       setTotalProducts(res.totalProducts || formatted.length);
-      setTotalPages(1);   // single fetch — no further pagination
+      setTotalPages(1);
       setCurrentPage(1);
     } else {
       setProducts([]);
@@ -168,21 +158,16 @@ export default function CategoryPage() {
         body.productCategory = [categoryId];
       }
 
-      // Tell the backend to sort: bestSeller first, then bestAvailable, then oldest→newest
-      // Your backend should apply: .sort({ isBestSeller: -1, isBestAvailable: -1, createdAt: 1 })
-
       body.sort = { isBestSeller: -1, isBestAvailable: -1, createdAt: 1 };
 
       const res = await post('product/list/all/forUser', body);
 
-      // Discard stale response
       if (fetchKey !== fetchKeyRef.current) return;
 
       if (res?.products) {
         setTotalProducts(res.totalProducts || 0);
         setTotalPages(res.totalPages || 1);
 
-        // No client-side sort — backend returns data pre-sorted across the full dataset
         const formatted = res.products.map(p => {
             const variant = p.variants?.[0] || {};
             return {
@@ -222,7 +207,6 @@ export default function CategoryPage() {
     }
   };
 
-  // Intersection Observer for infinite scroll
   const observerRef = useRef(null);
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
@@ -303,63 +287,79 @@ export default function CategoryPage() {
 
       {/* Hero Banner */}
       <section
-              className="w-full bg-white bg-cover bg-center bg-no-repeat h-[20vh] sm:h-[25vh] md:h-[30vh] flex items-center"
-              style={{ backgroundImage: `url(${headerbg})` }}
+        className="w-full bg-white bg-cover bg-center bg-no-repeat h-[18vh] sm:h-[25vh] md:h-[30vh] flex items-center"
+        style={{ backgroundImage: `url(${headerbg})` }}
+      >
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
+          <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-2 md:mb-4 max-w-3xl drop-shadow-sm">
+            {categoryName || 'All Categories'}
+          </h1>
+          <p className="text-sm sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 px-3 py-2 md:p-4 rounded-xl shadow-sm inline-block">
+            Everything your pet needs
+          </p>
+        </div>
+      </section>
+
+      {/* ── MOBILE: sticky category + subcategory filter bar ── */}
+      <div className="md:hidden sticky top-0 z-20 bg-[#FCFCFC] border-b border-gray-100 shadow-sm">
+        {/* Top-level category pills */}
+        <div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-2 [&::-webkit-scrollbar]:hidden">
+          {allCategories.map((cat) => (
+            <button
+              key={cat._id}
+              className={`whitespace-nowrap shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                cat._id === categoryId
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-gray-600 border-gray-200'
+              }`}
+              onClick={() => handleCategoryNavClick(cat)}
             >
-              <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
-                <h1 className="text-4xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-4 max-w-3xl drop-shadow-sm">
-                  All Categories
-                </h1>
-                <p className="text-lg sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
-                  Everything your pet needs 
-                </p>
-              </div>
-            </section>
+              {cat.name}
+            </button>
+          ))}
+        </div>
 
-      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-10">
-
-        {/* Mobile Subcategory Selector */}
-        <div className="flex md:hidden flex-col gap-3">
-          <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-            {allCategories.map((cat) => (
+        {/* Subcategory pills — shown when subcategories exist */}
+        {subcategories.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto px-4 pb-3 [&::-webkit-scrollbar]:hidden">
+            <button
+              className={`whitespace-nowrap shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+                !activeSubcategory ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-500'
+              }`}
+              onClick={() => handleSubcategoryClick(null)}
+            >
+              All
+            </button>
+            {subcategories.map((sub) => (
               <button
-                key={cat._id}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold border transition-colors shrink-0 ${cat._id === categoryId ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200'}`}
-                onClick={() => handleCategoryNavClick(cat)}
+                key={sub._id}
+                className={`whitespace-nowrap shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+                  activeSubcategory?._id === sub._id
+                    ? 'bg-[#FFD000] text-black'
+                    : 'bg-gray-100 text-gray-500'
+                }`}
+                onClick={() => handleSubcategoryClick(sub)}
               >
-                {cat.name}
+                {sub.name}
               </button>
             ))}
           </div>
-          {subcategories.length > 0 && (
-            <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-              <button
-                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${!activeSubcategory ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-600'}`}
-                onClick={() => handleSubcategoryClick(null)}
-              >
-                All
-              </button>
-              {subcategories.map((sub) => (
-                <button
-                  key={sub._id}
-                  className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${activeSubcategory?._id === sub._id ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-600'}`}
-                  onClick={() => handleSubcategoryClick(sub)}
-                >
-                  {sub.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
+      </div>
 
-        {/* Left Sidebar: Categories (Desktop) */}
-        <div className="underline underline-offset-4 hidden md:flex w-full md:w-1/4 lg:w-1/5 shrink-0 flex-col overflow-y-auto max-h-screen pr-2 sticky top-4 custom-scrollbar">
+      <main className="max-w-[1400px] mx-auto px-3 md:px-8 py-4 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-4 md:gap-10">
+
+        {/* Left Sidebar: Categories (Desktop only) */}
+        {/* Fixed: removed stray `underline underline-offset-4` class */}
+        <div className="hidden md:flex w-full md:w-1/4 lg:w-1/5 shrink-0 flex-col overflow-y-auto max-h-screen pr-2 sticky top-4 [&::-webkit-scrollbar]:hidden">
           {allCategories.map((cat) => {
             const isActive = cat._id === categoryId;
             return (
               <div key={cat._id} className="mb-8">
                 <h3
-                  className={`text-[13px] font-extrabold uppercase tracking-widest mb-4 cursor-pointer transition-colors ${isActive ? 'text-black' : 'text-gray-800 hover:text-black'}`}
+                  className={`text-[13px] font-extrabold uppercase tracking-widest mb-4 cursor-pointer transition-colors ${
+                    isActive ? 'text-black' : 'text-gray-800 hover:text-black'
+                  }`}
                   onClick={() => handleCategoryNavClick(cat)}
                 >
                   {cat.name}
@@ -368,7 +368,9 @@ export default function CategoryPage() {
                   <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
                     <span
                       onClick={() => handleSubcategoryClick(null)}
-                      className={`text-sm cursor-pointer transition-colors ${!activeSubcategory ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'}`}
+                      className={`text-sm cursor-pointer transition-colors ${
+                        !activeSubcategory ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'
+                      }`}
                     >
                       All
                     </span>
@@ -376,7 +378,11 @@ export default function CategoryPage() {
                       <span
                         key={sub._id}
                         onClick={() => handleSubcategoryClick(sub)}
-                        className={`text-sm cursor-pointer transition-colors ${activeSubcategory?._id === sub._id ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'}`}
+                        className={`text-sm cursor-pointer transition-colors ${
+                          activeSubcategory?._id === sub._id
+                            ? 'text-[#FFD000] font-bold'
+                            : 'text-gray-500 hover:text-[#FFD000]'
+                        }`}
                       >
                         {sub.name}
                       </span>
@@ -392,8 +398,9 @@ export default function CategoryPage() {
         <div className="w-full md:w-3/4 lg:w-4/5 flex flex-col">
 
           {/* Breadcrumbs & Header */}
-          <div className="mb-6 md:mb-8 border-b border-gray-200 pb-4 md:pb-6">
-            <div className="text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex flex-wrap items-center gap-1.5 md:gap-2">
+          <div className="mb-4 md:mb-8 border-b border-gray-200 pb-3 md:pb-6">
+            {/* Breadcrumbs — hidden on mobile */}
+            <div className="hidden md:flex text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex-wrap items-center gap-1.5 md:gap-2">
               <span
                 className="cursor-pointer hover:text-black transition-colors"
                 onClick={() => navigate('/')}
@@ -403,7 +410,10 @@ export default function CategoryPage() {
               <span>&gt;</span>
               <span
                 className="cursor-pointer hover:text-black transition-colors"
-                onClick={() => { setActiveSubcategory(null); navigate(`/category/${categoryId}`, { state: { categoryName }, replace: true }); }}
+                onClick={() => {
+                  setActiveSubcategory(null);
+                  navigate(`/category/${categoryId}`, { state: { categoryName }, replace: true });
+                }}
               >
                 {categoryName}
               </span>
@@ -415,28 +425,26 @@ export default function CategoryPage() {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-2xl md:text-5xl font-extrabold text-black tracking-tight leading-tight">
                 {activeSubcategory?.name || categoryName}
               </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-400 font-bold tracking-wide">
-                  PRODUCTS IN CATEGORY: {totalProducts}
-                </span>
-              </div>
+              <span className="shrink-0 text-[10px] md:text-xs text-gray-400 font-bold tracking-wide whitespace-nowrap">
+                {totalProducts} products
+              </span>
             </div>
           </div>
 
           {/* Sort By */}
-          <div className="flex justify-end mb-6">
-            <span className="text-xs text-gray-500 font-bold tracking-wider cursor-pointer hover:text-black transition-colors">
+          <div className="flex justify-end mb-4 md:mb-6">
+            <span className="text-[10px] md:text-xs text-gray-500 font-bold tracking-wider cursor-pointer hover:text-black transition-colors">
               SORT BY: <span className="text-black ml-1">POPULARITY ∨</span>
             </span>
           </div>
 
           {/* Product Grid */}
           {isInitialLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
               {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : products.length === 0 ? (
@@ -447,51 +455,51 @@ export default function CategoryPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
                 {products.map((product, i) => (
                   <div
                     key={`${product.id}-${i}`}
                     onClick={() => navigate(`/product/${product.id}`)}
-                    className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
+                    className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2 md:p-4 shadow-sm"
                   >
-                    <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
+                    <div className="w-full h-[110px] md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
                       <img
                         src={product.img}
                         alt={product.name}
                         className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
                       />
-                      <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
+                      <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-0.5 md:gap-1 items-end">
                         {product.isBestSeller && (
-                          <div className="bg-black text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-black text-white text-[7px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             Best Seller
                           </div>
                         )}
+                        {/* FIXED: was incorrectly labelled "Best Seller" — now correctly shows "Best Available" */}
                         {!product.isBestSeller && product.isBestAvailable && (
-                          <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
-                            Best Seller
+                          <div className="bg-green-600 text-white text-[7px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                            Best Available
                           </div>
                         )}
-
                         {product.discount && product.discount !== '0%' && (
-                          <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-[#FF5757] text-white text-[7px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             {product.discount} Off
                           </div>
                         )}
                       </div>
                     </div>
                     <div className="flex flex-col flex-grow">
-                      <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
-                      <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
-                      <div className="mt-auto flex items-center justify-between">
-                        <div className="flex flex-col">
+                      <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                      <span className="text-[10px] md:text-xs text-gray-400 mb-1 md:mb-2">{product.weight}</span>
+                      <div className="mt-auto flex items-center justify-between gap-1">
+                        <div className="flex flex-col min-w-0">
                           {product.oldPrice && product.oldPrice !== product.price && (
                             <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
                           )}
-                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
+                          <span className="font-bold text-black text-sm md:text-lg leading-tight">{product.price}</span>
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                          className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                          className="shrink-0 bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                         >
                           ADD
                         </button>
@@ -500,14 +508,11 @@ export default function CategoryPage() {
                   </div>
                 ))}
 
-                {/* Skeleton cards while fetching more */}
                 {isFetchingMore && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={`skel-${i}`} />)}
               </div>
 
-              {/* Sentinel element for IntersectionObserver */}
               <div ref={sentinelRef} className="h-10 mt-4" />
 
-              {/* End of results */}
               {!isFetchingMore && currentPage >= totalPages && products.length > 0 && (
                 <p className="text-center text-gray-400 text-sm font-bold py-6 tracking-wide">
                   — You've seen all {totalProducts} products —
@@ -518,7 +523,6 @@ export default function CategoryPage() {
         </div>
       </main>
 
-      {/* Footer Sections */}
       <div className="bg-white w-full">
         <Benefit />
         <WhyTrustUs />

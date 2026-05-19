@@ -58,7 +58,7 @@ export default function OffersBanner() {
   return (
     <div className="w-full pb-10 sm:pb-16 md:pb-20 flex flex-col items-center px-4 sm:px-8 md:px-12 lg:px-20">
       <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl balsamiq-sans-bold primary-color mb-6 sm:mb-8 md:mb-10 text-center">
-        Get Best Offers For Your Pet Care
+       Best offers just for you
       </h2>
       <div className="w-full mx-auto">
         <Slider {...settings}>
@@ -77,30 +77,7 @@ export default function OffersBanner() {
       </div>
 
       {/* Dialog Box */}
-      {isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/70 bg-opacity-60 z-50">
-          <div className="bg-white rounded-xl shadow-lg max-w-sm w-full p-6 relative text-black text-center">
-            {/* Close Button */}
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
-            >
-              ✕
-            </button>
-
-            <p className="text-md font-semibold">
-              Get Up to <span className="font-bold">50% OFF</span><br />
-              on every order on Petric App.
-            </p>
-
-            <div className="flex justify-center items-center gap-4 mt-4">
-              <img src={playstore} alt="Android" className="h-8 sm:h-10 cursor-pointer" />
-              <img src={appstore} alt="iOS" className="h-8 sm:h-10 cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      )}
-
+      
       {/* Custom styling for slider spacing */}
       <style>{`
         .slick-slide > div {

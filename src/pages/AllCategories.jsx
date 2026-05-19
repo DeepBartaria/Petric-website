@@ -11,7 +11,7 @@ import Footer from '../components/Footer';
 import { get, post } from '../helper/api';
 import { FiChevronDown } from "react-icons/fi";
 import headerbg from '../assets/petsproductherobg.png';
-
+import { Link } from 'react-router-dom';
 const LIMIT = 20;
 
 export default function AllCategories() {
@@ -44,10 +44,11 @@ export default function AllCategories() {
   
   const [expandedCategory, setExpandedCategory] = useState(null);
 
-  // Ref for the sentinel element at the bottom of the product grid
   const sentinelRef = useRef(null);
-  // Track the current fetch context so stale fetches don't append to wrong list
   const fetchKeyRef = useRef(0);
+  // Refs for scrolling category/subcategory pills to active position on mobile
+  const mobileCategoryScrollRef = useRef(null);
+  const mobileSubcategoryScrollRef = useRef(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -79,7 +80,6 @@ export default function AllCategories() {
     }
   };
 
-  // Reset and fetch page 1 whenever filter changes
   useEffect(() => {
     if (activeCategory || searchQuery || brandId) {
       setProducts([]);
@@ -90,7 +90,6 @@ export default function AllCategories() {
     }
   }, [activeCategory, activeSubcategory, searchQuery, brandId]);
 
-  // Infinite scroll: when currentPage increments beyond 1, fetch that page
   useEffect(() => {
     if (currentPage > 1) {
       fetchProducts(currentPage, false, fetchKeyRef.current);
@@ -121,20 +120,16 @@ export default function AllCategories() {
         }
       }
 
-      // Tell the backend to sort: bestSeller first, then bestAvailable, then oldest→newest
-      // Your backend should apply: .sort({ isBestSeller: -1, isBestAvailable: -1, createdAt: 1 })
       body.sort = { isBestSeller: -1, isBestAvailable: -1, createdAt: 1 };
 
       const res = await post('product/list/all/forUser', body);
 
-      // Discard if a newer fetch has been kicked off
       if (fetchKey !== fetchKeyRef.current) return;
 
       if (res && res.products) {
         setTotalProducts(res.totalProducts || 0);
         setTotalPages(res.totalPages || 1);
 
-        // No client-side sort — backend returns data pre-sorted across the full dataset
         const formatted = res.products.map(p => {
             const variant = p.variants?.[0] || {};
             return {
@@ -174,7 +169,6 @@ export default function AllCategories() {
     }
   };
 
-  // Intersection Observer for infinite scroll
   const observerRef = useRef(null);
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
@@ -226,9 +220,6 @@ export default function AllCategories() {
     setActiveSubcategory(sub);
   };
 
-  
-
-  // Skeleton card for loading state
   const SkeletonCard = () => (
     <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-2.5 md:p-4 shadow-sm animate-pulse">
       <div className="w-full h-24 md:h-40 bg-gray-100 rounded-xl mb-3"></div>
@@ -257,71 +248,75 @@ export default function AllCategories() {
 
       {/* Hero Banner */}
       <section
-        className="w-full bg-white bg-cover bg-center bg-no-repeat h-[20vh] sm:h-[25vh] md:h-[30vh] flex items-center"
+        className="w-full bg-white bg-cover bg-center bg-no-repeat h-[18vh] sm:h-[25vh] md:h-[30vh] flex items-center"
         style={{ backgroundImage: `url(${headerbg})` }}
       >
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
-          <h1 className="text-4xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-4 max-w-3xl drop-shadow-sm">
+          <h1 className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-2 md:mb-4 max-w-3xl drop-shadow-sm">
             All Categories
           </h1>
-          <p className="text-lg sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
+          <p className="text-sm sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 px-3 py-2 md:p-4 rounded-xl shadow-sm inline-block">
             Everything your pet needs in one place
           </p>
         </div>
       </section>
 
-      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-8 items-start">
-
-
-        {/* Mobile Category Selector */}
-       <div className="flex md:hidden flex-col gap-2">
-          {/* Main categories — horizontal scroll */}
-          <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
-            {categoriesData.map((category) => (
-              <button
-                key={category._id}
-                onClick={() => handleCategoryClick(category)}
-                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all ${
-                  activeCategory?._id === category._id
-                    ? 'bg-black text-white border-black'
-                    : 'bg-white text-gray-700 border-gray-200'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Subcategories — horizontal scroll, only shown when category is active */}
-          {activeCategory && (
-            <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
-              {categoriesData
-                .find(c => c._id === activeCategory._id)
-                ?.subcategories.map((sub) => (
-                  <button
-                    key={sub._id}
-                    onClick={() => setActiveSubcategory(sub)}
-                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                      activeSubcategory?._id === sub._id
-                        ? 'bg-[#FFD000] text-black'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                  >
-                    {sub.name}
-                  </button>
-                ))}
-            </div>
-          )}
+      {/* ── MOBILE: sticky category + subcategory filter bar ── */}
+      <div className="md:hidden sticky top-0 z-20 bg-[#FCFCFC] border-b border-gray-100 shadow-sm">
+        {/* Category pills row */}
+        <div
+          ref={mobileCategoryScrollRef}
+          className="flex gap-2 overflow-x-auto px-4 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
+        >
+          {categoriesData.map((category) => (
+            <button
+              key={category._id}
+              onClick={() => handleCategoryClick(category)}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${
+                activeCategory?._id === category._id
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
 
-        {/* Left Sidebar: Categories (Desktop) */}
+        {/* Subcategory pills row — only shown when there are subcategories */}
+        {activeCategory && activeCategory.subcategories.length > 0 && (
+          <div
+            ref={mobileSubcategoryScrollRef}
+            className="flex gap-2 overflow-x-auto px-4 pb-3 [&::-webkit-scrollbar]:hidden"
+          >
+            {categoriesData
+              .find(c => c._id === activeCategory._id)
+              ?.subcategories.map((sub) => (
+                <button
+                  key={sub._id}
+                  onClick={() => setActiveSubcategory(sub)}
+                  className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-all whitespace-nowrap ${
+                    activeSubcategory?._id === sub._id
+                      ? 'bg-[#FFD000] text-black'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+          </div>
+        )}
+      </div>
+
+      <main className="max-w-[1400px] mx-auto px-3 md:px-8 py-4 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-4 md:gap-8 items-start">
+
+        {/* Left Sidebar: Categories (Desktop only) */}
         <aside className="hidden md:flex w-56 lg:w-64 shrink-0 flex-col gap-2 sticky top-6 self-start max-h-[calc(100vh-5rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden pb-6">
           {categoriesData.map((category) => (
             <div
               key={category._id}
               className="rounded-2xl border border-gray-100 bg-white shadow-sm"
             >
-              {/* Category header button */}
               <button
                 onClick={() => {
                   setExpandedCategory(expandedCategory === category._id ? null : category._id);
@@ -345,7 +340,6 @@ export default function AllCategories() {
                 />
               </button>
 
-              {/* Subcategories — smooth animated expand, no overflow-hidden on parent */}
               {expandedCategory === category._id && (
                 <div className="border-t border-gray-100 flex flex-col pb-1">
                   {category.subcategories.map((sub) => (
@@ -374,45 +368,71 @@ export default function AllCategories() {
         <div className="w-full md:w-3/4 lg:w-4/5 flex flex-col">
 
           {/* Breadcrumbs & Header */}
-          <div className="mb-6 md:mb-8 border-b border-gray-200 pb-4 md:pb-6">
-            <div className="text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex flex-wrap items-center gap-1.5 md:gap-2">
-              <span className="cursor-pointer hover:text-black transition-colors">HOMEPAGE</span>
+          <div className="mb-4 md:mb-8 border-b border-gray-200 pb-3 md:pb-6">
+            {/* Breadcrumbs — hidden on mobile to save space */}
+            <div className="hidden md:flex text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex-wrap items-center gap-1.5 md:gap-2">
+              <Link
+                to="/"
+                className="underline underline-offset-2 cursor-pointer hover:text-black transition-colors"
+              >
+                HOMEPAGE
+              </Link>
               <span>&gt;</span>
-              <span className="cursor-pointer hover:text-black transition-colors">{activeCategory?.name}</span>
+              {activeCategory && (
+                <>
+                  <Link
+                    to={`/category/${activeCategory._id}`}
+                    state={{ categoryName: activeCategory.name }}
+                    className="underline underline-offset-2 cursor-pointer hover:text-black transition-colors"
+                  >
+                    {activeCategory.name}
+                  </Link>
+                </>
+              )}
               {activeSubcategory && (
                 <>
                   <span>&gt;</span>
-                  <span className="text-black">{activeSubcategory.name}</span>
+                  <Link
+                    to={`/category/${activeCategory._id}?subCategory=${activeSubcategory._id}`}
+                    state={{
+                      categoryName: activeCategory.name,
+                      subCategoryName: activeSubcategory.name
+                    }}
+                    className="underline underline-offset-2 text-black hover:text-gray-700 transition-colors"
+                  >
+                    {activeSubcategory.name}
+                  </Link>
                 </>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-2xl md:text-5xl font-extrabold text-black tracking-tight leading-tight">
                 {searchQuery
-                  ? `Search Results for "${searchQuery}"`
+                  ? `Results for "${searchQuery}"`
                   : brandName
                     ? `Brand: ${brandName}`
                     : (activeSubcategory?.name || activeCategory?.name)}
               </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-400 font-bold tracking-wide">
-                  {searchQuery || brandName ? `FOUND: ${totalProducts}` : `PRODUCTS IN CATEGORY: ${totalProducts}`}
-                </span>
-              </div>
+
+              <span className="shrink-0 text-[10px] md:text-xs text-gray-400 font-bold tracking-wide">
+                {searchQuery || brandName
+                  ? `${totalProducts} found`
+                  : `${totalProducts} products`}
+              </span>
             </div>
           </div>
 
           {/* Sort By */}
-          <div className="flex justify-end mb-6">
-            <span className="text-xs text-gray-500 font-bold tracking-wider cursor-pointer hover:text-black transition-colors">
+          <div className="flex justify-end mb-4 md:mb-6">
+            <span className="text-[10px] md:text-xs text-gray-500 font-bold tracking-wider cursor-pointer hover:text-black transition-colors">
               SORT BY: <span className="text-black ml-1">POPULARITY ∨</span>
             </span>
           </div>
 
           {/* Product Grid */}
           {isInitialLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
               {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : products.length === 0 ? (
@@ -423,50 +443,50 @@ export default function AllCategories() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
                 {products.map((product, i) => (
                   <div
                     key={`${product.id}-${i}`}
                     onClick={() => navigate(`/product/${product.id}`)}
-                    className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
+                    className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2 md:p-4 shadow-sm"
                   >
-                    <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
+                    <div className="w-full h-[110px] md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
                       <img
                         src={product.img}
                         alt={product.name}
                         className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
                       />
-                      <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
+                      <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-0.5 md:gap-1 items-end">
                         {product.isBestSeller && (
-                          <div className="bg-black text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-black text-white text-[7px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             Best Seller
                           </div>
                         )}
                         {!product.isBestSeller && product.isBestAvailable && (
-                          <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-green-600 text-white text-[7px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             Best Available
                           </div>
                         )}
                         {product.discount && product.discount !== '0%' && (
-                          <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="bg-[#FF5757] text-white text-[7px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             {product.discount} Off
                           </div>
                         )}
                       </div>
                     </div>
                     <div className="flex flex-col flex-grow">
-                      <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
-                      <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
-                      <div className="mt-auto flex items-center justify-between">
-                        <div className="flex flex-col">
+                      <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                      <span className="text-[10px] md:text-xs text-gray-400 mb-1 md:mb-2">{product.weight}</span>
+                      <div className="mt-auto flex items-center justify-between gap-1">
+                        <div className="flex flex-col min-w-0">
                           {product.oldPrice && product.oldPrice !== product.price && (
                             <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
                           )}
-                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
+                          <span className="font-bold text-black text-sm md:text-lg leading-tight">{product.price}</span>
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                          className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                          className="shrink-0 bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
                         >
                           ADD
                         </button>
@@ -475,14 +495,11 @@ export default function AllCategories() {
                   </div>
                 ))}
 
-                {/* Show skeleton cards while fetching next page */}
                 {isFetchingMore && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={`skel-${i}`} />)}
               </div>
 
-              {/* Sentinel for IntersectionObserver */}
               <div ref={sentinelRef} className="h-10 mt-4" />
 
-              {/* End of results message */}
               {!isFetchingMore && currentPage >= totalPages && products.length > 0 && (
                 <p className="text-center text-gray-400 text-sm font-bold py-6 tracking-wide">
                   — You've seen all {totalProducts} products —
@@ -493,7 +510,6 @@ export default function AllCategories() {
         </div>
       </main>
 
-      {/* Footer Sections */}
       <div className="bg-white w-full">
         <Benefit />
         <WhyTrustUs />

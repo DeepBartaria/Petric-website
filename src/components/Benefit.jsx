@@ -20,17 +20,11 @@ export default function Benefit() {
   return (
     <div className="w-full flex flex-col items-center bg-[#FFF2B8] py-16 px-4 sm:px-8 lg:px-16 relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute top-10 left-10 text-[#FFD000]/20">
-        <FiStar size={50} />
-      </div>
-      <div className="absolute top-40 right-20 text-[#FFD000]/15">
-        <FiStar size={35} />
-      </div>
-      <div className="absolute bottom-20 left-1/4 text-[#FFD000]/10">
-        <FiStar size={45} />
-      </div>
+      <div className="absolute top-10 left-10 text-[#FFD000]/20"><FiStar size={50} /></div>
+      <div className="absolute top-40 right-20 text-[#FFD000]/15"><FiStar size={35} /></div>
+      <div className="absolute bottom-20 left-1/4 text-[#FFD000]/10"><FiStar size={45} /></div>
 
-      {/* Header Section */}
+      {/* Header */}
       <div className="text-center mb-14 relative z-10">
         <Link
           to="/all-categories"
@@ -39,39 +33,61 @@ export default function Benefit() {
           <FiHeart className="w-4 h-4" />
           <span>Complete Pet Care</span>
         </Link>
-         <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight text-black">
-            Everything your 
-            
-            <span className="text-[#F5C400]"> pet needs</span>
-          </h2>
+        <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight text-black">
+          Everything your <span className="text-[#F5C400]"> pet needs</span>
+        </h2>
         <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto mt-5 leading-relaxed font-medium">
           Food, treats, medicines, toys, and essentials —
           delivered to your doorstep in minutes.
         </p>
       </div>
 
-      {/* Benefits Grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 md:gap-6 w-full max-w-5xl relative z-10 px-1 sm:px-2">
-        {benefits.map((benefit, index) => (
-          <div
-            key={index}
-            className="relative bg-white p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:shadow-xl sm:hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 md:hover:-translate-y-3 transition-all duration-300 group cursor-pointer overflow-hidden border border-white/10"
-          >
-            {/* Decorative circle */}
+      {/* Benefits — horizontal scroll on mobile, grid on desktop */}
+      <div className="w-full max-w-5xl relative z-10">
 
-            <div className="flex flex-col items-center text-center relative z-10">
-              <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl p-1.5 sm:p-2.5 md:p-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] group-hover:scale-105 sm:group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:shadow-xl mb-1.5 sm:mb-2 md:mb-3">
-                <img src={benefit.icon} alt={benefit.title} className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 object-contain" />
+        {/* Mobile: horizontal scroll */}
+        <div className="flex sm:hidden gap-3 overflow-x-auto pb-3 px-1 [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
+          {benefits.map((benefit, index) => (
+            <div
+              key={index}
+              className="shrink-0 snap-center w-36 bg-white rounded-2xl shadow-md p-3 flex flex-col items-center text-center cursor-pointer hover:-translate-y-1 transition-all duration-300 group"
+            >
+              <div className="bg-white border border-black/10 rounded-xl p-2 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 mb-2">
+                <img src={benefit.icon} alt={benefit.title} className="w-10 h-10 object-contain" />
               </div>
-              <h3 className="text-[10px] sm:text-sm md:text-xl font-bold text-black group-hover:text-[#FF5757] transition-colors duration-300 leading-tight mb-0.5 sm:mb-1">{benefit.title}</h3>
-              <p className="hidden sm:block text-[10px] sm:text-xs md:text-sm font-medium text-gray-500 group-hover:text-gray-700 transition-colors">{benefit.desc}</p>
+              <h3 className="text-sm font-bold text-black group-hover:text-[#FF5757] transition-colors leading-tight mb-1">
+                {benefit.title}
+              </h3>
+              <p className="text-[10px] font-medium text-gray-500 leading-snug">
+                {benefit.desc}
+              </p>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Bottom decorative dots */}
-      
+        {/* Desktop: grid */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-2">
+          {benefits.map((benefit, index) => (
+            <div
+              key={index}
+              className="relative bg-white  p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:shadow-2xl hover:-translate-y-2 md:hover:-translate-y-3 transition-all duration-300 group cursor-pointer overflow-hidden"
+            >
+              <div className="flex flex-col items-center text-center relative z-10">
+                <div className="bg-white border border-black/10 rounded-xl md:rounded-2xl p-2.5 md:p-3 shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 group-hover:shadow-xl mb-2 md:mb-3">
+                  <img src={benefit.icon} alt={benefit.title} className="w-10 h-10 md:w-14 md:h-14 object-contain" />
+                </div>
+                <h3 className="text-sm md:text-xl font-bold text-black group-hover:text-[#FF5757] transition-colors duration-300 leading-tight mb-1">
+                  {benefit.title}
+                </h3>
+                <p className="text-xs md:text-sm font-medium text-gray-500 group-hover:text-gray-700 transition-colors">
+                  {benefit.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
     </div>
   );
-} 
+}

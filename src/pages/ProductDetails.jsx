@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import {useParams, useNavigate } from 'react-router-dom';
 import { FiMinus, FiPlus, FiShoppingBag, FiCheck, FiUsers } from 'react-icons/fi';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
 import { get, post } from '../helper/api';
-
+import { Link } from 'react-router-dom';
 // Deterministic "random" number from product id so it doesn't change on re-render
 function getPetParentCount(id = '') {
   let hash = 0;
@@ -213,6 +213,11 @@ export default function ProductDetails() {
   }
 
   const brandName = product.brand?.name || (Array.isArray(product.brand) ? product.brand[0]?.name : 'Petric');
+  const brandId =
+    product?.brand?._id ||
+    (Array.isArray(product?.brand)
+      ? product.brand[0]?._id
+      : null);
   const categoryName = (Array.isArray(product.productCategory)
     ? product.productCategory[0]?.name
     : product.productCategory?.name) || 'Category';
@@ -295,9 +300,19 @@ export default function ProductDetails() {
             </div>
 
             {/* Title & Brand */}
-            <div>
-              <h1 className="text-lg md:text-2xl font-extrabold leading-tight mb-1">{product.name}</h1>
-              <p className="text-xs md:text-sm text-gray-500 font-medium">by <span className="font-bold text-black">{brandName}</span></p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-xs md:text-sm font-bold text-gray-600">
+                by: {brandName}
+              </p>
+
+              {brandId && (
+                <Link onClick={(e) => e.stopPropagation()}
+                  to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
+                  className="text-[10px] md:text-xs font-bold underline underline-offset-2 text-black hover:text-[#F5C400] transition-colors"
+                >
+                  More by {brandName}
+                </Link>
+              )}
             </div>
 
             {/* Pet parents social proof — replaces star rating */}
@@ -424,16 +439,31 @@ export default function ProductDetails() {
         {/* More by Brand */}
         {brandProducts.length > 0 && (
           <section className="mb-10 md:mb-14">
+            
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+              
               <h2 className="text-xl md:text-2xl font-extrabold text-black">
                 More by <span className="text-[#B8860B]">{brandName}</span>
               </h2>
+
+              {brandId && (
+                <Link
+                  to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[10px] md:text-xs font-bold underline underline-offset-2 text-black hover:text-[#F5C400] transition-colors whitespace-nowrap"
+                >
+                  View All
+                </Link>
+              )}
+
             </div>
+
             <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-3 md:pb-0">
               {brandProducts.map((p, i) => (
                 <ProductCard key={i} product={p} />
               ))}
             </div>
+
           </section>
         )}
 
