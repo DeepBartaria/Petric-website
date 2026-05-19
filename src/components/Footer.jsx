@@ -14,7 +14,7 @@ import logo from '../assets/logo.png';
 import appstore from '../assets/appstore.svg';
 import playstore from '../assets/playstore.svg';
 import mobiles from "../assets/mobiles.png";
-import hi from '../assets/hi.png';
+import hi from '../assets/hi.jpg';
 import laptop_hi from '../assets/laptop_hi.png';
 
 export default function Footer() {
@@ -96,7 +96,7 @@ export default function Footer() {
           {/* Logo & Address */}
 
           <div className="flex flex-col items-start gap-3 col-span-1">
-            <img src={logo} alt="Petric Logo" className="h-20 sm:h-24 object-contain" />
+            <img src={logo} alt="Petric Logo" className="h-20 sm:h-28 object-contain" />
             <div className="text-sm sm:text-base w-full sm:w-[80%] leading-relaxed text-[#3D3D3D]">Petric: U-26/7, DLF Phase 3, Sector 24, Gurugram, Haryana 122002</div>
             <div className="flex gap-3 sm:gap-4 mt-2">
               <a href="https://www.facebook.com/profile.php?id=61574867466246&mibextid=rS40aB7S9Ucbxw6v" aria-label="Facebook" className=" text-white bg-[#1D3557] rounded-full p-2"><FaFacebookF size={16} className="sm:w-[18px] sm:h-[18px]" /></a>

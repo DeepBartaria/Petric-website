@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
 import laptopImage from '../assets/laptop_hi.png';
-import mobileImage from '../assets/hi.png';
+import mobileImage from '../assets/hi.jpg';
 
 export default function BottomPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -74,27 +74,25 @@ export default function BottomPopup() {
             : 'animate-slideUpIn'
         }`}
       >
-        <div className="relative w-full px-6 sm:px-8 md:px-10 py-2 mx-auto">
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-2 shadow-xl z-10 hover:bg-gray-100 hover:scale-110 transition-all duration-300 active:scale-95"
-            aria-label="Close popup"
-          >
-            <FiX className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
-          </button>
-
+        <div className="relative w-full max-w-7xl px-2 sm:px-4 md:px-6 py-2 mx-auto">
           {/* Image */}
-          <div className="relative overflow-hidden shadow-2xl rounded-t-2xl sm:rounded-t-3xl">
+          <div className="relative overflow-hidden shadow-2xl rounded-2xl sm:rounded-3xl">
+            <button
+              onClick={handleClose}
+              className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/70 backdrop-blur border border-gray-200 rounded-full p-1.5 sm:p-2 z-20 "
+              aria-label="Close popup"
+            >
+              <FiX className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </button>
             <img
               src={laptopImage}
               alt="Welcome to Petric"
-              className="hidden md:block w-full object-cover"
+              className="hidden md:block w-full max-h-[360px] object-cover"
             />
             <img
               src={mobileImage}
               alt="Welcome to Petric"
-              className="md:hidden w-full object-cover"
+              className="md:hidden w-full max-h-[260px] object-cover"
             />
           </div>
         </div>
