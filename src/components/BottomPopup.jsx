@@ -9,13 +9,19 @@ export default function BottomPopup() {
   const [isEntering, setIsEntering] = useState(false);
 
   useEffect(() => {
-    // Start animation after render
     requestAnimationFrame(() => {
       setIsEntering(true);
+
+      document.body.classList.add('popup-open');
+
       setTimeout(() => {
         setIsVisible(true);
       }, 50);
     });
+
+    return () => {
+      document.body.classList.remove('popup-open');
+    };
   }, []);
 
   // Auto-close when scrolling near footer
@@ -46,7 +52,10 @@ export default function BottomPopup() {
   }, [isVisible]);
 
   const handleClose = () => {
+    document.body.classList.remove('popup-open');
+
     setIsClosing(true);
+
     setTimeout(() => {
       setIsVisible(false);
       setIsClosing(false);
@@ -87,7 +96,7 @@ export default function BottomPopup() {
             <img
               src={laptopImage}
               alt="Welcome to Petric"
-              className="hidden md:block w-full max-h-[360px] object-cover"
+              className="hidden md:block w-full max-h-[320px] object-cover"
             />
             <img
               src={mobileImage}

@@ -293,37 +293,34 @@ export default function NewHome() {
         </div>
 
         {/* Personalized Welcome Banner */}
-        <div className="mb-14 bg-gradient-to-r from-[#FFF9E5] to-[#F8F9FA] border border-[#FFE880] rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-
+        <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 w-full lg:w-auto shrink-0">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-black whitespace-nowrap">
+            <h2 className="text-2xl md:text-4xl font-black text-black whitespace-nowrap leading-tight">
               Hello, Pet Parent! 👋
             </h2>
-            <button className="bg-black text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto">
-              Sign In / Sign Up
+            <button className= "bg-black text-white px-8 py-3 rounded-full font-extrabold text-sm border-2 border-black hover:bg-white hover:text-black transition-all duration-300 shadow-md w-full sm:w-auto">
+              Sign up and get...
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-[48%]">
             {/* Autoship Card */}
-            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm border border-transparent hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-[280px]">
-              <div className="bg-blue-50 border border-blue-100 text-blue-600 p-3 rounded-xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
+              <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
                 <FiGift className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-black text-[13px] md:text-sm">Sign up & get <br /> upto 35% off on selected brands</span>
-                <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">exclusive offers just for you</span>
+                <span className="font-extrabold text-black text-[13px] md:text-sm">upto 35% off on <br /> selected brands</span>
               </div>
             </div>
 
             {/* Pharmacy Card */}
-            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm border border-transparent hover:border-[#FF5757] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-[280px]">
-              <div className="bg-red-50 border border-red-100 text-[#FF5757] p-3 rounded-xl group-hover:scale-110 group-hover:bg-[#FF5757] group-hover:text-white transition-all duration-300">
-                <FiShield className="w-6 h-6" />
+            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
+              <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+                <FiGift className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-black text-[13px] md:text-sm">Save 50% on first Pharmacy order</span>
-                <span className="text-blue-600 text-xs font-bold hover:underline mt-0.5">Explore Pharmacy →</span>
+                <span className="font-extrabold text-black text-[13px] md:text-sm">Exclusive offers just for you </span>
               </div>
             </div>
           </div>

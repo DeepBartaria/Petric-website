@@ -72,26 +72,17 @@ export default function AllBrands() {
       <NewHomeNavbar />
       
       {/* Hero Banner (from /products) */}
-      <section className="w-full bg-white bg-cover bg-center bg-no-repeat min-h-[40vh] sm:h-[60vh] md:h-[70vh] flex items-center" style={{ backgroundImage: `url(${headerbg})` }}>
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-4 max-w-3xl drop-shadow-sm">
-            Discover Top Brands
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
-            Premium quality for your best friend
-          </p>
-        </div>
-      </section>
+      
 
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-10 md:py-16 w-full flex-grow">
         {/* All Brands (With names) */}
         <BrandGrid title="All Brands" brands={allBrands} showName={true} />
 
         {/* Cat Brands (With names) */}
-        <BrandGrid title="Cat Brands" brands={catBrands} showName={true} />
+        {/* <BrandGrid title="Cat Brands" brands={catBrands} showName={true} /> */}
 
         {/* Dog Brands (With names) */}
-        <BrandGrid title="Dog Brands" brands={dogBrands} showName={true} />
+        {/* <BrandGrid title="Dog Brands" brands={dogBrands} showName={true} /> */}
       </main>
 
       {/* Sections requested */}

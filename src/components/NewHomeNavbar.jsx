@@ -543,39 +543,45 @@ export default function NewHomeNavbar() {
       </div>
 
       {/* Categories Sub-navbar */}
-      <div className="bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8 relative z-40 border-t border-black/10">
-        {/* Mobile */}
-        <div className="md:hidden">
-          <div className="rounded-2xl border border-black/10 bg-white/90 p-2 shadow-sm">
-            <div className="relative">
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-5 bg-gradient-to-r from-white/95 to-transparent"></div>
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-5 bg-gradient-to-l from-white/95 to-transparent"></div>
-              <div className="flex items-center gap-2 overflow-x-auto px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="category-strip bg-[#FFD000] px-3 py-2.5 md:py-3.5 md:px-8 relative z-40 border-t border-black/10">
+
+        {/* Mobile — same layout as desktop */}
+        <div className="md:hidden flex items-center relative">
+          {/* Pinned "All Categories" */}
+          <div className="shrink-0 z-10">
+            <Link
+              to="/all-categories"
+              className="relative overflow-hidden group px-3 py-1.5 rounded-md text-black text-xs font-semibold whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex isolate"
+            >
+              <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
+              All Categories
+            </Link>
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-4 bg-black/20 mx-1 shrink-0" />
+
+          {/* Scrollable mobile categories */}
+          <div className="relative flex-1 overflow-hidden">
+            <div className="flex items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden px-1">
+              {navCategories.map((category) => (
                 <Link
-                  to="/all-categories"
-                  className="shrink-0 rounded-full bg-black px-3.5 py-2 text-xs font-bold text-white flex items-center gap-1.5 shadow-sm"
+                  key={category._id}
+                  to={`/category/${category._id}`}
+                  state={{ categoryName: category.name }}
+                  className="relative overflow-hidden group px-3 py-1.5 rounded-md text-black text-xs font-medium whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex items-center isolate shrink-0"
                 >
-                  <FiGrid className="h-3.5 w-3.5" strokeWidth={2.8} />
-                  All Categories
+                  <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
+                  {category.name}
                 </Link>
-                {navCategories.map((category) => (
-                  <Link
-                    key={category._id}
-                    to={`/category/${category._id}`}
-                    state={{ categoryName: category.name }}
-                    className="underline underline-offset-4 shrink-0 whitespace-nowrap rounded-full border border-black/15 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition-colors hover:bg-[#FFF4B8]"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center relative">
-          {/* Pinned "All Categories" */}
+        <div className="hidden md:flex items-center gap-2 relative">
+          {/* Pinned "All Categories" — fixed width so it never shifts */}
           <div className="shrink-0 z-10">
             <Link
               to="/all-categories"
@@ -586,30 +592,21 @@ export default function NewHomeNavbar() {
             </Link>
           </div>
 
-          {/* Fade divider */}
-          <div className="w-px h-5 bg-black/20 mx-1 shrink-0" />
+          {/* Divider */}
+          <div className="w-px h-5 bg-black/20 shrink-0" />
 
-          {/* Back button — only when scrolled */}
-          {categoryScrollPos > 0 && (
-            <button
-              onClick={() => {
-                categoryScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' });
-              }}
-              className="shrink-0 mr-1 bg-white/80 hover:bg-white border border-black/15 text-black p-1 rounded-full flex items-center justify-center h-7 w-7 shadow-sm transition-all duration-200 hover:scale-110"
-            >
-              <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
-            </button>
-          )}
+          {/* Back button — always reserves space, invisible when not needed */}
+          <button
+            onClick={() => categoryScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
+            className={`shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-7 w-7 transition-all duration-200 hover:scale-110 hover:shadow-lg ${
+              categoryScrollPos > 0 ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <FiChevronRight className="h-4 w-4 rotate-180 text-[#FFD000]" strokeWidth={3} />
+          </button>
 
-          {/* Scrollable categories with fade edges */}
+          {/* Scrollable categories — no fade gradient */}
           <div className="relative flex-1 overflow-hidden">
-            {/* Right fade */}
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-[#C9A800] to-transparent z-10" />
-            {/* Left fade — only when scrolled */}
-            {categoryScrollPos > 0 && (
-              <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#C9A800] to-transparent z-10" />
-            )}
-
             <div
               ref={categoryScrollRef}
               onScroll={(e) => setCategoryScrollPos(e.target.scrollLeft)}
@@ -653,21 +650,19 @@ export default function NewHomeNavbar() {
                   )}
                 </div>
               ))}
-              {/* Right padding so last item clears the fade */}
-              <div className="shrink-0 w-10" />
+              <div className="shrink-0 w-4" />
             </div>
           </div>
 
           {/* Forward scroll button */}
           <button
-            onClick={() => {
-              categoryScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' });
-            }}
-            className="shrink-0 ml-1 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 transition-all duration-300 hover:scale-110 hover:shadow-lg"
+            onClick={() => categoryScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
+            className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-7 w-7 transition-all duration-300 hover:scale-110 hover:shadow-lg"
           >
-            <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
+            <FiChevronRight className="h-4 w-4 text-[#FFD000]" strokeWidth={3} />
           </button>
         </div>
+
       </div>
 
       {/* Mobile Delivery Time Bar */}
