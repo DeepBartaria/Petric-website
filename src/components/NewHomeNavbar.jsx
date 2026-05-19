@@ -548,7 +548,7 @@ export default function NewHomeNavbar() {
                     key={category._id}
                     to={`/category/${category._id}`}
                     state={{ categoryName: category.name }}
-                    className="shrink-0 whitespace-nowrap rounded-full border border-black/15 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition-colors hover:bg-[#FFF4B8]"
+                    className="underline underline-offset-4 shrink-0 whitespace-nowrap rounded-full border border-black/15 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition-colors hover:bg-[#FFF4B8]"
                   >
                     {category.name}
                   </Link>

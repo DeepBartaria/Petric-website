@@ -347,7 +347,7 @@ export default function CategoryPage() {
         </div>
 
         {/* Left Sidebar: Categories (Desktop) */}
-        <div className="hidden md:flex w-full md:w-1/4 lg:w-1/5 shrink-0 flex-col overflow-y-auto max-h-screen pr-2 sticky top-4 custom-scrollbar">
+        <div className="underline underline-offset-4 hidden md:flex w-full md:w-1/4 lg:w-1/5 shrink-0 flex-col overflow-y-auto max-h-screen pr-2 sticky top-4 custom-scrollbar">
           {allCategories.map((cat) => {
             const isActive = cat._id === categoryId;
             return (
