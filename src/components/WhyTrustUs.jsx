@@ -32,10 +32,9 @@ export default function WhyTrustUs() {
       </div>
 
       {/* Main Card */}
-      <div className="bg-gradient-to-br from-white via-[#FFF9E5] to-white rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-10 lg:p-12 shadow-xl sm:shadow-2xl border border-[#FFE880]/50 relative overflow-hidden">
+      <div className="bg-[#FFF2B8] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-10 lg:p-12 shadow-xl sm:shadow-2xl border border-[#FFE880]/50 relative overflow-hidden">
         {/* Decorative circles */}
-        <div className="absolute -top-16 -right-16 w-40 h-40 sm:w-60 sm:h-60 bg-[#FFD000]/10 rounded-full" />
-        <div className="absolute -bottom-12 -left-12 w-28 h-28 sm:w-40 sm:h-40 bg-[#FF5757]/10 rounded-full" />
+        
 
         {/* Content Layout - stacked on mobile, side by side on lg */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 relative z-10">
@@ -69,8 +68,7 @@ export default function WhyTrustUs() {
               <img src={trustImg} alt="Happy Pet Parent" className="w-full h-full object-cover rounded-lg sm:rounded-xl" />
                           </div>
             {/* Decorative elements */}
-            <div className="absolute -top-2 -left-2 sm:-top-4 sm:-left-4 w-4 h-4 sm:w-8 sm:h-8 bg-[#FFD000] rounded-full shadow-md" />
-            <div className="absolute -bottom-1 left-6 sm:-bottom-2 sm:left-10 w-3 h-3 sm:w-5 sm:h-5 bg-[#FF5757] rounded-full shadow-md" />
+            
           </div>
         </div>
       </div>
