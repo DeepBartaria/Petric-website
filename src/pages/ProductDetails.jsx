@@ -67,6 +67,12 @@ export default function ProductDetails() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [brandProducts, setBrandProducts] = useState([]);
+  useEffect(() => {
+    const handleOpenCart = () => setIsCartOpen(true);
+    window.addEventListener('openCart', handleOpenCart);
+    return () => window.removeEventListener('openCart', handleOpenCart);
+  }, []);
+
 
   const handleAddToCart = () => {
     if (!product) return;

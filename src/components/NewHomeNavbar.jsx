@@ -469,7 +469,14 @@ export default function NewHomeNavbar() {
             <span className="text-sm font-medium">Reorder</span>
           </Link>
           <div className="relative group flex items-center h-full">
-            <button className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white">
+            <button 
+              onClick={() => {
+                if (!user) {
+                  window.dispatchEvent(new CustomEvent('openCart'));
+                }
+              }}
+              className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white"
+            >
               <FiUser className="h-5 w-5" />
               <span className="text-sm font-medium">{user ? user.mobileNo : 'Account'}</span>
             </button>
@@ -506,7 +513,15 @@ export default function NewHomeNavbar() {
               <Link to="/reorder" className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
                 <BsArrowRepeat className="h-4 w-4" /> Reorder
               </Link>
-              <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  if (!user) {
+                    setIsMobileMenuOpen(false);
+                    window.dispatchEvent(new CustomEvent('openCart'));
+                  }
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2"
+              >
                 <FiUser className="h-4 w-4" /> {user ? user.mobileNo : 'Account'}
               </button>
               {user && (

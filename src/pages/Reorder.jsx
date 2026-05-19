@@ -23,6 +23,12 @@ export default function Reorder() {
   const navigate = useNavigate();
   const [reorderProducts, setReorderProducts] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  useEffect(() => {
+    const handleOpenCart = () => setIsCartOpen(true);
+    window.addEventListener('openCart', handleOpenCart);
+    return () => window.removeEventListener('openCart', handleOpenCart);
+  }, []);
+
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -48,6 +48,12 @@ const brands = [
 export default function NewHome() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  useEffect(() => {
+    const handleOpenCart = () => setIsCartOpen(true);
+    window.addEventListener('openCart', handleOpenCart);
+    return () => window.removeEventListener('openCart', handleOpenCart);
+  }, []);
+
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);

@@ -23,6 +23,12 @@ export default function AllCategories() {
   const brandName = searchParams.get('brandName');
 
   const [isCartOpen, setIsCartOpen] = useState(false);
+  useEffect(() => {
+    const handleOpenCart = () => setIsCartOpen(true);
+    window.addEventListener('openCart', handleOpenCart);
+    return () => window.removeEventListener('openCart', handleOpenCart);
+  }, []);
+
   const [cartItems, setCartItems] = useState([]);
 
   const [categoriesData, setCategoriesData] = useState([]);
