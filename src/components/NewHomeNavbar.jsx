@@ -5,8 +5,9 @@ import { BsArrowRepeat } from 'react-icons/bs';
 import logo from '../assets/logo.png';
 import DeliveryLocationModal from './DeliveryLocationModal';
 import ProfileSidebar from './ProfileSidebar';
-import { getHomePageProductsApi, getAllProductsApi } from '../api/homeApi';
+import { getHomePageProductsApi } from '../api/homeApi';
 import { get } from '../helper/api';
+import { post } from '../helper/api';
 
 // Popular/trending searches shown when input is focused but empty
 const TRENDING_SEARCHES = [
@@ -162,58 +163,68 @@ export default function NewHomeNavbar() {
 
     const fetchSearchData = async () => {
       try {
-        const [homeProductsRes, allProductsRes] = await Promise.all([
-          getHomePageProductsApi(),
-          getAllProductsApi()
-        ]);
+        // Fetch all pages in parallel — get page 1 first to know total
+        const firstPageRes = await post('product/list/all/forUser', {
+          page: 1,
+          limit: 100,
+          sort: { createdAt: 1 }
+        });
 
-        let mergedProducts = [];
+        let allProds = [];
 
-        if (homeProductsRes?.type === "success") {
-          const sections = homeProductsRes.homePageProductsData || [];
-          for (const section of sections) {
-            const prods = section.products || section.data || [];
-            mergedProducts.push(...prods);
+        if (firstPageRes?.products) {
+          allProds.push(...firstPageRes.products);
+
+          const totalPages = firstPageRes.totalPages || 1;
+
+          // Fetch remaining pages in parallel
+          if (totalPages > 1) {
+            const pagePromises = [];
+            for (let page = 2; page <= Math.min(totalPages, 50); page++) {
+              pagePromises.push(
+                post('product/list/all/forUser', {
+                  page,
+                  limit: 100,
+                  sort: { createdAt: 1 }
+                })
+              );
+            }
+            const restPages = await Promise.all(pagePromises);
+            for (const res of restPages) {
+              if (res?.products) allProds.push(...res.products);
+            }
           }
         }
 
-        // Handle all common API shapes: { products }, { data }, { data: { products } }, or array
-        let allProds = [];
-        const r = allProductsRes;
-        if (Array.isArray(r)) allProds = r;
-        else if (Array.isArray(r?.products)) allProds = r.products;
-        else if (Array.isArray(r?.data)) allProds = r.data;
-        else if (Array.isArray(r?.data?.products)) allProds = r.data.products;
-        else if (Array.isArray(r?.data?.data)) allProds = r.data.data;
-        else if (Array.isArray(r?.result)) allProds = r.result;
-        else if (Array.isArray(r?.items)) allProds = r.items;
+        console.log('[Search] Total products fetched:', allProds.length);
 
-        console.log('[Search] allProds extracted count:', allProds.length);
+        // Also pull homepage products
+        let homeProds = [];
+        const homeProductsRes = await getHomePageProductsApi();
+        if (homeProductsRes?.type === "success") {
+          const sections = homeProductsRes.homePageProductsData || [];
+          for (const section of sections) {
+            homeProds.push(...(section.products || section.data || []));
+          }
+        }
 
-        const unique = Array.from(new Map(mergedProducts.map(p => [p._id, p])).values())
-          // Guard: skip any entry without a usable name
+        // Merge and deduplicate
+        const merged = [...allProds, ...homeProds];
+        const unique = Array.from(new Map(merged.map(p => [p._id, p])).values())
           .filter(p => p && typeof p.name === 'string' && p.name.trim().length > 0);
 
-        // ── Debug: log to confirm index is populated ─────────────────────────
-        if (unique.length > 0) {
-          console.log('[Search] Sample names:', unique.slice(0, 5).map(p => p.name));
-        }
+        console.log('[Search] Index built:', unique.length, 'products');
 
         setAllProducts(unique);
 
-        const str = (v) => {
-          if (!v) return '';
-          if (typeof v === 'string') return v;
-          if (typeof v === 'object' && v.name) return v.name;
-          return '';
-        };
+        // Build search index
+        searchIndexRef.current = unique.map(p => {
+          const nameText = p.name.toLowerCase();
+          const nameTokens = nameText.split(/[\s()\-,./]+/).filter(t => t.length > 1);
+          return { product: p, nameText, nameTokens };
+        });
 
-        // Build search index — name only
-          searchIndexRef.current = unique.map(p => {
-            const nameText = p.name.toLowerCase();
-            const nameTokens = nameText.split(/[\s()\-,./]+/).filter(t => t.length > 1);
-            return { product: p, nameText, nameTokens };
-          });
+        console.log('[Search] Sample names:', unique.slice(0, 5).map(p => p.name));
 
       } catch (error) {
         console.error('[Search] fetchSearchData error:', error);
