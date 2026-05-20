@@ -298,6 +298,10 @@ export default function ProductDetails() {
                 <FiCheck className="h-3 w-3" /> Petric Assured
               </span>
             </div> */}
+            {/* Product Name */}
+            <h1 className="text-2xl md:text-4xl font-extrabold text-black leading-tight">
+              {product.name}
+            </h1>
 
             {/* Title & Brand */}
             <div className="flex items-center gap-2 flex-wrap">
