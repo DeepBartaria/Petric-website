@@ -7,6 +7,7 @@ import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import { get } from '../helper/api';
+import { logPageVisit } from '../helper/analytics';
 
 // Use same hero banner as /products
 import headerbg from '../assets/petsproductherobg.png';
@@ -44,6 +45,7 @@ export default function AllBrands() {
   
   useEffect(() => {
     window.scrollTo(0, 0);
+    logPageVisit('Visited All Brands page');
 
     const fetchBrands = async () => {
       try {

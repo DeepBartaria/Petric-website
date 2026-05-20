@@ -7,6 +7,7 @@ import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
 import { get, post } from '../helper/api';
 import { Link } from 'react-router-dom';
+import { logPageVisit } from '../helper/analytics';
 // Deterministic "random" number from product id so it doesn't change on re-render
 function getPetParentCount(id = '') {
   let hash = 0;
@@ -116,6 +117,7 @@ export default function ProductDetails() {
         if (res.type === 'success' && res.product) {
           const p = res.product;
           setProduct(p);
+          logPageVisit(`Visited product page: ${p.name}`);
           if (p.variants?.length > 0) setSelectedSize(p.variants[0]);
           setMainImage(p.productImage);
 

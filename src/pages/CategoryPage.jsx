@@ -12,6 +12,7 @@ import { get, post } from '../helper/api';
 import { getAllCategoryProductsTemp } from '../api/categoryProductsApi';
 import headerbg from '../assets/petsproductherobg.png';
 import { Link } from 'react-router-dom';
+import { logPageVisit } from '../helper/analytics';
 const LIMIT = 20;
 
 export default function CategoryPage() {
@@ -79,6 +80,15 @@ export default function CategoryPage() {
       console.error("Error fetching page data:", error);
     }
   };
+
+  useEffect(() => {
+    if (categoryName) {
+      const description = activeSubcategory
+        ? `Visited category page: ${categoryName} > ${activeSubcategory.name}`
+        : `Visited category page: ${categoryName}`;
+      logPageVisit(description);
+    }
+  }, [categoryName, activeSubcategory]);
 
   // Reset and refetch when category or subcategory filter changes
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { get } from '../helper/api';
 import { Link, useNavigate } from 'react-router-dom';
+import { logPageVisit } from '../helper/analytics';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
@@ -33,6 +34,7 @@ export default function Reorder() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    logPageVisit('Visited Reorder page');
     const fetchReorderProducts = async () => {
       const token = localStorage.getItem('petric_token');
       if (!token) {

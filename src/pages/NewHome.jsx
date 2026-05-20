@@ -14,6 +14,7 @@ import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import { FiChevronRight, FiChevronDown, FiGift, FiShield, FiStar} from 'react-icons/fi';
 import { get } from '../helper/api';
+import { logPageVisit } from '../helper/analytics';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/oldimg.png';
@@ -61,6 +62,10 @@ export default function NewHome() {
   useEffect(() => {
     const storedUser = localStorage.getItem('petric_user');
     if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  useEffect(() => {
+    logPageVisit('Visited Home page');
   }, []);
 
   useEffect(() => {

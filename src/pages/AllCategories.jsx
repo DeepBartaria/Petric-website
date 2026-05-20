@@ -12,6 +12,7 @@ import { get, post } from '../helper/api';
 import { FiChevronDown } from "react-icons/fi";
 import headerbg from '../assets/petsproductherobg.png';
 import { Link } from 'react-router-dom';
+import { logPageVisit } from '../helper/analytics';
 const LIMIT = 20;
 
 export default function AllCategories() {
@@ -79,6 +80,19 @@ export default function AllCategories() {
       console.error("Error fetching categories:", error);
     }
   };
+
+  useEffect(() => {
+    if (searchQuery) {
+      logPageVisit(`Searched for products: "${searchQuery}"`);
+    } else if (brandName) {
+      logPageVisit(`Visited brand products page: ${brandName}`);
+    } else if (activeCategory) {
+      const description = activeSubcategory
+        ? `Visited category: ${activeCategory.name} > ${activeSubcategory.name}`
+        : `Visited category: ${activeCategory.name}`;
+      logPageVisit(description);
+    }
+  }, [activeCategory, activeSubcategory, searchQuery, brandId, brandName]);
 
   useEffect(() => {
     if (activeCategory || searchQuery || brandId) {
