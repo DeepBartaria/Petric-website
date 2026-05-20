@@ -178,18 +178,23 @@ export default function NewHomeNavbar() {
         }
 
         // Handle all common API shapes: { products }, { data }, { data: { products } }, or array
-        const allProds = allProductsRes?.products
-          || allProductsRes?.data?.products
-          || allProductsRes?.data
-          || [];
-        if (Array.isArray(allProds)) mergedProducts.push(...allProds);
+        let allProds = [];
+        const r = allProductsRes;
+        if (Array.isArray(r)) allProds = r;
+        else if (Array.isArray(r?.products)) allProds = r.products;
+        else if (Array.isArray(r?.data)) allProds = r.data;
+        else if (Array.isArray(r?.data?.products)) allProds = r.data.products;
+        else if (Array.isArray(r?.data?.data)) allProds = r.data.data;
+        else if (Array.isArray(r?.result)) allProds = r.result;
+        else if (Array.isArray(r?.items)) allProds = r.items;
+
+        console.log('[Search] allProds extracted count:', allProds.length);
 
         const unique = Array.from(new Map(mergedProducts.map(p => [p._id, p])).values())
           // Guard: skip any entry without a usable name
           .filter(p => p && typeof p.name === 'string' && p.name.trim().length > 0);
 
         // ── Debug: log to confirm index is populated ─────────────────────────
-        console.log(`[Search] Index built: ${unique.length} products`);
         if (unique.length > 0) {
           console.log('[Search] Sample names:', unique.slice(0, 5).map(p => p.name));
         }
@@ -210,7 +215,6 @@ export default function NewHomeNavbar() {
             return { product: p, nameText, nameTokens };
           });
 
-        console.log('[Search] First entry sample:', searchIndexRef.current[0]);
       } catch (error) {
         console.error('[Search] fetchSearchData error:', error);
       }
@@ -239,6 +243,8 @@ export default function NewHomeNavbar() {
   
   useEffect(() => {
     const raw = inputValue.trim();
+    console.log('[Search] Query:', raw, '| Index size:', searchIndexRef.current.length);
+
     if (!raw || searchIndexRef.current.length === 0) {
       setSearchResults([]);
       setHighlightedIndex(-1);
@@ -255,10 +261,19 @@ export default function NewHomeNavbar() {
       let score = 0;
 
       for (const qt of queryTokens) {
+        // Substring match in full name
         if (nameText.includes(qt)) {
-          score += 80;
-          if (nameText.startsWith(qt)) score += 20;
-          else if (nameTokens.some(t => t.startsWith(qt))) score += 10;
+          score += 60;
+          if (nameText.startsWith(qt)) score += 30;
+        }
+
+        // ✅ PREFIX match on each individual word token
+        for (const token of nameTokens) {
+          if (token.startsWith(qt)) {
+            score += 50;
+            if (nameTokens[0] === token) score += 15;
+            break;
+          }
         }
       }
 
@@ -266,7 +281,9 @@ export default function NewHomeNavbar() {
     }
 
     scored.sort((a, b) => b.score - a.score || a.product.name.length - b.product.name.length);
-    setSearchResults(scored.map(s => s.product).slice(0, 8));
+    const results = scored.map(s => s.product).slice(0, 8);
+    console.log('[Search] Results:', results.map(p => p.name));
+    setSearchResults(results);
     setHighlightedIndex(-1);
   }, [inputValue]);
 
