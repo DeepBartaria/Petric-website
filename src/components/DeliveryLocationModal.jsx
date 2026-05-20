@@ -134,8 +134,14 @@ export default function DeliveryLocationModal({ isOpen, onClose }) {
         {/* Header */}
         <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-black flex items-center gap-2">
-            <FiMapPin className="text-[#FFD000]" />
-            Check Delivery Time
+            <FiMap
+              size={20}
+              className="shrink-0 text-black"
+            />
+
+            <span className="border-b border-black leading-none pb-[1px]">
+              Check Delivery Time
+            </span>
           </h2>
           <button
             onClick={onClose}
