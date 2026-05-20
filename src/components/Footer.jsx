@@ -16,6 +16,7 @@ import playstore from '../assets/playstore.svg';
 import mobiles from "../assets/mobiles.png";
 import hi from '../assets/hi.jpg';
 import laptop_hi from '../assets/laptop_hi.png';
+import cataloguePdf from '../assets/Petric_Catalogue.pdf';
 
 export default function Footer() {
   const { showDialog } = useDialog();
@@ -114,7 +115,7 @@ export default function Footer() {
               <li><Link to="/all-categories" className="hover:underline">All Categories</Link></li>
               <li className="pt-5">
                 <button
-                  onClick={() => window.open('/Petric-Brochure.pdf', '_blank')}
+                  onClick={() => window.open(cataloguePdf, '_blank')}
                   className="bg-black text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-fit"
                 >
                   Download Brochure
