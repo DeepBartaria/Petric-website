@@ -110,8 +110,8 @@ export default function Footer() {
             <div className="mb-3 text-base sm:text-lg">Quick links</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
               <li><Link to="/story" className="hover:underline">Our Story</Link></li>
-              <li><Link to="/all-categories" className="hover:underline">Pet Products</Link></li>
-              <li><Link to="/" className="hover:underline" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Our Catalogue</Link></li>
+              <li><Link to="/all-brands" className="hover:underline">All Brands</Link></li>
+              <li><Link to="/all-categories" className="hover:underline">All Categories</Link></li>
             </ul>
           </div>
           {/* Policies */}
@@ -128,12 +128,14 @@ export default function Footer() {
           <div className="col-span-1 sm:col-span-2 md:col-span-1">
             <div className="mb-3 text-base sm:text-lg">Popular Searches Near You</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
-              <li><Link to="/products" className="hover:underline">Pet Pharmacy Near me</Link></li>
-              <li><Link to="/healthcare" className="hover:underline">Vets Near Me</Link></li>
-              <li><Link to="/healthcare" className="hover:underline">Pet Clinic Near Me</Link></li>
-              <li><Link to="/products" className="hover:underline">Pet Food Near Me</Link></li>
-              <li><Link to="/products" className="hover:underline">Pet Treats Near Me</Link></li>
-              <li><Link to="/products" className="hover:underline">Pet Toys Near Me</Link></li>
+              <li><Link to="/category/688bb653d965e37b6406d2f0" className="hover:underline">Dog Food Near Me</Link></li>
+              <li><Link to="/category/689dd0df62fd763e5a773308" className="hover:underline">Pet Emergency Medicines</Link></li>
+              <li><Link to="/category/688bb661d965e37b6406d2f5?subCategory=688bcaedd965e37b6406da6f" className="hover:underline">Cat Wet Food Near Me</Link></li>
+              <li><Link to="/category/688bb67cd965e37b6406d2fe" className="hover:underline">Treats for Dog and Cats</Link></li>
+              <li><Link to="/all-categories" className="hover:underline">Instant Pet Food Delivery</Link></li>
+              <li><Link to="/category/69e8021dbfdbb023ad876b89" className="hover:underline">Pet Toys Near Me</Link></li>
+              <li><Link to="/category/688bb8d2d965e37b6406d3af" className="hover:underline">Vet Prescribed Pet Food</Link></li>
+              <li><Link to="/category/69e7dd7bbfdbb023ad83b8bb" className="hover:underline">Unscented Cat Litters</Link></li>
             </ul>
           </div>
         </div>
