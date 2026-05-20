@@ -41,7 +41,7 @@ export default function WhyTrustUs() {
           {/* Left Content */}
           <div className="flex-1 flex flex-col gap-4 sm:gap-6">
             <p className="text-gray-700 text-sm sm:text-base md:text-lg font-medium leading-relaxed">
-              We're not just another faceless brand. We stay in touch with the pet parents and assist them in finding exactly what they're looking for.
+              We're not just another faceless brand. <br />We stay in touch with the pet parents and assist them in finding exactly what they're looking for.
             </p>
 
             {/* Trust Points - horizontal scroll on mobile */}
