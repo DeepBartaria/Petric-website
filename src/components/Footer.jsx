@@ -112,6 +112,14 @@ export default function Footer() {
               <li><Link to="/story" className="hover:underline">Our Story</Link></li>
               <li><Link to="/all-brands" className="hover:underline">All Brands</Link></li>
               <li><Link to="/all-categories" className="hover:underline">All Categories</Link></li>
+              <li className="pt-5">
+                <button
+                  onClick={() => window.open('/Petric-Brochure.pdf', '_blank')}
+                  className="bg-black text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-fit"
+                >
+                  Download Brochure
+                </button>
+              </li>
             </ul>
           </div>
           {/* Policies */}
