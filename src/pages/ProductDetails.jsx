@@ -252,7 +252,7 @@ export default function ProductDetails() {
       <main className="mx-auto max-w-[1400px] px-3 md:px-8 py-4 md:py-10">
 
         {/* Breadcrumb */}
-        <div className="mb-4 text-[10px] md:text-xs font-medium text-gray-400 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
+        <div className="mb-4 text-[10px] underline md:text-xs font-medium text-gray-400 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
           <span className="hover:text-black cursor-pointer transition-colors">Home</span>
           <span>/</span>
           <span className="hover:text-black cursor-pointer transition-colors">{categoryName}</span>
@@ -307,18 +307,28 @@ export default function ProductDetails() {
 
             {/* Title & Brand */}
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-xs md:text-sm font-bold text-gray-600">
-                by: {brandName}
-              </p>
+              
+                
+                {brandId && (
+                  <Link onClick={(e) => e.stopPropagation()}
+                    to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
+                    className="text-[10px] md:text-xs font-bold text-black hover:text-[#F5C400] transition-colors"
+                  >
+                    <p className="text-xs md:text-sm font-bold text-gray-600">
+                      By: <span className='underline '>{brandName}</span>
+                    </p>
+                  </Link>
+                )}
 
-              {brandId && (
+
+              {/* {brandId && (
                 <Link onClick={(e) => e.stopPropagation()}
                   to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
                   className="text-[10px] md:text-xs font-bold underline underline-offset-2 text-black hover:text-[#F5C400] transition-colors"
                 >
                   More by {brandName}
                 </Link>
-              )}
+              )} */}
             </div>
 
             {/* Pet parents social proof — replaces star rating */}

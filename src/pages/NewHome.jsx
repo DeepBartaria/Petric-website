@@ -352,7 +352,7 @@ export default function NewHome() {
         <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
           <div className="flex flex-col xl:flex-row items-center gap-4 md:gap-6 w-full xl:w-auto shrink-0">
             <h2 className="text-2xl md:text-4xl font-black text-black leading-tight text-center xl:text-left">
-              Hello, <br /> Pet Parent! 👋
+              Hello, Pet Parent 👋🏻
             </h2>
             {!user ? (
               <button 
