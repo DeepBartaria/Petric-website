@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiCheck, FiZap, FiPackage, FiClock } from 'react-icons/fi';
-import trustImg from '../assets/dog.png';
+import trustImg from '../assets/Cozy_moments.png';
 import { Link } from 'react-router-dom';
 
 const trustPoints = [
@@ -63,10 +63,8 @@ export default function WhyTrustUs() {
           </div>
 
           {/* Right Image - hidden on very small screens, shown on sm+ */}
-          <div className="hidden sm:block flex-1 w-full relative">
-            <div className="bg-gradient-to-br from-[#FFE5E5] to-[#FFF9E5] rounded-xl sm:rounded-2xl p-2 sm:p-4 h-[200px] sm:h-[280px] md:h-[350px] overflow-hidden relative shadow-lg sm:shadow-xl border-2 sm:border-4 border-white">
+          <div className="hidden sm:block flex-1 w-full relative border-white border-2 sm:border-4 rounded-2xl sm:rounded-[2rem] shadow-lg sm:shadow-xl overflow-hidden">
               <img src={trustImg} alt="Happy Pet Parent" className="w-full h-full object-cover rounded-lg sm:rounded-xl" />
-                          </div>
             {/* Decorative elements */}
             
           </div>

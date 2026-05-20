@@ -18,7 +18,7 @@ import { logPageVisit } from '../helper/analytics';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/oldimg.png';
-import banner3 from '../assets/banner/newimg.png';
+import HomePageSmallBanner from '../assets/banner/homepagesmallbanner.png';
 
 import pedigree from '../assets/pedigree.png';
 import drools from '../assets/drools.png';
@@ -217,7 +217,7 @@ export default function NewHome() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
             <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative cursor-pointer group">
-              <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <img src={HomePageSmallBanner} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
           </div>
@@ -234,7 +234,7 @@ export default function NewHome() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
           </div>
           <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
-            <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <img src={HomePageSmallBanner} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
           </div>
         </div>
