@@ -8,6 +8,7 @@ import AllBrands from './pages/AllBrands';
 import AllCategories from './pages/AllCategories';
 import Reorder from './pages/Reorder';
 import ProductDetails from './pages/ProductDetails';
+import SavedAddresses from './pages/SavedAddresses';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/*" element={<MainLayout />} />
         <Route path="/category/:categoryId" element={<CategoryPage />} />
+        <Route path="/saved-addresses" element={<SavedAddresses />} />
       </Routes>
       <WhatsAppStickyButton />
     </>

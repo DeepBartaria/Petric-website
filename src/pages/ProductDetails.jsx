@@ -7,7 +7,9 @@ import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
 import { get, post } from '../helper/api';
 import { Link } from 'react-router-dom';
-import { logPageVisit } from '../helper/analytics';
+import { addProductToBackendCart, getBackendProductCart } from '../api/cartApi';
+
+
 // Deterministic "random" number from product id so it doesn't change on re-render
 function getPetParentCount(id = '') {
   let hash = 0;
@@ -66,39 +68,89 @@ export default function ProductDetails() {
   const [mainImage, setMainImage] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [pendingCartProduct, setPendingCartProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [brandProducts, setBrandProducts] = useState([]);
+  
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
     window.addEventListener('openCart', handleOpenCart);
+
+    if (localStorage.getItem('petric_token')) {
+      syncCartFromBackend();
+    }
+
     return () => window.removeEventListener('openCart', handleOpenCart);
   }, []);
 
 
+  const isLoggedIn = () => Boolean(localStorage.getItem('petric_token'));
+
+  const syncCartFromBackend = async () => {
+    const response = await getBackendProductCart();
+
+    if (response?.type === 'success') {
+      setCartItems(response.cartItems);
+    } else {
+      setCartItems([]);
+    }
+  };
+
+  const addProductToCart = async (cartProduct) => {
+    const backendResponse = await addProductToBackendCart(cartProduct);
+
+    if (backendResponse?.type !== 'success') {
+      alert(backendResponse?.message || 'Failed to add product to cart');
+      return;
+    }
+
+    await syncCartFromBackend();
+    setIsCartOpen(true);
+  };
+
+  const openLoginForCart = (cartProduct) => {
+    setPendingCartProduct(cartProduct);
+    setIsCartOpen(true);
+    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
+
     const cartProduct = {
       id: product._id,
+      productId: product._id,
       img: product.productImage,
       brand: product.brand?.name || 'Petric',
       name: product.name,
+      description: product.description || '',
       weight: selectedSize ? selectedSize.name : '',
+      variantName: selectedSize ? selectedSize.name : '',
+      unit: selectedSize ? selectedSize.unit : '',
       price: (selectedSize?.discountedPrice || selectedSize?.originalPrice || product.originalPrice || 0).toString(),
       oldPrice: (selectedSize?.originalPrice || product.originalPrice || 0).toString(),
+      originalPrice: selectedSize?.originalPrice || product.originalPrice || 0,
+      discountedPrice: selectedSize?.discountedPrice || selectedSize?.originalPrice || product.originalPrice || 0,
       variantId: selectedSize ? selectedSize._id : null,
+      quantity,
     };
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === cartProduct.id && item.variantId === cartProduct.variantId);
-      if (existing) {
-        return prev.map(item =>
-          item.id === cartProduct.id && item.variantId === cartProduct.variantId
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prev, { ...cartProduct, quantity }];
-    });
-    setIsCartOpen(true);
+
+    if (!isLoggedIn()) {
+      openLoginForCart(cartProduct);
+      return;
+    }
+
+    addProductToCart(cartProduct);
+  };
+
+  const handleLoginSuccess = async () => {
+    if (pendingCartProduct) {
+      await addProductToCart(pendingCartProduct);
+      setPendingCartProduct(null);
+      return;
+    }
+
+    await syncCartFromBackend();
   };
 
   const handleUpdateQuantity = (id, newQuantity) => {
@@ -117,7 +169,6 @@ export default function ProductDetails() {
         if (res.type === 'success' && res.product) {
           const p = res.product;
           setProduct(p);
-          logPageVisit(`Visited product page: ${p.name}`);
           if (p.variants?.length > 0) setSelectedSize(p.variants[0]);
           setMainImage(p.productImage);
 
@@ -239,9 +290,14 @@ export default function ProductDetails() {
 
       <CartSidebar
         isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
+        onClose={() => {
+          setIsCartOpen(false);
+          setPendingCartProduct(null);
+        }}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
+        onLoginSuccess={handleLoginSuccess}
+        loginBackCloses={Boolean(pendingCartProduct)}
       />
       <CartFloatingButton
         cartItems={cartItems}
@@ -252,7 +308,7 @@ export default function ProductDetails() {
       <main className="mx-auto max-w-[1400px] px-3 md:px-8 py-4 md:py-10">
 
         {/* Breadcrumb */}
-        <div className="mb-4 text-[10px] underline md:text-xs font-medium text-gray-400 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
+        <div className="mb-4 text-[10px] md:text-xs font-medium text-gray-400 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
           <span className="hover:text-black cursor-pointer transition-colors">Home</span>
           <span>/</span>
           <span className="hover:text-black cursor-pointer transition-colors">{categoryName}</span>
@@ -300,35 +356,21 @@ export default function ProductDetails() {
                 <FiCheck className="h-3 w-3" /> Petric Assured
               </span>
             </div> */}
-            {/* Product Name */}
-            <h1 className="text-2xl md:text-4xl font-extrabold text-black leading-tight">
-              {product.name}
-            </h1>
 
             {/* Title & Brand */}
             <div className="flex items-center gap-2 flex-wrap">
-              
-                
-                {brandId && (
-                  <Link onClick={(e) => e.stopPropagation()}
-                    to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
-                    className="text-[10px] md:text-xs font-bold text-black hover:text-[#F5C400] transition-colors"
-                  >
-                    <p className="text-xs md:text-sm font-bold text-gray-600">
-                      By: <span className='underline '>{brandName}</span>
-                    </p>
-                  </Link>
-                )}
+              <p className="text-xs md:text-sm font-bold text-gray-600">
+                by: {brandName}
+              </p>
 
-
-              {/* {brandId && (
+              {brandId && (
                 <Link onClick={(e) => e.stopPropagation()}
                   to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
                   className="text-[10px] md:text-xs font-bold underline underline-offset-2 text-black hover:text-[#F5C400] transition-colors"
                 >
                   More by {brandName}
                 </Link>
-              )} */}
+              )}
             </div>
 
             {/* Pet parents social proof — replaces star rating */}

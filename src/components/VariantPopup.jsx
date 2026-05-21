@@ -26,10 +26,16 @@ export default function VariantPopup({ isOpen, onClose, product, onAddToCart }) 
     if (selectedVariant && product) {
       onAddToCart({
         ...product,
-        id: `${product.id}-${selectedVariant.weight}`,
+        id: `${product.id}-${selectedVariant.id}`,
+        productId: product.productId || product.id,
+        variantId: selectedVariant.id,
+        variantName: selectedVariant.weight,
         weight: selectedVariant.weight,
+        unit: selectedVariant.unit || '',
         price: selectedVariant.price,
         oldPrice: selectedVariant.oldPrice,
+        originalPrice: selectedVariant.originalPrice,
+        discountedPrice: selectedVariant.discountedPrice,
         discount: selectedVariant.discount
       });
       handleClose();

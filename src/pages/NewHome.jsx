@@ -14,11 +14,11 @@ import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import { FiChevronRight, FiChevronDown, FiGift, FiShield, FiStar} from 'react-icons/fi';
 import { get } from '../helper/api';
-import { logPageVisit } from '../helper/analytics';
+import { addProductToBackendCart, getBackendProductCart } from '../api/cartApi';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/oldimg.png';
-import HomePageSmallBanner from '../assets/banner/homepagesmallbanner.png';
+import banner3 from '../assets/banner/newimg.png';
 
 import pedigree from '../assets/pedigree.png';
 import drools from '../assets/drools.png';
@@ -53,6 +53,7 @@ export default function NewHome() {
   const [cartItems, setCartItems] = useState([]);
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
+  const [pendingCartProduct, setPendingCartProduct] = useState(null);
   const [homePageSections, setHomePageSections] = useState([]);
   const [brands, setBrands] = useState([]);
   const brandsScrollRef = useRef(null);
@@ -61,11 +62,20 @@ export default function NewHome() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('petric_user');
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+    const token = localStorage.getItem('petric_token');
 
-  useEffect(() => {
-    logPageVisit('Visited Home page');
+    if (storedUser) setUser(JSON.parse(storedUser));
+    if (token) syncCartFromBackend();
+
+    const handleOpenCart = () => {
+      setIsCartOpen(true);
+    };
+
+    window.addEventListener('openCart', handleOpenCart);
+
+    return () => {
+      window.removeEventListener('openCart', handleOpenCart);
+    };
   }, []);
 
   useEffect(() => {
@@ -91,6 +101,9 @@ export default function NewHome() {
               const variants = p.variants?.map(v => ({
                 id: v._id,
                 weight: v.name,
+                unit: v.unit || '',
+                originalPrice: v.originalPrice,
+                discountedPrice: v.discountedPrice,
                 price: `₹${v.discountedPrice}`,
                 oldPrice: `₹${v.originalPrice}`,
                 discount: Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
@@ -100,11 +113,18 @@ export default function NewHome() {
 
               return {
                 id: p._id,
+                productId: p._id,
+                variantId: defaultVariant.id || null,
+                variantName: defaultVariant.weight || '',
+                unit: defaultVariant.unit || '',
                 img: p.productImage,
                 name: p.name,
+                description: p.description || '',
                 weight: defaultVariant.weight || '',
                 price: defaultVariant.price || '',
                 oldPrice: defaultVariant.oldPrice || '',
+                originalPrice: defaultVariant.originalPrice,
+                discountedPrice: defaultVariant.discountedPrice,
                 discount: defaultVariant.discount || '',
                 variants: variants,
                 isBestSeller: p.isBestSeller,
@@ -147,15 +167,56 @@ export default function NewHome() {
 
   fetchBrands();
 
-  const handleAddToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
+  const isLoggedIn = () => Boolean(localStorage.getItem('petric_token'));
+
+  const openLoginForCart = (product) => {
+    setPendingCartProduct(product);
     setIsCartOpen(true);
+    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
+  };
+
+  const syncCartFromBackend = async () => {
+    const response = await getBackendProductCart();
+
+    if (response?.type === 'success') {
+      setCartItems(response.cartItems);
+    } else {
+      setCartItems([]);
+    }
+  };
+
+  const addProductToCart = async (product) => {
+    const backendResponse = await addProductToBackendCart(product);
+
+    if (backendResponse?.type !== 'success') {
+      alert(backendResponse?.message || 'Failed to add product to cart');
+      return;
+    }
+
+    await syncCartFromBackend();
+    setIsCartOpen(true);
+  };
+
+  const handleAddToCart = (product) => {
+    if (!isLoggedIn()) {
+      openLoginForCart(product);
+      return;
+    }
+
+    addProductToCart(product);
+  };
+
+  const handleLoginSuccess = async () => {
+    const storedUser = localStorage.getItem('petric_user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+
+    if (pendingCartProduct) {
+      await addProductToCart(pendingCartProduct);
+      setPendingCartProduct(null);
+      return;
+    }
+
+    await syncCartFromBackend();
   };
 
   const handleUpdateQuantity = (id, newQuantity) => {
@@ -173,9 +234,14 @@ export default function NewHome() {
 
       <CartSidebar
         isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
+        onClose={() => {
+          setIsCartOpen(false);
+          setPendingCartProduct(null);
+        }}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
+        onLoginSuccess={handleLoginSuccess}
+        loginBackCloses={Boolean(pendingCartProduct)}
       />
 
       <OrdersSidebar
@@ -217,7 +283,7 @@ export default function NewHome() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
             <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative cursor-pointer group">
-              <img src={HomePageSmallBanner} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
           </div>
@@ -234,7 +300,7 @@ export default function NewHome() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
           </div>
           <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
-            <img src={HomePageSmallBanner} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
           </div>
         </div>
@@ -251,12 +317,9 @@ export default function NewHome() {
             {brandsScrollPos > 0 && (
               <button
                 onClick={() => brandsScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
-                className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-black p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-200 hover:scale-110"
               >
-                <FiChevronRight
-                  className="h-5 w-5 text-[#FFD000] rotate-180"
-                  strokeWidth={3}
-                />
+                <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
               </button>
             )}
 
@@ -355,7 +418,7 @@ export default function NewHome() {
         <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
           <div className="flex flex-col xl:flex-row items-center gap-4 md:gap-6 w-full xl:w-auto shrink-0">
             <h2 className="text-2xl md:text-4xl font-black text-black leading-tight text-center xl:text-left">
-              Hello, Pet Parent 👋🏻
+              Hello, <br /> Pet Parent! 👋
             </h2>
             {!user ? (
               <button 

@@ -239,6 +239,22 @@ export default function NewHomeNavbar() {
     const handleDeliveryTimeUpdate = (e) => setDeliveryTime(e.detail);
     window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
 
+    const handlePetricLoginSuccess = (e) => {
+      if (e.detail?.user) {
+        setUser(e.detail.user);
+        return;
+      }
+
+      const storedUser = localStorage.getItem('petric_user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (error) {}
+      }
+    };
+
+    window.addEventListener('petricLoginSuccess', handlePetricLoginSuccess);
+
     const intervalId = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % placeholders.length);
     }, 3000);
@@ -246,6 +262,7 @@ export default function NewHomeNavbar() {
     return () => {
       clearInterval(intervalId);
       window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+      window.removeEventListener('petricLoginSuccess', handlePetricLoginSuccess);
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     };
   }, []);
@@ -503,7 +520,11 @@ export default function NewHomeNavbar() {
             <button 
               onClick={() => {
                 if (!user) {
-                  window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
+                  window.dispatchEvent(
+                    new CustomEvent('openCart', {
+                      detail: { step: 'mobile', mode: 'loginOnly' },
+                    })
+                  );
                 }
               }}
               className="flex flex-row items-center gap-1.5 text-gray-800 hover:text-black border border-gray-400 rounded-full px-4 py-2 transition-all duration-300 hover:scale-105 hover:border-black hover:shadow-sm bg-white"
@@ -519,6 +540,12 @@ export default function NewHomeNavbar() {
                     className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 font-medium transition-colors"
                   >
                     Your Profile
+                  </button>
+                  <button
+                    onClick={() => navigate('/saved-addresses')}
+                    className="block w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Saved Address
                   </button>
                   <button
                     onClick={() => {
@@ -572,6 +599,17 @@ export default function NewHomeNavbar() {
                   >
                     Your Profile
                   </button>
+
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate('/saved-addresses');
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Saved Address
+                  </button>
+
                   <button
                     onClick={() => {
                       localStorage.removeItem('petric_user');

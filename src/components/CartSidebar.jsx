@@ -1,13 +1,64 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { FiArrowLeft, FiShare2, FiInfo, FiPlus, FiMinus, FiChevronRight, FiCheck, FiMapPin, FiNavigation } from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import {
+  FiArrowLeft,
+  FiShare2,
+  FiInfo,
+  FiPlus,
+  FiMinus,
+  FiChevronRight,
+  FiCheck,
+  FiHome,
+  FiBriefcase,
+  FiMapPin,
+  FiNavigation,
+  FiLoader,
+} from 'react-icons/fi';
+
 import { BsClockHistory } from 'react-icons/bs';
-import { post, get, put } from '../helper/api';
-import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
+import { post, get, put, del } from '../helper/api';
+import {
+  addSavedAddress,
+  getSavedAddresses,
+  setDefaultAddress,
+} from '../api/addressApi';
 
-const GMAPS_LIBRARIES = ['places'];
-const DEFAULT_MAP_CENTER = { lat: 28.6139, lng: 77.2090 };
+import { getBackendProductCart } from '../api/cartApi';
 
-export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuantity }) {
+const ADDRESS_TYPES = {
+  1: { label: 'Home', icon: FiHome },
+  2: { label: 'Work', icon: FiBriefcase },
+  3: { label: 'Others', icon: FiMapPin },
+};
+
+const emptyAddressForm = {
+  username: '',
+  mobileNo: '',
+  fullAddress: '',
+  landmark: '',
+  pincode: '',
+  area: '',
+  city: '',
+  state: '',
+  country: 'India',
+  type: '1',
+  lat: '',
+  lng: '',
+  address: '',
+};
+
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('petric_user')) || {};
+  } catch {
+    return {};
+  }
+};
+
+const getAddressPart = (components, type) => {
+  return components.find((item) => item.types.includes(type))?.long_name || '';
+};
+
+export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuantity, onLoginSuccess, loginBackCloses = false }) {
   const totalMrp = cartItems.reduce((total, item) => {
     const priceStr = item.oldPrice ? item.oldPrice : item.price;
     const numericPrice = parseInt(priceStr.replace('₹', '').replace(',', '')) || 0;
@@ -26,28 +77,20 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const [otpValue, setOtpValue] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginOnlyMode, setLoginOnlyMode] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [addressForm, setAddressForm] = useState(emptyAddressForm);
+  const [isAddressSaving, setIsAddressSaving] = useState(false);
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
+  const [addressError, setAddressError] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [isCouponsLoading, setIsCouponsLoading] = useState(false);
-
-  // Address state
-  const [savedAddresses, setSavedAddresses] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [isAddressLoading, setIsAddressLoading] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    fullName: '', petName: '', petType: '', fullAddress: '',
-    landmark: '', pincode: '', mobileNumber: '', addressType: 'Home'
-  });
-  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
-  const [markerPos, setMarkerPos] = useState(null);
-  const [isFetchingGPS, setIsFetchingGPS] = useState(false);
-  const mapRef = useRef(null);
-  const autocompleteRef = useRef(null);
-  const addressInputRef = useRef(null);
-  const [isSavingAddress, setIsSavingAddress] = useState(false);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -63,18 +106,178 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const totalPayable = itemsTotal - couponDiscount;
   const [deliveryTime, setDeliveryTime] = useState(16);
 
-  const { isLoaded: isMapsLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: GMAPS_LIBRARIES,
-  });
+  const loadSavedAddresses = async () => {
+    const token = localStorage.getItem('petric_token');
+    if (!token) return;
+
+    setIsAddressLoading(true);
+
+    const response = await getSavedAddresses();
+    const addressList = response?.type === 'success' ? response.address || [] : [];
+
+    setSavedAddresses(addressList);
+
+    setSelectedAddress((currentAddress) => {
+      if (currentAddress) {
+        const stillExists = addressList.find((item) => item._id === currentAddress._id);
+        if (stillExists) return stillExists;
+      }
+
+      return addressList.find((item) => item.isDefault) || addressList[0] || null;
+    });
+
+    setIsAddressLoading(false);
+  };
+
+  const openAddAddressForm = () => {
+    const user = getStoredUser();
+
+    setAddressError('');
+    setAddressForm({
+      ...emptyAddressForm,
+      username: user?.name || user?.username || '',
+      mobileNo: user?.mobileNo || user?.mobile || '',
+    });
+
+    setCheckoutStep('addAddress');
+  };
+
+  const handleAddressChange = (field, value) => {
+    setAddressForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleDetectAddressLocation = () => {
+    if (!navigator.geolocation) {
+      setAddressError('Location is not supported in this browser.');
+      return;
+    }
+
+    setIsLocationLoading(true);
+    setAddressError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        try {
+          const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+          let detectedAddress = { lat, lng };
+
+          if (apiKey) {
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            const result = data.results?.[0];
+
+            if (result) {
+              const components = result.address_components || [];
+
+              detectedAddress = {
+                lat,
+                lng,
+                address: result.formatted_address || '',
+                pincode: getAddressPart(components, 'postal_code'),
+                city:
+                  getAddressPart(components, 'locality') ||
+                  getAddressPart(components, 'administrative_area_level_3'),
+                state: getAddressPart(components, 'administrative_area_level_1'),
+                area:
+                  getAddressPart(components, 'sublocality_level_1') ||
+                  getAddressPart(components, 'sublocality_level_2'),
+                landmark:
+                  getAddressPart(components, 'premise') ||
+                  getAddressPart(components, 'neighborhood'),
+              };
+            }
+          }
+
+          setAddressForm((prev) => ({
+            ...prev,
+            ...detectedAddress,
+          }));
+        } catch {
+          setAddressForm((prev) => ({
+            ...prev,
+            lat,
+            lng,
+          }));
+        }
+
+        setIsLocationLoading(false);
+      },
+      () => {
+        setAddressError('Please allow location permission to detect your address.');
+        setIsLocationLoading(false);
+      }
+    );
+  };
+
+  const handleSaveCheckoutAddress = async (event) => {
+    event.preventDefault();
+
+    if (
+      !addressForm.username ||
+      !addressForm.mobileNo ||
+      !addressForm.fullAddress ||
+      !addressForm.pincode
+    ) {
+      setAddressError('Please fill full name, mobile number, full address and pincode.');
+      return;
+    }
+
+    setIsAddressSaving(true);
+    setAddressError('');
+
+    try {
+      const response = await addSavedAddress({
+        ...addressForm,
+        type: String(addressForm.type),
+        country: addressForm.country || 'India',
+      });
+
+      if (response?.type === 'success') {
+        const newAddress = response.address;
+
+        if (newAddress?._id) {
+          setSelectedAddress(newAddress);
+        }
+
+        await loadSavedAddresses();
+        setCheckoutStep('cart');
+      } else {
+        setAddressError(response?.message || 'Could not save address.');
+      }
+    } catch (error) {
+      setAddressError('Could not save address. Please try again.');
+    } finally {
+      setIsAddressSaving(false);
+    }
+  };
+
+  const handleSelectAddress = async (address) => {
+    setSelectedAddress(address);
+
+    if (!address.isDefault) {
+      await setDefaultAddress(address._id);
+      await loadSavedAddresses();
+    }
+
+    setCheckoutStep('cart');
+  };
 
   const isMobileValid = mobileNumber.length === 10;
   const isOtpValid = otpValue.length === 4;
 
   useEffect(() => {
-    if (localStorage.getItem('petric_token')) {
-      setIsLoggedIn(true);
+    const token = localStorage.getItem('petric_token');
+    setIsLoggedIn(Boolean(token));
+
+    if (isOpen && token) {
+      loadSavedAddresses();
     }
     
     const storedDeliveryTime = localStorage.getItem('petric_delivery_time');
@@ -87,6 +290,8 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     };
 
     const handleOpenCart = (e) => {
+      setLoginOnlyMode(e.detail?.mode === 'loginOnly');
+
       if (e.detail?.step) {
         setCheckoutStep(e.detail.step);
       }
@@ -97,6 +302,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     
     if (!isOpen) {
       setCheckoutStep('cart');
+      setLoginOnlyMode(false);
       setMobileNumber('');
       setOtpValue('');
       setResendTimer(60);
@@ -121,11 +327,26 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   }, [checkoutStep, resendTimer]);
 
   const handleBack = () => {
-    if (checkoutStep === 'addAddress') { setCheckoutStep('selectAddress'); return; }
-    if (checkoutStep === 'selectAddress') { setCheckoutStep('cart'); return; }
-    if (checkoutStep === 'otp') { setCheckoutStep('mobile'); return; }
-    if (checkoutStep === 'mobile') { setCheckoutStep('cart'); return; }
-    if (checkoutStep === 'coupons') { setCheckoutStep('cart'); return; }
+    if (checkoutStep === 'addresses' || checkoutStep === 'addAddress') {
+      setCheckoutStep('cart');
+      return;
+    }
+
+    if (checkoutStep === 'otp') {
+      setCheckoutStep('mobile');
+      return;
+    }
+
+    if (checkoutStep === 'mobile') {
+      if (loginBackCloses || loginOnlyMode) {
+        onClose();
+        return;
+      }
+
+      setCheckoutStep('cart');
+      return;
+    }
+
     onClose();
   };
 
@@ -187,9 +408,31 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     try {
       const res = await post('user/verifyOtp', { mobileNo: mobileNumber, otp: otpValue, type: 'user' });
       if (res && res.type === 'success') {
+        const loggedInUser = {
+          _id: res._id,
+          name: res.name,
+          mobileNo: res.mobileNo,
+        };
+
         localStorage.setItem('petric_token', res.token);
-        localStorage.setItem('petric_user', JSON.stringify({ _id: res._id, name: res.name, mobileNo: res.mobileNo }));
+        localStorage.setItem('petric_user', JSON.stringify(loggedInUser));
+
         setIsLoggedIn(true);
+
+        window.dispatchEvent(
+          new CustomEvent('petricLoginSuccess', {
+            detail: { user: loggedInUser },
+          })
+        );
+
+        onLoginSuccess?.(loggedInUser);
+
+        if (loginOnlyMode) {
+          setLoginOnlyMode(false);
+          onClose();
+          return;
+        }
+
         setCheckoutStep('cart');
       } else {
         alert(res?.message || 'Invalid OTP');
@@ -198,76 +441,160 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       alert('An error occurred. Please try again.');
     }
   };
+
+  const formatBookingDate = () => {
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
+  const createBooking = async (deliveryLat, deliveryLng) => {
+    const cartResponse = await getBackendProductCart();
+
+    if (cartResponse?.type !== 'success' || !cartResponse.cart?._id) {
+      return {
+        type: 'error',
+        message: cartResponse?.message || 'Cart not found. Please add product again.',
+      };
+    }
+
+    const bookingPayload = {
+      type: '3',
+      status: 'awaitingPayment',
+      totalPrice: itemsTotal,
+      totalPayable,
+      couponDiscountedAmount: couponDiscount > 0 ? couponDiscount : undefined,
+      platformFee: 0,
+      deliveryCharge: 0,
+      paymentType: 'Online',
+      isLivePaymentTest: false,
+      date: formatBookingDate(),
+      typeOfBooking: 'Order',
+      address: selectedAddress._id,
+      lat: deliveryLat,
+      lng: deliveryLng,
+      cartId: cartResponse.cart._id,
+    };
+
+    return await post('booking/add/webhook/test', bookingPayload, {
+      headers: {
+        Authorization: localStorage.getItem('petric_token'),
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
   const handlePayment = async () => {
+    if (!selectedAddress) {
+      if (savedAddresses.length > 0) {
+        setCheckoutStep('addresses');
+      } else {
+        openAddAddressForm();
+      }
+      return;
+    }
+
+    const deliveryLat = Number(selectedAddress.lat);
+    const deliveryLng = Number(selectedAddress.lng);
+
+    if (!deliveryLat || !deliveryLng) {
+      alert('Selected address needs location. Please add address again using current location.');
+      return;
+    }
+
+    const bookingResponse = await createBooking(deliveryLat, deliveryLng);
+
+    if (bookingResponse?.type !== 'success' || !bookingResponse.booking?._id) {
+      alert(bookingResponse?.message || 'Failed to create booking');
+      return;
+    }
+
     const res = await loadRazorpayScript();
-    
+
     if (!res) {
       alert('Razorpay SDK failed to load. Are you online?');
       return;
     }
 
+    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+    if (!razorpayKey) {
+      alert('Razorpay key is missing.');
+      return;
+    }
+
+    const user = getStoredUser();
+    const booking = bookingResponse.booking;
+
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sq3zLrq0lg5vDL',
-      amount: totalPayable * 100, // Amount in paise
+      key: razorpayKey,
+      amount: totalPayable * 100,
       currency: 'INR',
       name: 'Petric',
-      description: 'Test Transaction',
-      image: '/logo.png', // Assuming a logo is available
-      handler: async function (response) {
-        try {
-          const bookingData = {
-            type: "3", // FoodShop / products
-            typeOfBooking: "Order",
-            totalPayable: totalPayable,
-            totalPrice: itemsTotal,
-            couponDiscountedAmount: couponDiscount,
-            paymentId: response.razorpay_payment_id,
-            isLivePaymentTest: true,
-            lat: 28.6139, // Default Delhi coordinate, since backend requires it
-            lng: 77.2090,
-            products: cartItems.map(item => ({
-              productId: item.id,
-              productName: item.name,
-              variantId: item.variantId || null,
-              variantName: item.weight || null,
-              quantity: item.quantity,
-              originalAmount: parseInt(item.oldPrice?.toString().replace(/\\D/g, '')) || 0,
-              discountAmount: (parseInt(item.oldPrice?.toString().replace(/\\D/g, '')) || 0) - (parseInt(item.price?.toString().replace(/\\D/g, '')) || 0),
-            })),
-          };
-          
-          const backendRes = await post('booking/add', bookingData, {
-            headers: { Authorization: localStorage.getItem('petric_token') }
-          });
-
-          if (backendRes && backendRes.type === 'success') {
-            try {
-              await post('logs/add', {
-                description: `Placed an order of ₹${totalPayable}`,
-                type: "Order"
-              }, {
-                headers: { Authorization: localStorage.getItem('petric_token') }
-              });
-            } catch (logErr) {
-              console.error("Failed to log order:", logErr);
-            }
-
-            setPaymentSuccess(true);
-            setTimeout(() => {
-               setPaymentSuccess(false);
-               onClose(); // Close the cart after successful payment
-               // Ideally empty the cart here as well
-            }, 3000);
-          } else {
-            alert(backendRes?.message || 'Payment completed, but failed to create order in database.');
-          }
-        } catch (error) {
-          alert('Error creating order in database: ' + error.message);
-        }
+      description: 'Petric Order',
+      image: '/logo.png',
+      notes: {
+        bookingId: booking._id,
+        contact: user?.mobileNo || '',
+        name: user?.name || '',
       },
       prefill: {
-        name: 'Petric User',
-        contact: mobileNumber || '9999999999',
+        name: user?.name || 'Petric User',
+        contact: user?.mobileNo || '',
+      },
+      handler: async function (response) {
+        const paymentId = response.razorpay_payment_id;
+
+        await put(
+          `booking/update/${booking._id}`,
+          {
+            status: 'accepted',
+            paymentStatus: 'paid',
+            paymentId,
+            razorpayPaymentId: paymentId,
+            razorpayPaymentStatus: 'PAID',
+            paymentMode: 'RzrPay',
+          },
+          {
+            headers: {
+              Authorization: localStorage.getItem('petric_token'),
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        await del('cart/delete?type=2', {
+          headers: {
+            Authorization: localStorage.getItem('petric_token'),
+          },
+        });
+
+        try {
+          await post(
+            'logs/add',
+            {
+              description: `Placed an order of ₹${totalPayable}`,
+              type: 'Order',
+            },
+            {
+              headers: {
+                Authorization: localStorage.getItem('petric_token'),
+              },
+            }
+          );
+        } catch (logErr) {
+          console.error('Failed to log order:', logErr);
+        }
+
+        setPaymentSuccess(true);
+
+        setTimeout(() => {
+          setPaymentSuccess(false);
+          onClose();
+        }, 3000);
       },
       theme: {
         color: '#FFD000',
@@ -275,9 +602,11 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     };
 
     const paymentObject = new window.Razorpay(options);
+
     paymentObject.on('payment.failed', function (response) {
       alert(`Payment failed: ${response.error.description}`);
     });
+
     paymentObject.open();
   };
 
@@ -339,110 +668,6 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const handleApplyCoupon = () => applySpecificCoupon(couponCode);
   // (handleApplyCoupon contents moved to applySpecificCoupon)
 
-  const fetchAddresses = async () => {
-    setIsAddressLoading(true);
-    try {
-      const token = localStorage.getItem('petric_token');
-      if (!token) return;
-      const res = await get('address/list/forUser', { headers: { Authorization: token } });
-      if (res && res.type === 'success' && res.addresses) {
-        setSavedAddresses(res.addresses);
-        if (res.addresses.length > 0 && !selectedAddressId) {
-          setSelectedAddressId(res.addresses[0]._id);
-        }
-      }
-    } catch (e) { console.error('fetchAddresses', e); }
-    setIsAddressLoading(false);
-  };
-
-  const reverseGeocode = (lat, lng) => {
-    if (!window.google) return;
-    const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-      if (status === 'OK' && results[0]) {
-        const comps = results[0].address_components;
-        let landmark = '', pincode = '', fullAddress = results[0].formatted_address;
-        comps.forEach(c => {
-          if (c.types.includes('sublocality_level_1') || c.types.includes('neighborhood')) landmark = c.long_name;
-          if (c.types.includes('postal_code')) pincode = c.long_name;
-        });
-        setNewAddress(prev => ({
-          ...prev,
-          fullAddress: prev.fullAddress || fullAddress,
-          landmark: prev.landmark || landmark,
-          pincode: prev.pincode || pincode,
-        }));
-        if (addressInputRef.current && !addressInputRef.current.value) {
-          addressInputRef.current.value = fullAddress;
-        }
-      }
-    });
-  };
-
-  const handleMapClick = useCallback((e) => {
-    const lat = e.latLng.lat(), lng = e.latLng.lng();
-    setMarkerPos({ lat, lng });
-    reverseGeocode(lat, lng);
-  }, []);
-
-  const handleUseMyLocation = () => {
-    if (!navigator.geolocation) return;
-    setIsFetchingGPS(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setMarkerPos(loc);
-        setMapCenter(loc);
-        if (mapRef.current) { mapRef.current.panTo(loc); mapRef.current.setZoom(15); }
-        reverseGeocode(loc.lat, loc.lng);
-        setIsFetchingGPS(false);
-      },
-      () => setIsFetchingGPS(false),
-      { timeout: 10000 }
-    );
-  };
-
-  const handlePlaceChanged = () => {
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace();
-      if (place.geometry?.location) {
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const loc = { lat, lng };
-        setMarkerPos(loc);
-        setMapCenter(loc);
-        if (mapRef.current) { mapRef.current.panTo(loc); mapRef.current.setZoom(15); }
-        reverseGeocode(lat, lng);
-      }
-    }
-  };
-
-  const handleSaveAddress = async () => {
-    if (!newAddress.fullName || !newAddress.fullAddress) {
-      alert('Full Name and Full Address are required.');
-      return;
-    }
-    setIsSavingAddress(true);
-    try {
-      const token = localStorage.getItem('petric_token');
-      const payload = {
-        ...newAddress,
-        lat: markerPos?.lat,
-        lng: markerPos?.lng,
-      };
-      const res = await post('address/add', payload, { headers: { Authorization: token } });
-      if (res && res.type === 'success') {
-        await fetchAddresses();
-        setNewAddress({ fullName: '', petName: '', petType: '', fullAddress: '', landmark: '', pincode: '', mobileNumber: '', addressType: 'Home' });
-        setMarkerPos(null);
-        setCheckoutStep('selectAddress');
-      } else {
-        alert(res?.message || 'Failed to save address');
-      }
-    } catch (e) { alert('Error saving address'); }
-    setIsSavingAddress(false);
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -462,7 +687,15 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
             <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
               <FiArrowLeft className="h-6 w-6 text-black" strokeWidth={2.5} />
             </button>
-            <h2 className="text-xl font-bold text-black">My Cart</h2>
+            <h2 className="text-xl font-bold text-black">
+              {checkoutStep === 'mobile' || checkoutStep === 'otp'
+                ? 'Login'
+                : checkoutStep === 'addresses'
+                  ? 'Select Address'
+                  : checkoutStep === 'addAddress'
+                    ? 'Add Address'
+                    : 'My Cart'}
+            </h2>
           </div>
         </div>
 
@@ -596,40 +829,6 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                 </div>
               </div>
 
-              {/* Select Address */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-black flex items-center gap-2">
-                    <FiMapPin className="text-[#FFD000]" /> Deliver To
-                  </h3>
-                  <button
-                    onClick={() => { fetchAddresses(); setCheckoutStep('selectAddress'); }}
-                    className="text-blue-600 text-xs font-bold hover:underline"
-                  >
-                    Change
-                  </button>
-                </div>
-                {selectedAddressId && savedAddresses.length > 0 ? (
-                  (() => {
-                    const a = savedAddresses.find(x => x._id === selectedAddressId);
-                    return a ? (
-                      <div className="text-sm text-gray-700">
-                        <span className="bg-[#FFF9CC] text-black text-[10px] font-bold px-2 py-0.5 rounded-full mr-2">{a.addressType || 'Home'}</span>
-                        <span className="font-semibold">{a.fullName}</span>
-                        <p className="mt-1 text-gray-500 text-xs leading-snug">{a.fullAddress}{a.landmark ? `, ${a.landmark}` : ''}{a.pincode ? ` - ${a.pincode}` : ''}</p>
-                      </div>
-                    ) : null;
-                  })()
-                ) : (
-                  <button
-                    onClick={() => { fetchAddresses(); setCheckoutStep('selectAddress'); }}
-                    className="w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm font-bold text-gray-400 hover:border-[#FFD000] hover:text-black transition-colors"
-                  >
-                    + Add Delivery Address
-                  </button>
-                )}
-              </div>
-
               {/* Cancellation Policy */}
               <div className="bg-white rounded-2xl p-4 shadow-sm">
                 <h3 className="font-bold text-black mb-2">Cancellation Policy</h3>
@@ -687,28 +886,252 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
               </div>
             </div>
           )}
+          {checkoutStep === 'addresses' && (
+            <div className="flex flex-col gap-3">
+              {isAddressLoading ? (
+                <div className="bg-white rounded-2xl p-5 text-center text-gray-500">
+                  Loading addresses...
+                </div>
+              ) : (
+                <>
+                  {savedAddresses.map((address) => {
+                    const meta = ADDRESS_TYPES[address.type] || ADDRESS_TYPES[3];
+                    const Icon = meta.icon;
+                    const isSelected = selectedAddress?._id === address._id;
+
+                    return (
+                      <button
+                        key={address._id}
+                        type="button"
+                        onClick={() => handleSelectAddress(address)}
+                        className={`bg-white rounded-2xl p-4 text-left shadow-sm border ${
+                          isSelected ? 'border-black' : 'border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-full bg-[#FFF9CC] flex items-center justify-center shrink-0">
+                            <Icon className="text-black" />
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-black">{meta.label}</p>
+                              {address.isDefault && (
+                                <span className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-gray-500 mt-1">
+                              {address.username} | {address.mobileNo}
+                            </p>
+
+                            <p className="text-sm text-gray-700 mt-2 leading-5">
+                              {address.fullAddress}
+                            </p>
+
+                            <p className="text-xs text-gray-500 mt-1">
+                              {[address.landmark, address.area, address.city, address.pincode]
+                                .filter(Boolean)
+                                .join(', ')}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    type="button"
+                    onClick={openAddAddressForm}
+                    className="w-full bg-[#FFD000] text-black rounded-xl p-4 font-bold flex items-center justify-center gap-2"
+                  >
+                    <FiPlus />
+                    Add New Address
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {checkoutStep === 'addAddress' && (
+            <form onSubmit={handleSaveCheckoutAddress} className="bg-white rounded-2xl p-4 shadow-sm">
+              <button
+                type="button"
+                onClick={handleDetectAddressLocation}
+                className="mb-4 w-full border border-black rounded-xl p-3 font-bold text-black flex items-center justify-center gap-2"
+              >
+                {isLocationLoading ? <FiLoader className="animate-spin" /> : <FiNavigation />}
+                Use current location
+              </button>
+
+              {addressError && (
+                <p className="mb-3 text-sm text-red-600 font-medium">{addressError}</p>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <input
+                  value={addressForm.username}
+                  onChange={(e) => handleAddressChange('username', e.target.value)}
+                  placeholder="Full name"
+                  className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                />
+
+                <input
+                  value={addressForm.mobileNo}
+                  onChange={(e) => handleAddressChange('mobileNo', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  placeholder="Mobile number"
+                  className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                />
+
+                <textarea
+                  value={addressForm.fullAddress}
+                  onChange={(e) => handleAddressChange('fullAddress', e.target.value)}
+                  placeholder="Full address"
+                  rows="3"
+                  className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                />
+
+                <input
+                  value={addressForm.landmark}
+                  onChange={(e) => handleAddressChange('landmark', e.target.value)}
+                  placeholder="Landmark"
+                  className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    value={addressForm.area}
+                    onChange={(e) => handleAddressChange('area', e.target.value)}
+                    placeholder="Area"
+                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                  />
+
+                  <input
+                    value={addressForm.pincode}
+                    onChange={(e) => handleAddressChange('pincode', e.target.value)}
+                    placeholder="Pincode"
+                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                  />
+
+                  <input
+                    value={addressForm.city}
+                    onChange={(e) => handleAddressChange('city', e.target.value)}
+                    placeholder="City"
+                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                  />
+
+                  <input
+                    value={addressForm.state}
+                    onChange={(e) => handleAddressChange('state', e.target.value)}
+                    placeholder="State"
+                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-sm font-bold text-gray-700 mb-2">Save address as</p>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {Object.entries(ADDRESS_TYPES).map(([type, meta]) => {
+                      const Icon = meta.icon;
+                      const isActive = addressForm.type === type;
+
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => handleAddressChange('type', type)}
+                          className={`rounded-xl border p-3 text-sm font-bold flex items-center justify-center gap-1 ${
+                            isActive
+                              ? 'bg-[#FFD000] border-black text-black'
+                              : 'border-gray-300 text-gray-700'
+                          }`}
+                        >
+                          <Icon />
+                          {meta.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isAddressSaving}
+                  className="w-full bg-black text-white rounded-xl p-4 font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {isAddressSaving && <FiLoader className="animate-spin" />}
+                  Save Address
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         {checkoutStep === 'cart' && (
-          <div className="absolute bottom-0 w-full p-4 bg-[#f8f9fa] border-t">
+          <div className="absolute bottom-0 w-full p-4 bg-white border-t shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+            {isLoggedIn && selectedAddress && (
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-700">
+                    Delivering to{' '}
+                    <span className="font-bold text-black">
+                      {(ADDRESS_TYPES[selectedAddress.type] || ADDRESS_TYPES[3]).label}
+                    </span>
+                  </p>
+
+                  <p className="text-sm text-gray-500 line-clamp-1">
+                    {selectedAddress.fullAddress}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep('addresses')}
+                  className="shrink-0 text-sm font-bold text-black"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => {
-                if (isLoggedIn) {
-                  handlePayment();
-                } else {
+                if (!isLoggedIn) {
                   setCheckoutStep('mobile');
+                  return;
                 }
+
+                if (!selectedAddress) {
+                  openAddAddressForm();
+                  return;
+                }
+
+                handlePayment();
               }}
               className="w-full bg-[#FFD000] hover:bg-[#ffdb33] text-black rounded-xl p-4 flex items-center justify-between transition-colors shadow-md"
             >
-              <div className="flex flex-col items-start">
-                <span className="font-bold text-lg leading-tight">₹{totalPayable}</span>
-                <span className="text-[10px] font-bold tracking-wider">TOTAL</span>
-              </div>
-              <div className="flex items-center gap-1 font-medium text-lg">
-                {isLoggedIn ? 'Proceed to Checkout' : 'Login to Proceed'} <FiChevronRight className="h-5 w-5" strokeWidth={2.5} />
-              </div>
+              {isLoggedIn && !selectedAddress ? (
+                <div className="w-full flex items-center justify-center gap-2 font-bold text-lg">
+                  <FiPlus />
+                  Add Address
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col items-start">
+                    <span className="font-bold text-lg leading-tight">₹{totalPayable}</span>
+                    <span className="text-[10px] font-bold tracking-wider">TOTAL</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 font-medium text-lg">
+                    {isLoggedIn ? 'Proceed to Checkout' : 'Login to Proceed'}
+                    <FiChevronRight className="h-5 w-5" strokeWidth={2.5} />
+                  </div>
+                </>
+              )}
             </button>
           </div>
         )}
@@ -803,126 +1226,6 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   );
                 })
               )}
-            </div>
-          </div>
-        )}
-
-        {checkoutStep === 'selectAddress' && (
-          <div className="absolute inset-0 bg-[#f8f9fa] z-20 flex flex-col overflow-hidden">
-            <div className="flex items-center gap-3 p-4 bg-white border-b sticky top-0 z-10">
-              <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-full"><FiArrowLeft className="h-6 w-6" strokeWidth={2.5} /></button>
-              <h2 className="text-xl font-bold text-black">Select Address</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-              {isAddressLoading ? (
-                <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-4 border-[#FFD000] border-t-transparent" /></div>
-              ) : savedAddresses.length === 0 ? (
-                <p className="text-center text-gray-400 py-10 text-sm">No saved addresses yet.</p>
-              ) : (
-                savedAddresses.map(a => (
-                  <button
-                    key={a._id}
-                    onClick={() => { setSelectedAddressId(a._id); setCheckoutStep('cart'); }}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                      selectedAddressId === a._id ? 'border-[#FFD000] bg-[#FFFDE8]' : 'border-gray-100 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="bg-[#FFF9CC] text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{a.addressType || 'Home'}</span>
-                      {selectedAddressId === a._id && <FiCheck className="text-[#B8860B] h-4 w-4" />}
-                    </div>
-                    <p className="font-bold text-sm text-black">{a.fullName}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-snug">{a.fullAddress}{a.landmark ? `, ${a.landmark}` : ''}{a.pincode ? ` - ${a.pincode}` : ''}</p>
-                    {a.mobileNumber && <p className="text-xs text-gray-400 mt-1">{a.mobileNumber}</p>}
-                  </button>
-                ))
-              )}
-              <button
-                onClick={() => setCheckoutStep('addAddress')}
-                className="w-full border-2 border-dashed border-gray-200 rounded-xl py-4 text-sm font-bold text-gray-400 hover:border-[#FFD000] hover:text-black transition-colors mt-1"
-              >
-                + Add New Address
-              </button>
-            </div>
-          </div>
-        )}
-
-        {checkoutStep === 'addAddress' && (
-          <div className="absolute inset-0 bg-[#f8f9fa] z-20 flex flex-col overflow-hidden">
-            <div className="flex items-center gap-3 p-4 bg-white border-b sticky top-0 z-10">
-              <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-full"><FiArrowLeft className="h-6 w-6" strokeWidth={2.5} /></button>
-              <h2 className="text-xl font-bold text-black">Save Address</h2>
-            </div>
-
-            {/* Mini Map */}
-            <div className="h-44 w-full relative shrink-0">
-              {isMapsLoaded ? (
-                <>
-                  <GoogleMap
-                    mapContainerStyle={{ width: '100%', height: '100%' }}
-                    center={mapCenter}
-                    zoom={markerPos ? 15 : 11}
-                    onLoad={(m) => { mapRef.current = m; }}
-                    onClick={handleMapClick}
-                    options={{ disableDefaultUI: true, zoomControl: true }}
-                  >
-                    {markerPos && <Marker position={markerPos} draggable onDragEnd={(e) => { const lat=e.latLng.lat(),lng=e.latLng.lng(); setMarkerPos({lat,lng}); reverseGeocode(lat,lng); }} />}
-                  </GoogleMap>
-                  <button
-                    onClick={handleUseMyLocation}
-                    disabled={isFetchingGPS}
-                    className="absolute bottom-2 right-2 bg-white shadow border border-gray-200 rounded-full px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 hover:bg-gray-50"
-                  >
-                    <FiNavigation className="h-3 w-3" />{isFetchingGPS ? 'Locating…' : 'Use my location'}
-                  </button>
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full bg-gray-100 text-xs text-gray-400">Loading map…</div>
-              )}
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24">
-              {isMapsLoaded && (
-                <Autocomplete onLoad={(ac) => (autocompleteRef.current = ac)} onPlaceChanged={handlePlaceChanged}>
-                  <input ref={addressInputRef} type="text" placeholder="Search area or full address…" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000]" />
-                </Autocomplete>
-              )}
-              {[{key:'fullName',label:'Enter Full Name*',type:'text'},{key:'petName',label:'Enter Pet Name*',type:'text'}].map(({key,label,type}) => (
-                <input key={key} type={type} placeholder={label} value={newAddress[key]} onChange={e=>setNewAddress(p=>({...p,[key]:e.target.value}))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000]" />
-              ))}
-              <div className="relative">
-                <select value={newAddress.petType} onChange={e=>setNewAddress(p=>({...p,petType:e.target.value}))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000] bg-white appearance-none">
-                  <option value="" disabled hidden>Select Pet Type</option>
-                  {['Dog','Cat','Bird','Fish','Rabbit','Others'].map(t=><option key={t} value={t}>{t}</option>)}
-                </select>
-                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 fill-gray-500 pointer-events-none" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-              </div>
-              <input type="text" placeholder="Full Address*" value={newAddress.fullAddress} onChange={e=>setNewAddress(p=>({...p,fullAddress:e.target.value}))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#FFD000]" />
-              <div className="relative border border-gray-200 rounded-xl px-4 pt-5 pb-2">
-                <label className="absolute top-2 left-4 text-[10px] text-gray-400 font-semibold">Landmark</label>
-                <input type="text" value={newAddress.landmark} onChange={e=>setNewAddress(p=>({...p,landmark:e.target.value}))} className="w-full text-sm outline-none text-black bg-transparent" />
-              </div>
-              <div className="relative border border-gray-200 rounded-xl px-4 pt-5 pb-2">
-                <label className="absolute top-2 left-4 text-[10px] text-gray-400 font-semibold">Pincode</label>
-                <input type="text" inputMode="numeric" value={newAddress.pincode} onChange={e=>setNewAddress(p=>({...p,pincode:e.target.value}))} className="w-full text-sm outline-none text-black bg-transparent" />
-              </div>
-              <div className="relative border border-gray-200 rounded-xl px-4 pt-5 pb-2">
-                <label className="absolute top-2 left-4 text-[10px] text-gray-400 font-semibold">Enter Mobile Number</label>
-                <input type="tel" inputMode="numeric" maxLength={10} value={newAddress.mobileNumber} onChange={e=>setNewAddress(p=>({...p,mobileNumber:e.target.value.replace(/\D/g,'').slice(0,10)}))} className="w-full text-sm outline-none text-black bg-transparent" />
-              </div>
-              <div className="flex items-center gap-3 mt-1">
-                {['Home','Work','Others'].map(t => (
-                  <button key={t} onClick={()=>setNewAddress(p=>({...p,addressType:t}))} className={`flex items-center gap-1.5 px-4 py-2 rounded-full border-2 text-sm font-bold transition-all ${ newAddress.addressType===t ? 'bg-[#FFD000] border-[#FFD000] text-black' : 'border-gray-200 text-gray-500 bg-white' }`}>
-                    {t==='Home'&&'🏠'} {t==='Work'&&'💼'} {t==='Others'&&'📍'} {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4 bg-white border-t sticky bottom-0">
-              <button onClick={handleSaveAddress} disabled={isSavingAddress} className="w-full bg-[#FFD000] text-black font-bold py-4 rounded-3xl text-[17px] hover:bg-[#E6BC00] transition-colors disabled:opacity-50">
-                {isSavingAddress ? 'Saving…' : 'Save Address'}
-              </button>
             </div>
           </div>
         )}
