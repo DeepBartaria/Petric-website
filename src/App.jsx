@@ -9,6 +9,8 @@ import AllCategories from './pages/AllCategories';
 import Reorder from './pages/Reorder';
 import ProductDetails from './pages/ProductDetails';
 import SavedAddresses from './pages/SavedAddresses';
+import Front from './pages/Front';
+import Newtemp from './pages/newtemp';
 
 function App() {
   return (
@@ -20,6 +22,9 @@ function App() {
         <Route path="/all-categories" element={<AllCategories />} />
         <Route path="/reorder" element={<Reorder />} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/front" element={<Front />} />
+        <Route path="/front.jsx" element={<Front />} />
+        <Route path="/newtemp.jsx" element={<Newtemp />} />
         <Route path="/*" element={<MainLayout />} />
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         <Route path="/saved-addresses" element={<SavedAddresses />} />
