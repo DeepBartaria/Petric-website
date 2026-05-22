@@ -7,7 +7,7 @@ import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
 import { get, post } from '../helper/api';
 import { Link } from 'react-router-dom';
-import { addProductToBackendCart, getBackendProductCart } from '../api/cartApi';
+import useCart from '../hooks/useCart';
 
 
 // Deterministic "random" number from product id so it doesn't change on re-render
@@ -66,9 +66,16 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [mainImage, setMainImage] = useState(null);
-  const [cartItems, setCartItems] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [pendingCartProduct, setPendingCartProduct] = useState(null);
+  const {
+    cartItems,
+    isCartOpen,
+    setIsCartOpen,
+    pendingCartProduct,
+    setPendingCartProduct,
+    addProductToCart,
+    handleUpdateQuantity,
+    handleLoginSuccess,
+  } = useCart();
   const [similarProducts, setSimilarProducts] = useState([]);
   const [brandProducts, setBrandProducts] = useState([]);
   
@@ -76,43 +83,9 @@ export default function ProductDetails() {
     const handleOpenCart = () => setIsCartOpen(true);
     window.addEventListener('openCart', handleOpenCart);
 
-    if (localStorage.getItem('petric_token')) {
-      syncCartFromBackend();
-    }
-
     return () => window.removeEventListener('openCart', handleOpenCart);
   }, []);
 
-
-  const isLoggedIn = () => Boolean(localStorage.getItem('petric_token'));
-
-  const syncCartFromBackend = async () => {
-    const response = await getBackendProductCart();
-
-    if (response?.type === 'success') {
-      setCartItems(response.cartItems);
-    } else {
-      setCartItems([]);
-    }
-  };
-
-  const addProductToCart = async (cartProduct) => {
-    const backendResponse = await addProductToBackendCart(cartProduct);
-
-    if (backendResponse?.type !== 'success') {
-      alert(backendResponse?.message || 'Failed to add product to cart');
-      return;
-    }
-
-    await syncCartFromBackend();
-    setIsCartOpen(true);
-  };
-
-  const openLoginForCart = (cartProduct) => {
-    setPendingCartProduct(cartProduct);
-    setIsCartOpen(true);
-    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
-  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -135,31 +108,10 @@ export default function ProductDetails() {
       quantity,
     };
 
-    if (!isLoggedIn()) {
-      openLoginForCart(cartProduct);
-      return;
-    }
-
     addProductToCart(cartProduct);
   };
 
-  const handleLoginSuccess = async () => {
-    if (pendingCartProduct) {
-      await addProductToCart(pendingCartProduct);
-      setPendingCartProduct(null);
-      return;
-    }
-
-    await syncCartFromBackend();
-  };
-
-  const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) {
-      setCartItems(prev => prev.filter(item => item.id !== id));
-      return;
-    }
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
-  };
+  
 
   useEffect(() => {
     const fetchProduct = async () => {

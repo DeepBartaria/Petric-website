@@ -12,7 +12,7 @@ import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import { FiChevronRight, FiChevronDown, FiGift, FiShield, FiStar} from 'react-icons/fi';
 import { get } from '../helper/api';
-import { addProductToBackendCart, getBackendProductCart } from '../api/cartApi';
+import useCart from '../hooks/useCart';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/oldimg.png';
@@ -46,12 +46,19 @@ const brands = [
 
 export default function NewHome() {
   const navigate = useNavigate();
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
+  const {
+    cartItems,
+    isCartOpen,
+    setIsCartOpen,
+    pendingCartProduct,
+    setPendingCartProduct,
+    addProductToCart,
+    handleUpdateQuantity,
+    handleLoginSuccess: cartHandleLoginSuccess,
+  } = useCart();
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
-  const [pendingCartProduct, setPendingCartProduct] = useState(null);
- const [homePageSections, setHomePageSections] = useState([]);
+  const [homePageSections, setHomePageSections] = useState([]);
 
   const [shopCategories, setShopCategories] = useState([]);
   const categoriesScrollRef = useRef(null);
@@ -64,10 +71,7 @@ export default function NewHome() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('petric_user');
-    const token = localStorage.getItem('petric_token');
-
     if (storedUser) setUser(JSON.parse(storedUser));
-    if (token) syncCartFromBackend();
 
     const handleOpenCart = () => {
       setIsCartOpen(true);
@@ -210,64 +214,14 @@ export default function NewHome() {
     return () => clearTimeout(timer);
   }, [homePageSections.length]);
 
-  const isLoggedIn = () => Boolean(localStorage.getItem('petric_token'));
-
-  const openLoginForCart = (product) => {
-    setPendingCartProduct(product);
-    setIsCartOpen(true);
-    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
-  };
-
-  const syncCartFromBackend = async () => {
-    const response = await getBackendProductCart();
-
-    if (response?.type === 'success') {
-      setCartItems(response.cartItems);
-    } else {
-      setCartItems([]);
-    }
-  };
-
-  const addProductToCart = async (product) => {
-    const backendResponse = await addProductToBackendCart(product);
-
-    if (backendResponse?.type !== 'success') {
-      alert(backendResponse?.message || 'Failed to add product to cart');
-      return;
-    }
-
-    await syncCartFromBackend();
-    setIsCartOpen(true);
-  };
-
   const handleAddToCart = (product) => {
-    if (!isLoggedIn()) {
-      openLoginForCart(product);
-      return;
-    }
-
     addProductToCart(product);
   };
 
   const handleLoginSuccess = async () => {
     const storedUser = localStorage.getItem('petric_user');
     if (storedUser) setUser(JSON.parse(storedUser));
-
-    if (pendingCartProduct) {
-      await addProductToCart(pendingCartProduct);
-      setPendingCartProduct(null);
-      return;
-    }
-
-    await syncCartFromBackend();
-  };
-
-  const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) {
-      setCartItems(prev => prev.filter(item => item.id !== id));
-      return;
-    }
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
+    await cartHandleLoginSuccess();
   };
 
   const topHomeSection = homePageSections[0];

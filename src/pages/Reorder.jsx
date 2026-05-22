@@ -9,6 +9,7 @@ import CartFloatingButton from '../components/CartFloatingButton';
 import { FiPackage, FiRefreshCw } from 'react-icons/fi';
 import product1 from '../assets/product1.png';
 import product2 from '../assets/product2.png';
+import useCart from '../hooks/useCart';
 
 // Mock Data - Individual products from previous orders
 const mockReorderProducts = [
@@ -23,14 +24,22 @@ const mockReorderProducts = [
 export default function Reorder() {
   const navigate = useNavigate();
   const [reorderProducts, setReorderProducts] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const {
+    cartItems,
+    isCartOpen,
+    setIsCartOpen,
+    pendingCartProduct,
+    addProductToCart,
+    handleUpdateQuantity,
+    handleLoginSuccess,
+  } = useCart();
+
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
     window.addEventListener('openCart', handleOpenCart);
     return () => window.removeEventListener('openCart', handleOpenCart);
   }, []);
 
-  const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -50,15 +59,23 @@ export default function Reorder() {
         if (res && res.type === 'success' && Array.isArray(res.products)) {
           const formatted = res.products.map((p) => {
             const firstVariant = p.variants?.[0];
-            const price = firstVariant?.discountedPrice
-              ?? firstVariant?.originalPrice
-              ?? p.originalPrice;
+            const discountedPrice = firstVariant?.discountedPrice ?? firstVariant?.originalPrice ?? p.originalPrice ?? 0;
+            const originalPrice = firstVariant?.originalPrice ?? p.originalPrice ?? 0;
             return {
               id: p._id,
+              productId: p._id,
+              variantId: firstVariant?._id || null,
               img: p.productImage || product1,
               name: p.name,
+              description: p.description || '',
+              brand: p.brand?.name || 'Petric',
               weight: firstVariant?.name || '',
-              price: price != null ? `₹${price}` : '',
+              variantName: firstVariant?.name || '',
+              unit: firstVariant?.unit || '',
+              price: discountedPrice != null ? `₹${discountedPrice}` : '',
+              oldPrice: originalPrice && originalPrice !== discountedPrice ? `₹${originalPrice}` : '',
+              originalPrice,
+              discountedPrice,
               qty: 1,
             };
           });
@@ -77,22 +94,7 @@ export default function Reorder() {
   }, []);
 
   const handleAddToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-    setIsCartOpen(true);
-  };
-
-  const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) {
-      setCartItems(prev => prev.filter(item => item.id !== id));
-      return;
-    }
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
+    addProductToCart(product);
   };
 
   return (
@@ -104,6 +106,8 @@ export default function Reorder() {
         onClose={() => setIsCartOpen(false)} 
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
+        onLoginSuccess={handleLoginSuccess}
+        loginBackCloses={Boolean(pendingCartProduct)}
       />
 
       <CartFloatingButton

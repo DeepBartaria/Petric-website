@@ -12,6 +12,7 @@ import { get, post } from '../helper/api';
 import { getAllCategoryProductsTemp } from '../api/categoryProductsApi';
 import headerbg from '../assets/petsproductherobg.png';
 import { Link } from 'react-router-dom';
+import useCart from '../hooks/useCart';
 import { logPageVisit } from '../helper/analytics';
 const LIMIT = 20;
 
@@ -26,14 +27,25 @@ export default function CategoryPage() {
   const [subcategories, setSubcategories] = useState([]);
   const [activeSubcategory, setActiveSubcategory] = useState(null);
 
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  // const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const {
+    cartItems,
+    isCartOpen,
+    setIsCartOpen,
+    pendingCartProduct,
+    addProductToCart,
+    handleUpdateQuantity,
+    handleLoginSuccess,
+  } = useCart();
+
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
     window.addEventListener('openCart', handleOpenCart);
     return () => window.removeEventListener('openCart', handleOpenCart);
   }, []);
 
-  const [cartItems, setCartItems] = useState([]);
+  // const [cartItems, setCartItems] = useState([]);
 
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
@@ -254,22 +266,7 @@ export default function CategoryPage() {
   }, [isFetchingMore, isInitialLoading, currentPage, totalPages]);
 
   const handleAddToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-    setIsCartOpen(true);
-  };
-
-  const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) {
-      setCartItems(prev => prev.filter(item => item.id !== id));
-      return;
-    }
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
+    addProductToCart(product);
   };
 
   const handleSubcategoryClick = (sub) => {
@@ -303,6 +300,8 @@ export default function CategoryPage() {
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
+        onLoginSuccess={handleLoginSuccess}
+        loginBackCloses={Boolean(pendingCartProduct)}
       />
 
       <CartFloatingButton
