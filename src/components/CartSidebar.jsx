@@ -104,6 +104,42 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalPayable = itemsTotal - couponDiscount;
+
+  // Re-validate / recompute the applied coupon whenever the cart total changes.
+  // 1) If items drop below the minimum, the coupon is auto-removed.
+  // 2) For percentage coupons, the discount is recomputed against the new total.
+  useEffect(() => {
+    if (!appliedCoupon) return;
+
+    // Auto-remove when cart drops below the minimum
+    if (
+      appliedCoupon.couponMinimumAmount &&
+      itemsTotal < appliedCoupon.couponMinimumAmount
+    ) {
+      setAppliedCoupon(null);
+      setCouponCode('');
+      setCouponError(
+        `Coupon "${appliedCoupon.code}" removed — minimum order ₹${appliedCoupon.couponMinimumAmount} not met.`
+      );
+      return;
+    }
+
+    // Keep the discount in sync for percentage coupons (cart can grow/shrink)
+    if (appliedCoupon.couponType === "0") {
+      let recalculated = (itemsTotal * appliedCoupon.couponPrice) / 100;
+      if (
+        appliedCoupon.couponMaximumAmount &&
+        recalculated > appliedCoupon.couponMaximumAmount
+      ) {
+        recalculated = appliedCoupon.couponMaximumAmount;
+      }
+      const rounded = Math.round(recalculated);
+      if (rounded !== appliedCoupon.discount) {
+        setAppliedCoupon({ ...appliedCoupon, discount: rounded });
+      }
+    }
+  }, [itemsTotal, appliedCoupon]);
+
   const [deliveryTime, setDeliveryTime] = useState(16);
 
   const loadSavedAddresses = async () => {
@@ -327,7 +363,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   }, [checkoutStep, resendTimer]);
 
   const handleBack = () => {
-    if (checkoutStep === 'addresses' || checkoutStep === 'addAddress') {
+    if (checkoutStep === 'addresses' || checkoutStep === 'addAddress' || checkoutStep === 'coupons') {
       setCheckoutStep('cart');
       return;
     }
@@ -653,7 +689,16 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
              setCouponError(`Minimum order amount should be ₹${found.couponMinimumAmount}`);
              return;
           }
-          setAppliedCoupon({ code: found.couponPromoCode, discount: Math.round(discountAmt) });
+
+          setAppliedCoupon({
+            code: found.couponPromoCode,
+            discount: Math.round(discountAmt),
+            couponType: found.couponType,
+            couponPrice: found.couponPrice,
+            couponMinimumAmount: found.couponMinimumAmount || 0,
+            couponMaximumAmount: found.couponMaximumAmount || 0,
+          });
+
         } else {
           setCouponError('Invalid coupon code');
         }
@@ -674,12 +719,12 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        className="fixed inset-0 bg-black/50 z-[140] transition-opacity"
         onClick={onClose}
       />
       
       {/* Sidebar */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#f8f9fa] z-50 flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-0 font-sans">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#f8f9fa] z-[150] flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-0 font-sans">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10">
@@ -694,7 +739,9 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   ? 'Select Address'
                   : checkoutStep === 'addAddress'
                     ? 'Add Address'
-                    : 'My Cart'}
+                    : checkoutStep === 'coupons'
+                      ? 'Select Promo Code'
+                      : 'My Cart'}
             </h2>
           </div>
         </div>
@@ -768,7 +815,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                     className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none uppercase"
                   />
                   <button 
-                    onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); } : handleApplyCoupon}
+                    onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); setCouponError(''); } : handleApplyCoupon}
                     className="bg-[#FFD000] text-black px-4 py-2 rounded-lg text-sm font-bold shrink-0"
                   >
                     {appliedCoupon ? 'Remove' : 'Apply'}
@@ -836,6 +883,58 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   Orders cannot be cancelled once packed for delivery. In case of unexpected delays, a refund will be provided, if applicable.
                 </p>
               </div>
+            </>
+          )}
+
+          {checkoutStep === 'coupons' && (
+            <>
+              {isCouponsLoading ? (
+                <div className="flex justify-center items-center py-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#FFD000] border-t-transparent"></div>
+                </div>
+              ) : availableCoupons.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 font-medium">No coupons available at the moment.</div>
+              ) : (
+                availableCoupons.map((c) => {
+                  const isEligible = !c.couponMinimumAmount || itemsTotal >= c.couponMinimumAmount;
+
+                  let desc = "";
+                  if (c.couponType === "0") {
+                    desc = `Flat ${c.couponPrice}% off`;
+                    if (c.couponMaximumAmount) desc += ` upto ₹${c.couponMaximumAmount}`;
+                  } else {
+                    desc = `Flat ₹${c.couponPrice} off`;
+                  }
+                  if (c.couponMinimumAmount) desc += ` above ₹${c.couponMinimumAmount}`;
+
+                  return (
+                    <div key={c._id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div className="bg-[#FFF9CC] text-black text-xs font-bold px-3 py-1.5 rounded-md">
+                          {c.couponPromoCode}
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (isEligible) {
+                              setCheckoutStep('cart');
+                              applySpecificCoupon(c.couponPromoCode);
+                            }
+                          }}
+                          className={`text-sm font-bold px-5 py-1.5 rounded-lg transition-colors ${isEligible ? 'bg-[#FFD000] text-black hover:bg-[#E6BC00]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      <p className="text-sm font-medium text-black">{desc}</p>
+                      {!isEligible && c.couponMinimumAmount && (
+                        <p className="text-[11px] text-gray-500 font-medium">
+                          Add ₹{c.couponMinimumAmount - itemsTotal} more to unlock this coupon
+                        </p>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </>
           )}
 
@@ -1172,61 +1271,6 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
             <p className="text-gray-500 font-medium text-center px-8">
               Thank you for shopping with Petric. Your order has been placed successfully.
             </p>
-          </div>
-        )}
-        {checkoutStep === 'coupons' && (
-          <div className="flex flex-col h-full bg-[#f8f9fa]">
-            <div className="flex items-center gap-3 p-4 bg-white border-b sticky top-0 z-10">
-              <button onClick={() => setCheckoutStep('cart')} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                <FiArrowLeft className="h-6 w-6 text-black" strokeWidth={2.5} />
-              </button>
-              <h2 className="text-xl font-bold text-black">Select Promo Code</h2>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-              {isCouponsLoading ? (
-                <div className="flex justify-center items-center py-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#FFD000] border-t-transparent"></div>
-                </div>
-              ) : availableCoupons.length === 0 ? (
-                <div className="text-center py-10 text-gray-500 font-medium">No coupons available at the moment.</div>
-              ) : (
-                availableCoupons.map((c) => {
-                  const isEligible = !c.couponMinimumAmount || itemsTotal >= c.couponMinimumAmount;
-                  
-                  let desc = "";
-                  if (c.couponType === "0") {
-                    desc = `Flat ${c.couponPrice}% off`;
-                    if (c.couponMaximumAmount) desc += ` upto ₹${c.couponMaximumAmount}`;
-                  } else {
-                    desc = `Flat ₹${c.couponPrice} off`;
-                  }
-                  if (c.couponMinimumAmount) desc += ` above ₹${c.couponMinimumAmount}`;
-
-                  return (
-                    <div key={c._id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        <div className="bg-[#FFF9CC] text-black text-xs font-bold px-3 py-1.5 rounded-md">
-                          {c.couponPromoCode}
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (isEligible) {
-                               setCheckoutStep('cart');
-                               applySpecificCoupon(c.couponPromoCode);
-                            }
-                          }}
-                          className={`text-sm font-bold px-5 py-1.5 rounded-lg transition-colors ${isEligible ? 'bg-[#FFD000] text-black hover:bg-[#E6BC00]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                        >
-                          Apply
-                        </button>
-                      </div>
-                      <p className="text-sm font-medium text-black">{desc}</p>
-                    </div>
-                  );
-                })
-              )}
-            </div>
           </div>
         )}
 

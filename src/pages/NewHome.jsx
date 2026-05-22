@@ -4,8 +4,6 @@ import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
-import OrdersSidebar from '../components/OrdersSidebar';
-import OrdersFloatingButton from '../components/OrdersFloatingButton';
 import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
@@ -49,12 +47,16 @@ const brands = [
 export default function NewHome() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
   const [pendingCartProduct, setPendingCartProduct] = useState(null);
-  const [homePageSections, setHomePageSections] = useState([]);
+ const [homePageSections, setHomePageSections] = useState([]);
+
+  const [shopCategories, setShopCategories] = useState([]);
+  const categoriesScrollRef = useRef(null);
+  const [categoriesScrollPos, setCategoriesScrollPos] = useState(0);
+
   const [brands, setBrands] = useState([]);
   const brandsScrollRef = useRef(null);
   const [brandsScrollPos, setBrandsScrollPos] = useState(0);
@@ -143,6 +145,30 @@ export default function NewHome() {
 
     fetchHomePageProducts();
   }, []);
+
+  useEffect(() => {
+    const fetchShopCategories = async () => {
+      try {
+        const response = await get('product/category');
+
+        if (response?.categories) {
+          const formattedCategories = response.categories
+            .sort((a, b) => (a.order || 999) - (b.order || 999))
+            .map((category) => ({
+              id: category._id,
+              name: category.name,
+              img: category.categoryImage || category.image || '',
+            }));
+
+          setShopCategories(formattedCategories);
+        }
+      } catch (error) {
+        console.error('Error fetching shop categories:', error);
+      }
+    };
+
+    fetchShopCategories();
+  }, []);
   
   const fetchBrands = async () => {
     try {
@@ -166,6 +192,23 @@ export default function NewHome() {
   };
 
   fetchBrands();
+
+  useEffect(() => {
+    const savedScrollY = sessionStorage.getItem('petric_home_scroll_y');
+
+    if (!savedScrollY) return;
+
+    const timer = setTimeout(() => {
+      window.scrollTo({
+        top: Number(savedScrollY),
+        behavior: 'auto',
+      });
+
+      sessionStorage.removeItem('petric_home_scroll_y');
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [homePageSections.length]);
 
   const isLoggedIn = () => Boolean(localStorage.getItem('petric_token'));
 
@@ -227,6 +270,9 @@ export default function NewHome() {
     setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
   };
 
+  const topHomeSection = homePageSections[0];
+  const remainingHomeSections = homePageSections.slice(1); 
+
   return (
     <div className="min-h-screen bg-white font-sans relative">
       <BottomPopup />
@@ -244,22 +290,10 @@ export default function NewHome() {
         loginBackCloses={Boolean(pendingCartProduct)}
       />
 
-      <OrdersSidebar
-        isOpen={isOrdersOpen}
-        onClose={() => setIsOrdersOpen(false)}
-      />
-
       <CartFloatingButton
         cartItems={cartItems}
         isCartOpen={isCartOpen}
-        isOrdersOpen={isOrdersOpen}
         onClick={() => setIsCartOpen(true)}
-      />
-
-      <OrdersFloatingButton
-        isCartOpen={isCartOpen}
-        isOrdersOpen={isOrdersOpen}
-        onClick={() => setIsOrdersOpen(true)}
       />
 
       <VariantPopup
@@ -304,6 +338,220 @@ export default function NewHome() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
           </div>
         </div>
+
+        {/* Shop by Category */}
+        <div className="mb-14">
+          <div className="flex justify-between items-end mb-6">
+            <h2 className="text-2xl font-bold text-black transition-colors duration-300 hover:text-gray-700 cursor-pointer">
+              Shop by Category
+            </h2>
+
+            <Link
+              to="/all-categories"
+              className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2"
+            >
+              See all
+            </Link>
+          </div>
+
+          {/* DESKTOP */}
+          <div className="hidden md:flex items-center gap-2">
+            {categoriesScrollPos > 0 && (
+              <button
+                onClick={() => categoriesScrollRef.current?.scrollBy({ left: -220, behavior: 'smooth' })}
+                className="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-black p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-200 hover:scale-110"
+              >
+                <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
+              </button>
+            )}
+
+            <div className="relative flex-1 overflow-hidden">
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10" />
+
+              {categoriesScrollPos > 0 && (
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
+              )}
+
+              <div
+                ref={categoriesScrollRef}
+                onScroll={(e) => setCategoriesScrollPos(e.target.scrollLeft)}
+                className="flex items-center gap-5 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2"
+              >
+                {shopCategories.map((category) => (
+                  <Link
+                    key={category.id}
+                    to={`/category/${category.id}`}
+                    state={{ categoryName: category.name }}
+                    className="relative shrink-0 flex flex-col items-center justify-center gap-3 w-44 cursor-pointer group"
+                  >
+                    <div className="w-44 h-44 rounded-full overflow-hidden bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center">
+                      {category.img ? (
+                        <img
+                          src={category.img}
+                          alt={category.name}
+                          className="w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-110"
+                        />
+                      ) : (
+                        <span className="text-3xl font-black text-gray-300">
+                          {category.name?.charAt(0)}
+                        </span>
+                      )}
+                    </div>
+
+                    <span className="text-sm font-semibold text-gray-700 text-center truncate w-full">
+                      {category.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => categoriesScrollRef.current?.scrollBy({ left: 220, behavior: 'smooth' })}
+              className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
+            >
+              <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
+            </button>
+          </div>
+
+          {/* MOBILE */}
+          <div className="md:hidden overflow-x-auto [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-4 px-2 pb-2" style={{ width: 'max-content' }}>
+              {shopCategories.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/category/${category.id}`}
+                  state={{ categoryName: category.name }}
+                  className="flex flex-col items-center gap-2 w-32 shrink-0 cursor-pointer group"
+                >
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 flex items-center justify-center">
+                    {category.img ? (
+                      <img
+                        src={category.img}
+                        alt={category.name}
+                        className="w-full h-full object-contain p-1.5"
+                      />
+                    ) : (
+                      <span className="text-2xl font-black text-gray-300">
+                        {category.name?.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+
+                  <span className="text-[11px] font-semibold text-gray-600 text-center truncate w-full">
+                    {category.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* First Backend Product Section */}
+        {topHomeSection && (
+          <div className="mb-14">
+            <h2 className="text-2xl font-bold text-black mb-6">
+              {topHomeSection.title}
+            </h2>
+
+            <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
+              {topHomeSection.products.map((product, i) => (
+                <div
+                  key={i}
+                  onClick={() => {
+                    sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
+                    navigate(`/product/${product.id}`);
+                  }}
+                  className="bg-white rounded-3xl w-[45vw] md:w-[260px] lg:w-[280px] shrink-0 snap-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
+                >
+                  <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
+                    <img
+                      src={product.img}
+                      alt={product.name}
+                      className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+                    />
+
+                    <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                      {product.isBestSeller && (
+                        <div className="bg-black text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          Best Seller
+                        </div>
+                      )}
+
+                      {!product.isBestSeller && product.isBestAvailable && (
+                        <div className="bg-green-600 text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          Best Available
+                        </div>
+                      )}
+
+                      {product.discount && product.discount !== '0%' && (
+                        <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                          {product.discount} Off
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col flex-grow">
+                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">
+                      {product.name}
+                    </h3>
+
+                    <div
+                      className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${
+                        product.variants && product.variants.length > 1
+                          ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded'
+                          : ''
+                      }`}
+                      onClick={(e) => {
+                        if (product.variants && product.variants.length > 1) {
+                          e.stopPropagation();
+                          setVariantPopupProduct(product);
+                          setIsVariantPopupOpen(true);
+                        }
+                      }}
+                    >
+                      {product.weight}
+                      {product.variants && product.variants.length > 1 && (
+                        <FiChevronDown className="h-3 w-3" />
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 mt-auto">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-black text-sm md:text-base">
+                          {product.price}
+                        </span>
+
+                        {product.oldPrice && (
+                          <span className="text-[10px] md:text-xs text-gray-400 line-through">
+                            {product.oldPrice}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          if (product.variants && product.variants.length > 1) {
+                            setVariantPopupProduct(product);
+                            setIsVariantPopupOpen(true);
+                          } else {
+                            handleAddToCart(product);
+                          }
+                        }}
+                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                      >
+                        ADD
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Shop by Brands */}
         <div className="mb-14">
@@ -415,60 +663,73 @@ export default function NewHome() {
           </div>
         </div>
         {/* Personalized Welcome Banner */}
-        <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
-          <div className="flex flex-col xl:flex-row items-center gap-4 md:gap-6 w-full xl:w-auto shrink-0">
-            <h2 className="text-2xl md:text-4xl font-black text-black leading-tight text-center xl:text-left">
-              Hello, <br /> Pet Parent! 👋
-            </h2>
-            {!user ? (
-              <button 
-                onClick={() => window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }))}
-                className="bg-black text-white px-6 md:px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md w-full sm:w-auto shrink-0"
+        {!user && (
+          <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 md:gap-6 w-full lg:w-auto shrink-0 text-center sm:text-left">
+              <h2 className="text-2xl md:text-4xl font-black text-black leading-tight">
+                Hello, <br /> Pet Parent! 👋
+              </h2>
+
+              <button
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent('openCart', {
+                      detail: { step: 'mobile', mode: 'loginOnly' },
+                    })
+                  )
+                }
+                className="inline-flex h-11 min-w-[120px] items-center justify-center rounded-full bg-black px-7 text-sm font-bold text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800"
               >
-                Sign up and get...
+                Sign In
               </button>
-            ) : (
-              <Link
-                to="/all-categories"
-                className="bg-black text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-gray-800 hover:-translate-y-1 transition-all duration-300 shadow-md inline-flex items-center justify-center"
-              >
-                Start Shopping
-              </Link>
-            )}
-          </div>
-
-          <div className="flex flex-col md:flex-row items-stretch gap-4 w-full xl:w-auto">
-            {/* Autoship Card */}
-            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
-              <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                <FiStar className="w-6 h-6" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-black text-[13px] md:text-sm">upto 35% off on <br /> selected brands</span>
-              </div>
             </div>
 
-            {/* Pharmacy Card */}
-            <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
-              <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                <FiGift className="w-6 h-6" />
+            <div className="flex flex-col md:flex-row items-stretch gap-4 w-full xl:w-auto">
+              <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
+                <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+                  <FiStar className="w-6 h-6" />
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-black text-[13px] md:text-sm">
+                    upto 35% off on <br /> selected brands
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-black text-[13px] md:text-sm">Exclusive offers just for you </span>
+
+              <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
+                <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+                  <FiGift className="w-6 h-6" />
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-black text-[13px] md:text-sm">
+                    Exclusive offers just for you
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Dynamic Sections from API */}
-        {homePageSections.map((section, idx) => (
+        {remainingHomeSections.map((section, idx) => (
           <div key={idx} className="mb-14">
             <h2 className="text-2xl font-bold text-black mb-6">{section.title}</h2>
-            <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:p-0">
+            <div
+              className={`flex md:grid ${
+                section.products.length <= 8
+                  ? 'md:grid-cols-4'
+                  : 'md:grid-flow-col md:grid-rows-2 md:auto-cols-[minmax(220px,260px)] lg:auto-cols-[minmax(240px,280px)]'
+              } gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:px-2 md:pb-5`}
+            >
               {section.products.map((product, i) => (
                 <div
                   key={i}
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  onClick={() => {
+                    sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
+                    navigate(`/product/${product.id}`);
+                  }}
                   className="bg-white rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
                 >
                   

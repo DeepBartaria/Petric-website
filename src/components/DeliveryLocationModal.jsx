@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
-import { FiX, FiMapPin, FiNavigation } from 'react-icons/fi';
+import { FiX, FiMapPin, FiNavigation, FiMap } from 'react-icons/fi';
 
 const libraries = ['places'];
 const STORE_COORDINATES = { lat: 28.4416870, lng: 77.0759438 };

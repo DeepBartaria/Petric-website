@@ -9,6 +9,14 @@ export default function BottomPopup() {
   const [isEntering, setIsEntering] = useState(false);
 
   useEffect(() => {
+    const hasSeenPopup = sessionStorage.getItem('petric_download_popup_seen');
+
+    if (hasSeenPopup) {
+      return;
+    }
+
+    sessionStorage.setItem('petric_download_popup_seen', 'true');
+
     requestAnimationFrame(() => {
       setIsEntering(true);
 
