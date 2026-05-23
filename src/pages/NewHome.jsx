@@ -13,7 +13,7 @@ import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import ProductCard from '../components/ProductCard';
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiChevronRight, FiStar, FiGift } from "react-icons/fi";
 import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
 import useProductCoupons from '../hooks/useProductCoupons';
@@ -205,7 +205,10 @@ export default function NewHome() {
     }
   };
 
-  fetchBrands();
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
 
   useEffect(() => {
     const savedScrollY = sessionStorage.getItem('petric_home_scroll_y');
