@@ -48,6 +48,52 @@ export const mapBackendCartToCartItems = (cart) => {
   return Array.from(aggregated.values());
 };
 
+export const getStoredDeliveryLocation = () => {
+  try {
+    const raw = localStorage.getItem('petric_delivery_location');
+    if (!raw) return null;
+
+    const location = JSON.parse(raw);
+    const lat = Number(location.lat);
+    const lng = Number(location.lng);
+
+    if (!lat || !lng) return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
+};
+
+export const checkProductAvailableForLocation = async ({ productId, variantId, lat, lng }) => {
+  const token = localStorage.getItem('petric_token');
+  if (!token) return { type: 'error', message: 'Login required' };
+
+  const response = await post('product/details', {
+    productId,
+    lat,
+    lng,
+  }, {
+    headers: {
+      Authorization: token,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (response?.type !== 'success') return response;
+
+  const variants = response.product?.variants || [];
+  const hasVariant = !variantId || variants.some(v => String(v._id) === String(variantId));
+
+  if (!hasVariant) {
+    return {
+      type: 'error',
+      message: 'Selected variant is not available at this delivery location',
+    };
+  }
+
+  return { type: 'success' };
+};
+
 export const getBackendProductCart = async () => {
   const token = localStorage.getItem('petric_token');
 

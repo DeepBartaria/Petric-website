@@ -267,6 +267,9 @@ export default function NewHomeNavbar() {
     const handleDeliveryTimeUpdate = (e) => setDeliveryTime(e.detail);
     window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
 
+    const handleOpenDeliveryLocation = () => setIsLocationModalOpen(true);
+    window.addEventListener('openDeliveryLocation', handleOpenDeliveryLocation);
+
     const handlePetricLoginSuccess = (e) => {
       if (e.detail?.user) {
         setUser(e.detail.user);
@@ -290,6 +293,7 @@ export default function NewHomeNavbar() {
     return () => {
       clearInterval(intervalId);
       window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
+      window.removeEventListener('openDeliveryLocation', handleOpenDeliveryLocation);
       window.removeEventListener('petricLoginSuccess', handlePetricLoginSuccess);
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     };

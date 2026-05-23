@@ -117,9 +117,19 @@ export default function DeliveryLocationModal({ isOpen, onClose }) {
             ? Math.ceil(response.rows[0].elements[0].duration.value / 60) + 20
             : calculateFallbackTime(selectedLocation);
 
+        const deliveryLocation = {
+          lat: selectedLocation.lat,
+          lng: selectedLocation.lng,
+          time,
+        };
+
         setDeliveryTime(time);
         localStorage.setItem('petric_delivery_time', time.toString());
+        localStorage.setItem('petric_delivery_location', JSON.stringify(deliveryLocation));
+
         window.dispatchEvent(new CustomEvent('deliveryTimeUpdated', { detail: time }));
+        window.dispatchEvent(new CustomEvent('deliveryLocationUpdated', { detail: deliveryLocation }));
+
         setTimeout(onClose, 1500);
       }
     );

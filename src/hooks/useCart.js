@@ -4,6 +4,8 @@ import {
   addProductToBackendCart,
   updateBackendCartQuantity,
   removeBackendCartProduct,
+  getStoredDeliveryLocation,
+  checkProductAvailableForLocation,
 } from '../api/cartApi';
 
 const isLoggedIn = () => Boolean(localStorage.getItem('petric_token'));
@@ -20,6 +22,8 @@ export default function useCart() {
     return items;
   }, []);
 
+  
+
   // Initial sync on mount (and whenever login state changes — re-mounts will pick this up)
   useEffect(() => {
     if (isLoggedIn()) syncCartFromBackend();
@@ -34,12 +38,39 @@ export default function useCart() {
       return { type: 'pending-login' };
     }
 
+    const productId = product.productId || product.id || product._id;
+    const variantId = product.variantId || null;
+
+    if (!variantId) {
+      alert('Please select a product variant before adding to cart.');
+      return { type: 'error', message: 'Variant is required' };
+    }
+
+    const deliveryLocation = getStoredDeliveryLocation();
+
+    if (!deliveryLocation) {
+      setPendingCartProduct(product);
+      window.dispatchEvent(new CustomEvent('openDeliveryLocation'));
+      return { type: 'pending-location' };
+    }
+
+    const availability = await checkProductAvailableForLocation({
+      productId,
+      variantId,
+      lat: deliveryLocation.lat,
+      lng: deliveryLocation.lng,
+    });
+
+    if (availability?.type !== 'success') {
+      alert(availability?.message || 'This product is not available at your delivery location.');
+      return availability;
+    }
+
     // Always fetch fresh — protects against app/web concurrent edits
     const current = await getBackendProductCart();
     const currentItems = current?.cartItems || [];
 
-    const productId = product.productId || product.id || product._id;
-    const variantId = product.variantId || null;
+    
     const addQty = product.quantity || 1;
 
     const existing = currentItems.find(
@@ -103,6 +134,22 @@ export default function useCart() {
     }
     await syncCartFromBackend();
   }, [pendingCartProduct, addProductToCart, syncCartFromBackend]);
+
+  useEffect(() => {
+    const handleDeliveryLocationUpdated = async () => {
+      if (!pendingCartProduct) return;
+
+      const productToAdd = pendingCartProduct;
+      setPendingCartProduct(null);
+      await addProductToCart(productToAdd);
+    };
+
+    window.addEventListener('deliveryLocationUpdated', handleDeliveryLocationUpdated);
+
+    return () => {
+      window.removeEventListener('deliveryLocationUpdated', handleDeliveryLocationUpdated);
+    };
+  }, [pendingCartProduct, addProductToCart]);
 
   return {
     cartItems,

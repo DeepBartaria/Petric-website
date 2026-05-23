@@ -147,15 +147,34 @@ export default function CategoryPage() {
         const variant = p.variants?.[0] || {};
         return {
           id: p._id,
+          productId: p._id,
+          variantId: variant._id || null,
+          variantName: variant.name || '',
+          unit: variant.unit || '',
           img: p.productImage,
           name: p.name,
           weight: variant.name || '',
           price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
           oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+          originalPrice: variant.originalPrice || 0,
+          discountedPrice: variant.discountedPrice || variant.originalPrice || 0,
           discount:
             variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
               ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
               : '',
+          variants: (p.variants || []).map(v => ({
+            id: v._id,
+            weight: v.name,
+            unit: v.unit || '',
+            originalPrice: v.originalPrice || 0,
+            discountedPrice: v.discountedPrice || v.originalPrice || 0,
+            price: v.discountedPrice ? `₹${v.discountedPrice}` : '',
+            oldPrice: v.originalPrice ? `₹${v.originalPrice}` : '',
+            discount:
+              v.originalPrice && v.discountedPrice && v.originalPrice > v.discountedPrice
+                ? Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
+                : '',
+          })),
           isBestSeller: p.isBestSeller,
           isBestAvailable: p.isBestAvailable,
           createdAt: p.createdAt,
@@ -209,15 +228,34 @@ export default function CategoryPage() {
             const variant = p.variants?.[0] || {};
             return {
               id: p._id,
+              productId: p._id,
+              variantId: variant._id || null,
+              variantName: variant.name || '',
+              unit: variant.unit || '',
               img: p.productImage,
               name: p.name,
               weight: variant.name || '',
               price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
               oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+              originalPrice: variant.originalPrice || 0,
+              discountedPrice: variant.discountedPrice || variant.originalPrice || 0,
               discount:
                 variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
                   ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
                   : '',
+              variants: (p.variants || []).map(v => ({
+                id: v._id,
+                weight: v.name,
+                unit: v.unit || '',
+                originalPrice: v.originalPrice || 0,
+                discountedPrice: v.discountedPrice || v.originalPrice || 0,
+                price: v.discountedPrice ? `₹${v.discountedPrice}` : '',
+                oldPrice: v.originalPrice ? `₹${v.originalPrice}` : '',
+                discount:
+                  v.originalPrice && v.discountedPrice && v.originalPrice > v.discountedPrice
+                    ? Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
+                    : '',
+              })),
               isBestSeller: p.isBestSeller,
               isBestAvailable: p.isBestAvailable,
               createdAt: p.createdAt,
