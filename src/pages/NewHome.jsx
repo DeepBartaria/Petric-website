@@ -4,6 +4,8 @@ import NewHomeNavbar from '../components/NewHomeNavbar';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
+import CartAnimationLayer from '../components/CartAnimationLayer';
+import useCartAnimation from '../hooks/useCartAnimation';
 import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
@@ -57,6 +59,10 @@ export default function NewHome() {
     handleUpdateQuantity,
     handleLoginSuccess: cartHandleLoginSuccess,
   } = useCart();
+
+  const { cartRef, flyItems, toasts, cartShake, triggerFlyToCart, onFlyComplete, dismissToast } =
+    useCartAnimation();
+
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
   const [homePageSections, setHomePageSections] = useState([]);
@@ -256,9 +262,18 @@ export default function NewHome() {
       />
 
       <CartFloatingButton
+        ref={cartRef}
         cartItems={cartItems}
         isCartOpen={isCartOpen}
+        shake={cartShake}
         onClick={() => setIsCartOpen(true)}
+      />
+
+      <CartAnimationLayer
+        flyItems={flyItems}
+        toasts={toasts}
+        onFlyComplete={onFlyComplete}
+        onDismissToast={dismissToast}
       />
 
       <VariantPopup
@@ -266,6 +281,7 @@ export default function NewHome() {
         onClose={() => setIsVariantPopupOpen(false)}
         product={variantPopupProduct}
         onAddToCart={handleAddToCart}
+        onAnimateToCart={triggerFlyToCart}
       />
 
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-10">
@@ -427,6 +443,7 @@ export default function NewHome() {
                   onOpenProduct={handleOpenProduct}
                   onAddToCart={handleAddToCart}
                   onOpenVariants={handleOpenVariants}
+                  onAnimateToCart={triggerFlyToCart}
                   className="md:w-[260px] lg:w-[280px] md:max-w-[280px]"
                 />
               ))}
@@ -611,6 +628,7 @@ export default function NewHome() {
                   onOpenProduct={handleOpenProduct}
                   onAddToCart={handleAddToCart}
                   onOpenVariants={handleOpenVariants}
+                  onAnimateToCart={triggerFlyToCart}
                 />
               ))}
             </div>

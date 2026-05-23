@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { FiChevronDown, FiMinus, FiPlus } from 'react-icons/fi';
 import useCart from '../hooks/useCart';
 
@@ -7,18 +7,34 @@ export default function ProductCard({
   onOpenProduct,
   onAddToCart,
   onOpenVariants,
+  /** Called with (imageEl, imageUrl, productName) to trigger fly-to-cart animation. Optional. */
+  onAnimateToCart,
   className = '',
 }) {
   const hasMultipleVariants = product.variants && product.variants.length > 1;
   const hasDiscount = product.discount && product.discount !== '0%';
   const { cartItems, handleUpdateQuantity } = useCart();
 
+  // Ref on the product image for position sampling
+  const imageRef = useRef(null);
+  // Controls the ADD button bounce animation
+  const [btnBounce, setBtnBounce] = useState(false);
+
   const handleAddClick = (event) => {
     event.stopPropagation();
+
+    // Spring-bounce the button
+    setBtnBounce(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setBtnBounce(true)));
 
     if (hasMultipleVariants) {
       onOpenVariants?.(product);
       return;
+    }
+
+    // Kick off the fly animation before the cart API call changes state
+    if (imageRef.current && onAnimateToCart) {
+      onAnimateToCart(imageRef.current, product.img, product.name);
     }
 
     onAddToCart?.(product);
@@ -26,10 +42,7 @@ export default function ProductCard({
 
   const handleVariantClick = (event) => {
     event.stopPropagation();
-
-    if (hasMultipleVariants) {
-      onOpenVariants?.(product);
-    }
+    if (hasMultipleVariants) onOpenVariants?.(product);
   };
 
   return (
@@ -39,6 +52,7 @@ export default function ProductCard({
     >
       <div className="relative mb-3 flex h-[155px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-2 md:h-40 md:rounded-2xl">
         <img
+          ref={imageRef}
           src={product.img}
           alt={product.name}
           className="h-[118%] w-[118%] max-w-none object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-125"
@@ -68,10 +82,7 @@ export default function ProductCard({
           <span className="truncate">
             {product.weight || product.variantName || product.unit}
           </span>
-
-          {hasMultipleVariants && (
-            <FiChevronDown className="h-3.5 w-3.5 shrink-0" />
-          )}
+          {hasMultipleVariants && <FiChevronDown className="h-3.5 w-3.5 shrink-0" />}
         </button>
 
         <div className="mt-auto flex items-end justify-between gap-2">
@@ -81,19 +92,26 @@ export default function ProductCard({
                 {product.oldPrice}
               </p>
             )}
-
             <p className="truncate text-[20px] font-black leading-tight text-black md:text-lg">
               {product.price}
             </p>
           </div>
 
           {(() => {
-            const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
+            const cartItem = cartItems.find(
+              (item) => item.productId === (product.id || product._id)
+            );
             return cartItem ? (
-              <div className="flex h-8 md:h-9 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="flex h-8 md:h-9 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
                   className="grid h-8 md:h-9 w-8 md:w-9 place-items-center hover:bg-gray-100 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpdateQuantity(cartItem.id, cartItem.quantity - 1);
+                  }}
                 >
                   <FiMinus className="h-3.5 w-3.5" />
                 </button>
@@ -102,7 +120,10 @@ export default function ProductCard({
                 </span>
                 <button
                   className="grid h-8 md:h-9 w-8 md:w-9 place-items-center hover:bg-gray-100 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpdateQuantity(cartItem.id, cartItem.quantity + 1);
+                  }}
                 >
                   <FiPlus className="h-3.5 w-3.5" />
                 </button>
@@ -111,7 +132,10 @@ export default function ProductCard({
               <button
                 type="button"
                 onClick={handleAddClick}
-                className="shrink-0 rounded-xl bg-[#FFD000] px-4 py-2 text-[12px] font-black text-black shadow-sm transition-all hover:scale-105 hover:bg-[#ffdb33] hover:shadow-md md:rounded-full md:px-6 md:text-sm"
+                onAnimationEnd={() => setBtnBounce(false)}
+                className={`shrink-0 rounded-xl bg-[#FFD000] px-4 py-2 text-[12px] font-black text-black shadow-sm transition-colors hover:bg-[#ffdb33] md:rounded-full md:px-6 md:text-sm${
+                  btnBounce ? ' animate-add-btn-bounce' : ''
+                }`}
               >
                 ADD
               </button>

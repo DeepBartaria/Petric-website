@@ -3,6 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import NewHomeNavbar from '../components/NewHomeNavbar';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
+import CartAnimationLayer from '../components/CartAnimationLayer';
+import useCartAnimation from '../hooks/useCartAnimation';
 import Benefit from '../components/Benefit';
 import WhyTrustUs from '../components/WhyTrustUs';
 import OffersBanner from '../components/Banner';
@@ -39,6 +41,9 @@ export default function CategoryPage() {
     handleUpdateQuantity,
     handleLoginSuccess,
   } = useCart();
+
+  const { cartRef, flyItems, toasts, cartShake, triggerFlyToCart, onFlyComplete, dismissToast } =
+    useCartAnimation();
 
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
@@ -304,7 +309,13 @@ export default function CategoryPage() {
     return () => observerRef.current?.disconnect();
   }, [isFetchingMore, isInitialLoading, currentPage, totalPages]);
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product, event) => {
+    // Fly animation: find the product image inside the card that was clicked
+    if (event && triggerFlyToCart) {
+      const card = event.currentTarget.closest('[data-product-card]');
+      const img = card?.querySelector('img');
+      if (img) triggerFlyToCart(img, product.img, product.name);
+    }
     addProductToCart(product);
   };
 
@@ -344,9 +355,18 @@ export default function CategoryPage() {
       />
 
       <CartFloatingButton
+        ref={cartRef}
         cartItems={cartItems}
         isCartOpen={isCartOpen}
+        shake={cartShake}
         onClick={() => setIsCartOpen(true)}
+      />
+
+      <CartAnimationLayer
+        flyItems={flyItems}
+        toasts={toasts}
+        onFlyComplete={onFlyComplete}
+        onDismissToast={dismissToast}
       />
 
       {/* Hero Banner */}
@@ -502,6 +522,7 @@ export default function CategoryPage() {
                 {products.map((product, i) => (
                   <div
                     key={`${product.id}-${i}`}
+                    data-product-card=""
                     onClick={() => navigate(`/product/${product.id}`)}
                     className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
                   >
@@ -551,8 +572,16 @@ export default function CategoryPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                              className="shrink-0 bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Button bounce: remove + re-add class via the DOM for reliable restart
+                                e.currentTarget.classList.remove('animate-add-btn-bounce');
+                                void e.currentTarget.offsetWidth;
+                                e.currentTarget.classList.add('animate-add-btn-bounce');
+                                handleAddToCart(product, e);
+                              }}
+                              onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-add-btn-bounce')}
+                              className="shrink-0 bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] transition-colors"
                             >
                               ADD
                             </button>

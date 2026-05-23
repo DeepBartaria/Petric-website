@@ -95,7 +95,6 @@ export default function useCart() {
     }
 
     await syncCartFromBackend();
-    setIsCartOpen(true);
     return resp;
   }, [syncCartFromBackend]);
 

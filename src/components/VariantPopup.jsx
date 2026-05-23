@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiCheck } from 'react-icons/fi';
 
-export default function VariantPopup({ isOpen, onClose, product, onAddToCart }) {
+export default function VariantPopup({ isOpen, onClose, product, onAddToCart, onAnimateToCart }) {
   const [isClosing, setIsClosing] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const imageRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && product?.variants?.length > 0) {
@@ -24,6 +25,11 @@ export default function VariantPopup({ isOpen, onClose, product, onAddToCart }) 
 
   const handleAdd = () => {
     if (selectedVariant && product) {
+      // Trigger fly animation from the popup's product image before closing
+      if (imageRef.current && onAnimateToCart) {
+        onAnimateToCart(imageRef.current, product.img, product.name);
+      }
+
       onAddToCart({
         ...product,
         id: `${product.id}-${selectedVariant.id}`,
@@ -78,7 +84,7 @@ export default function VariantPopup({ isOpen, onClose, product, onAddToCart }) 
             <>
               <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
                 <div className="w-20 h-20 bg-gray-50 rounded-xl p-2 flex items-center justify-center shrink-0">
-                  <img src={product.img} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                  <img ref={imageRef} src={product.img} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm md:text-base text-gray-800 line-clamp-2">{product.name}</h4>
