@@ -285,7 +285,6 @@ export default function ProductDetails() {
         isOpen={isCartOpen}
         onClose={() => {
           setIsCartOpen(false);
-          setPendingCartProduct(null);
         }}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}

@@ -29,6 +29,25 @@ export default function useCart() {
     if (isLoggedIn()) syncCartFromBackend();
   }, [syncCartFromBackend]);
 
+  useEffect(() => {
+    const handleCartUpdated = async (event) => {
+      if (event.detail?.cartItems) {
+        setCartItems(event.detail.cartItems);
+        return;
+      }
+
+      if (isLoggedIn()) {
+        await syncCartFromBackend();
+      }
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdated);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdated);
+    };
+  }, [syncCartFromBackend]);
+
   // Add to cart — checks current cart first so duplicates increment instead of stacking
   const addProductToCart = useCallback(async (product) => {
     if (!isLoggedIn()) {
@@ -50,6 +69,7 @@ export default function useCart() {
 
     if (!deliveryLocation) {
       setPendingCartProduct(product);
+      setIsCartOpen(false);
       window.dispatchEvent(new CustomEvent('openDeliveryLocation'));
       return { type: 'pending-location' };
     }
@@ -94,7 +114,14 @@ export default function useCart() {
       return resp;
     }
 
-    await syncCartFromBackend();
+    const syncedItems = await syncCartFromBackend();
+
+    window.dispatchEvent(
+      new CustomEvent('cartUpdated', {
+        detail: { cartItems: syncedItems },
+      })
+    );
+
     return resp;
   }, [syncCartFromBackend]);
 
@@ -122,15 +149,27 @@ export default function useCart() {
     }
 
     const items = await syncCartFromBackend();
+
+    window.dispatchEvent(
+      new CustomEvent('cartUpdated', {
+        detail: { cartItems: items },
+      })
+    );
+
     if (items.length === 0) setIsCartOpen(false);
   }, [cartItems, syncCartFromBackend]);
 
   const handleLoginSuccess = useCallback(async () => {
     if (pendingCartProduct) {
-      await addProductToCart(pendingCartProduct);
-      setPendingCartProduct(null);
+      const result = await addProductToCart(pendingCartProduct);
+
+      if (result?.type !== 'pending-location' && result?.type !== 'pending-login') {
+        setPendingCartProduct(null);
+      }
+
       return;
     }
+
     await syncCartFromBackend();
   }, [pendingCartProduct, addProductToCart, syncCartFromBackend]);
 

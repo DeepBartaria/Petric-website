@@ -1,4 +1,4 @@
-export const DEFAULT_PRODUCT_CARD_COUPON_TEXT = 'Additional Flat 8% off';
+export const DEFAULT_PRODUCT_CARD_COUPON_TEXT = '+ 8% off';
 
 const getNumber = (value) => {
   return Number(String(value ?? 0).replace(/[^\d.]/g, '')) || 0;
@@ -17,7 +17,9 @@ export const getProductCardCouponText = (coupon) => {
 
   if (!match?.[1]) return '';
 
-  return `Additional ${match[1].trim()}`;
+  const couponText = match[1].trim().replace(/^Flat\s+/i, '');
+
+  return `+ ${couponText.replace(/\boff\b/i, 'Off')}`;
 };
 
 export const normalizeProductCoupon = (coupon) => {

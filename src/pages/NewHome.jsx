@@ -269,7 +269,6 @@ export default function NewHome() {
         isOpen={isCartOpen}
         onClose={() => {
           setIsCartOpen(false);
-          setPendingCartProduct(null);
         }}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}

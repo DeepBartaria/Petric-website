@@ -73,8 +73,21 @@ export default function ProductCard({
     }
   };
 
-  const cartItem = cartItems.find(
-    (item) => item.productId === (product.productId || product.id || product._id)
+  const productId = product.productId || product.id || product._id;
+
+  const productCartItems = cartItems.filter(
+    (item) => String(item.productId) === String(productId)
+  );
+
+  const totalCartQuantity = productCartItems.reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0
+  );
+
+  const cartItem = productCartItems.find(
+    (item) =>
+      String(item.variantId || '') === String(product.variantId || '') ||
+      !hasMultipleVariants
   );
 
   return (
@@ -91,22 +104,29 @@ export default function ProductCard({
         />
 
         {discount && discount !== '0%' && (
-          <div className="absolute right-1.5 top-1.5 rounded-md bg-[#E95B32] px-2 py-1 text-[10px] font-extrabold leading-none text-white shadow-sm">
+          <div className="absolute right-1.5 top-1.5 rounded-md bg-green-600 px-2 py-1 text-[9px] font-bold leading-tight text-white shadow-sm">
             {discount} off
+          </div>
+        )}
+
+        {couponText && (
+          <div className="absolute right-1.5 top-8 inline-flex max-w-[78%] items-center gap-1 rounded-md border border-dashed border-green-500 bg-green-50 px-2 py-1 text-[9px] font-bold leading-tight text-green-700 shadow-sm">
+            <FiTag className="h-3 w-3 shrink-0" />
+            <span className="line-clamp-1">{couponText}</span>
           </div>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-2.5">
-        <h3 className="mb-1.5 line-clamp-2 min-h-[34px] text-[12px] font-semibold leading-[1.25] text-gray-950 md:text-[13px]">
+        <h3 className="mb-1.5 line-clamp-2 h-[32px] overflow-hidden text-[12px] font-semibold leading-[16px] text-gray-950 md:h-[34px] md:text-[13px] md:leading-[17px]">
           {product.name}
         </h3>
 
-        <div className="mb-2 flex min-w-0 items-center gap-1.5">
+        <div className="mb-1.5 flex min-w-0 items-center">
           <button
             type="button"
             onClick={handleVariantClick}
-            className={`flex max-w-[58%] items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-left text-[10px] font-semibold text-gray-700 ${
+            className={`flex max-w-full items-center gap-1 rounded-md bg-gray-100 px-2.5 py-1.5 text-left text-[11px] font-semibold text-gray-700 ${
               hasMultipleVariants ? 'hover:bg-gray-200' : ''
             }`}
           >
@@ -114,18 +134,23 @@ export default function ProductCard({
               {product.weight || product.variantName || product.unit}
             </span>
 
-            {hasMultipleVariants && <FiChevronDown className="h-3 w-3 shrink-0" />}
+            {hasMultipleVariants && <FiChevronDown className="h-3.5 w-3.5 shrink-0" />}
           </button>
-
-          {bestVariantDiscountText && (
-            <span className="min-w-0 truncate text-[10px] font-semibold text-green-600">
-              {bestVariantDiscountText}
-            </span>
-          )}
         </div>
 
+        {/* 
+        <div className="mb-2 min-h-[10px] min-w-0 truncate text-[9px] font-medium leading-none text-green-600">
+          {bestVariantDiscountText && (
+            <>
+              <span className="mr-0.5 text-[8px] leading-none">▲</span>
+              {bestVariantDiscountText}
+            </>
+          )}
+        </div>
+        */}
+
         <div className="mb-2 flex items-baseline gap-1.5">
-          <span className="text-[16px] font-extrabold leading-none text-black">
+          <span className="text-[17px] font-extrabold leading-none text-black">
             {product.price}
           </span>
 
@@ -136,37 +161,44 @@ export default function ProductCard({
           )}
         </div>
 
-        {couponText && (
-          <div className="mb-2 flex min-h-[26px] items-center gap-1 rounded-md border border-dashed border-green-500 bg-green-50 px-2 py-1 text-[10px] font-extrabold leading-tight text-green-700">
-            <FiTag className="h-3 w-3 shrink-0" />
-            <span className="line-clamp-1">{couponText}</span>
-          </div>
-        )}
-
-        {cartItem ? (
+        {totalCartQuantity > 0 ? (
           <div
-            className="mt-auto flex h-10 items-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-sm"
+            className="mt-auto flex h-10 items-center overflow-hidden rounded-lg border border-[#FFD000] bg-[#FFD000] shadow-sm"
             onClick={(event) => event.stopPropagation()}
           >
             <button
-              className="grid h-10 w-10 place-items-center hover:bg-gray-100 transition-colors"
+              className="grid h-10 w-10 place-items-center bg-[#FFD000] hover:bg-[#ffdb33] transition-colors"
               onClick={(event) => {
                 event.stopPropagation();
-                handleUpdateQuantity(cartItem.id, cartItem.quantity - 1);
+
+                if (hasMultipleVariants) {
+                  onOpenVariants?.(product);
+                  return;
+                }
+
+                if (cartItem) {
+                  handleUpdateQuantity(cartItem.id, cartItem.quantity - 1);
+                }
               }}
             >
               <FiMinus className="h-3.5 w-3.5" />
             </button>
 
-            <span className="grid h-10 flex-1 place-items-center bg-white text-sm font-extrabold border-x border-gray-100">
-              {cartItem.quantity}
+            <span className="grid h-10 flex-1 place-items-center bg-white text-sm font-extrabold border-x border-yellow-300">
+              {totalCartQuantity}
             </span>
 
             <button
-              className="grid h-10 w-10 place-items-center hover:bg-gray-100 transition-colors"
+              className="grid h-10 w-10 place-items-center bg-[#FFD000] hover:bg-[#ffdb33] transition-colors"
               onClick={(event) => {
                 event.stopPropagation();
-                handleUpdateQuantity(cartItem.id, cartItem.quantity + 1);
+
+                if (hasMultipleVariants) {
+                  onOpenVariants?.(product);
+                  return;
+                }
+
+                onAddToCart?.(product);
               }}
             >
               <FiPlus className="h-3.5 w-3.5" />

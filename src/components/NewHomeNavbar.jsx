@@ -267,7 +267,10 @@ export default function NewHomeNavbar() {
     const handleDeliveryTimeUpdate = (e) => setDeliveryTime(e.detail);
     window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
 
-    const handleOpenDeliveryLocation = () => setIsLocationModalOpen(true);
+    const handleOpenDeliveryLocation = () => {
+      window.dispatchEvent(new CustomEvent('closeCart'));
+      setIsLocationModalOpen(true);
+    };
     window.addEventListener('openDeliveryLocation', handleOpenDeliveryLocation);
 
     const handlePetricLoginSuccess = (e) => {
@@ -360,7 +363,8 @@ export default function NewHomeNavbar() {
   };
 
   return (
-    <div className="sticky top-0 z-[90] w-full flex flex-col font-sans bg-white shadow-[0_4px_24px_0_rgba(0,0,0,0.18)] ring-2 ring-black/10">
+    <>
+      <div className="sticky top-0 z-[90] w-full flex flex-col font-sans bg-white shadow-[0_4px_24px_0_rgba(0,0,0,0.18)] ring-2 ring-black/10">
       {/* Top Navbar */}
       <div className="bg-white py-3 px-4 md:px-8 flex items-center justify-between gap-3 md:gap-4">
         {/* Logo */}
@@ -423,7 +427,7 @@ export default function NewHomeNavbar() {
 
             <div className={`absolute right-4 top-1/2 -translate-y-1/2 hidden md:block border-b border-black hover:border-[#FFD000] transition-all duration-300 z-20 ${inputValue ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
               <button
-                onClick={() => setIsLocationModalOpen(true)}
+                onClick={() => window.dispatchEvent(new CustomEvent('openDeliveryLocation'))}
                 className="text-xs text-black font-medium whitespace-nowrap hover:text-gray-700 transition-colors duration-200"
               >
                 <FiMapPin className="inline-block h-3 w-3 mr-1" />
@@ -954,11 +958,13 @@ export default function NewHomeNavbar() {
           </span>
         </div>
         <button
-          onClick={() => setIsLocationModalOpen(true)}
+          onClick={() => window.dispatchEvent(new CustomEvent('openDeliveryLocation'))}
           className="bg-[#FFD000] text-black px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wide transition-transform active:scale-95 shrink-0"
         >
           {deliveryTime ? 'Change' : 'Check Now'}
         </button>
+      </div>
+
       </div>
 
       <DeliveryLocationModal
@@ -970,6 +976,6 @@ export default function NewHomeNavbar() {
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
       />
-    </div>
+    </>
   );
 }

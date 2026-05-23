@@ -333,8 +333,13 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       }
     };
 
+    const handleCloseCart = () => {
+      onClose?.();
+    };
+
     window.addEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
     window.addEventListener('openCart', handleOpenCart);
+    window.addEventListener('closeCart', handleCloseCart);
     
     if (!isOpen) {
       setCheckoutStep('cart');
@@ -347,6 +352,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     return () => {
       window.removeEventListener('deliveryTimeUpdated', handleDeliveryTimeUpdate);
       window.removeEventListener('openCart', handleOpenCart);
+      window.removeEventListener('closeCart', handleCloseCart);
     };
   }, [isOpen]);
 
@@ -719,12 +725,12 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-[140] transition-opacity"
+        className="fixed inset-0 bg-black/50 z-[240] transition-opacity"
         onClick={onClose}
       />
       
       {/* Sidebar */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#f8f9fa] z-[150] flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-0 font-sans">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#f8f9fa] z-[250] flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-0 font-sans">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10">

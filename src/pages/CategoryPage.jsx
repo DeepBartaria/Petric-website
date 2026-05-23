@@ -445,12 +445,6 @@ export default function CategoryPage() {
                 </h3>
                 {isActive && subcategories.length > 0 && (
                   <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-100">
-                    <span
-                      onClick={() => handleSubcategoryClick(null)}
-                      className={`text-sm cursor-pointer transition-colors ${!activeSubcategory ? 'text-[#FFD000] font-bold' : 'text-gray-500 hover:text-[#FFD000]'}`}
-                    >
-                      All
-                    </span>
                     {subcategories.map((sub) => (
                       <span
                         key={sub._id}
