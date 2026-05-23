@@ -20,6 +20,24 @@ function getPetParentCount(id = '') {
 
 function ProductCard({ product }) {
   const navigate = useNavigate();
+  const { cartItems, addProductToCart, handleUpdateQuantity } = useCart();
+
+  const handleAddToCart = (p) => {
+    const cartProduct = {
+      id: p.id || p._id,
+      productId: p.id || p._id,
+      img: p.img || p.productImage,
+      brand: p.brand || 'Petric',
+      name: p.name,
+      price: (p.price || 0).toString(),
+      oldPrice: (p.oldPrice || 0).toString(),
+      originalPrice: p.oldPrice || 0,
+      discountedPrice: p.price || 0,
+      quantity: 1,
+    };
+    addProductToCart(cartProduct);
+  };
+
   return (
     <article
       onClick={() => { navigate(`/product/${product.id}`); window.scrollTo(0, 0); }}
@@ -47,12 +65,35 @@ function ProductCard({ product }) {
             )}
             <span className="font-bold text-black text-sm md:text-base">₹{product.price}</span>
           </div>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className="bg-[#FFD000] text-black text-[9px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all shadow-sm"
-          >
-            ADD
-          </button>
+          {(() => {
+            const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
+            return cartItem ? (
+              <div className="flex h-7 md:h-8 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                >
+                  <FiMinus className="h-3 w-3" />
+                </button>
+                <span className="grid h-7 md:h-8 min-w-7 md:min-w-8 place-items-center bg-white text-[10px] md:text-xs font-extrabold border-x border-gray-100">
+                  {cartItem.quantity}
+                </span>
+                <button
+                  className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                >
+                  <FiPlus className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                className="bg-[#FFD000] text-black text-[9px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all shadow-sm"
+              >
+                ADD
+              </button>
+            );
+          })()}
         </div>
       </div>
     </article>
@@ -262,11 +303,11 @@ export default function ProductDetails() {
         {/* Breadcrumb */}
         <div className="mb-4 text-[10px] md:text-xs font-medium text-gray-400 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap">
           <span className="hover:text-black cursor-pointer transition-colors">Home</span>
-          <span>/</span>
+          <span>&gt;</span>
           <span className="hover:text-black cursor-pointer transition-colors">{categoryName}</span>
-          <span>/</span>
+          <span>&gt;</span>
           <span className="hover:text-black cursor-pointer transition-colors">{brandName}</span>
-          <span>/</span>
+          <span>&gt;</span>
           <span className="text-black line-clamp-1 max-w-[200px]">{product.name}</span>
         </div>
 
@@ -310,19 +351,24 @@ export default function ProductDetails() {
             </div> */}
 
             {/* Title & Brand */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-xs md:text-sm font-bold text-gray-600">
-                by: {brandName}
-              </p>
+            <div className="flex flex-col gap-1">
+              <h1 className="text-lg md:text-xl font-bold text-black leading-tight">
+                {product.name}
+              </h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-xs md:text-sm font-bold text-gray-600">
+                  by: {brandName}
+                </p>
 
-              {brandId && (
-                <Link onClick={(e) => e.stopPropagation()}
-                  to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
-                  className="text-[10px] md:text-xs font-bold underline underline-offset-2 text-black hover:text-[#F5C400] transition-colors"
-                >
-                  More by {brandName}
-                </Link>
-              )}
+                {brandId && (
+                  <Link onClick={(e) => e.stopPropagation()}
+                    to={`/all-categories?brandId=${brandId}&brandName=${encodeURIComponent(brandName)}`}
+                    className="text-[10px] md:text-xs font-bold underline underline-offset-2 text-black hover:text-[#F5C400] transition-colors"
+                  >
+                    More by {brandName}
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* Pet parents social proof — replaces star rating */}

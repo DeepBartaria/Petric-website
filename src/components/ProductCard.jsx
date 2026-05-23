@@ -1,5 +1,6 @@
 import React from 'react';
-import { FiChevronDown } from 'react-icons/fi';
+import { FiChevronDown, FiMinus, FiPlus } from 'react-icons/fi';
+import useCart from '../hooks/useCart';
 
 export default function ProductCard({
   product,
@@ -10,6 +11,7 @@ export default function ProductCard({
 }) {
   const hasMultipleVariants = product.variants && product.variants.length > 1;
   const hasDiscount = product.discount && product.discount !== '0%';
+  const { cartItems, handleUpdateQuantity } = useCart();
 
   const handleAddClick = (event) => {
     event.stopPropagation();
@@ -85,13 +87,36 @@ export default function ProductCard({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddClick}
-            className="shrink-0 rounded-xl bg-[#FFD000] px-4 py-2 text-[12px] font-black text-black shadow-sm transition-all hover:scale-105 hover:bg-[#ffdb33] hover:shadow-md md:rounded-full md:px-6 md:text-sm"
-          >
-            ADD
-          </button>
+          {(() => {
+            const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
+            return cartItem ? (
+              <div className="flex h-8 md:h-9 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm shrink-0" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="grid h-8 md:h-9 w-8 md:w-9 place-items-center hover:bg-gray-100 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                >
+                  <FiMinus className="h-3.5 w-3.5" />
+                </button>
+                <span className="grid h-8 md:h-9 min-w-8 md:min-w-9 place-items-center bg-white text-xs md:text-sm font-extrabold border-x border-gray-100">
+                  {cartItem.quantity}
+                </span>
+                <button
+                  className="grid h-8 md:h-9 w-8 md:w-9 place-items-center hover:bg-gray-100 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                >
+                  <FiPlus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAddClick}
+                className="shrink-0 rounded-xl bg-[#FFD000] px-4 py-2 text-[12px] font-black text-black shadow-sm transition-all hover:scale-105 hover:bg-[#ffdb33] hover:shadow-md md:rounded-full md:px-6 md:text-sm"
+              >
+                ADD
+              </button>
+            );
+          })()}
         </div>
       </div>
     </article>

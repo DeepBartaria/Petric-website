@@ -829,6 +829,7 @@ export default function NewHomeNavbar() {
           <div className="shrink-0 z-10">
             <Link
               to="/all-categories"
+              onClick={() => window.dispatchEvent(new CustomEvent('resetCategories'))}
               className="relative overflow-hidden group px-3 py-1.5 rounded-md text-black text-xs font-semibold whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex isolate"
             >
               <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>
@@ -863,6 +864,7 @@ export default function NewHomeNavbar() {
           <div className="shrink-0 z-10">
             <Link
               to="/all-categories"
+              onClick={() => window.dispatchEvent(new CustomEvent('resetCategories'))}
               className="relative overflow-hidden group px-4 py-1.5 rounded-md text-black text-base font-semibold whitespace-nowrap transition-colors duration-300 hover:text-[#FFD000] flex isolate"
             >
               <span className="absolute top-0 left-0 w-full h-0 bg-black transition-all duration-300 ease-in-out group-hover:h-full -z-10"></span>

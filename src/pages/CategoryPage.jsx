@@ -14,6 +14,7 @@ import headerbg from '../assets/petsproductherobg.png';
 import { Link } from 'react-router-dom';
 import useCart from '../hooks/useCart';
 import { logPageVisit } from '../helper/analytics';
+import { FiMinus, FiPlus } from 'react-icons/fi';
 const LIMIT = 20;
 
 export default function CategoryPage() {
@@ -366,18 +367,7 @@ export default function CategoryPage() {
       <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-10">
 
         {/* Mobile Subcategory Selector */}
-        <div className="flex md:hidden flex-col gap-3">
-          <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-            {allCategories.map((cat) => (
-              <button
-                key={cat._id}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold border transition-colors shrink-0 ${cat._id === categoryId ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200'}`}
-                onClick={() => handleCategoryNavClick(cat)}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+        <div className="flex md:hidden flex-col gap-3 sticky top-[160px] z-[80] bg-[#FCFCFC] pt-8 pb-3 -mx-4 px-4 shadow-sm border-b border-gray-100 mb-4">
           {subcategories.length > 0 && (
             <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
               <button
@@ -522,17 +512,6 @@ export default function CategoryPage() {
                         className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
                       />
                       <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
-                        {product.isBestSeller && (
-                          <div className="bg-black text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
-                            Best Seller
-                          </div>
-                        )}
-                        {!product.isBestSeller && product.isBestAvailable && (
-                          <div className="bg-green-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
-                            Best Seller
-                          </div>
-                        )}
-
                         {product.discount && product.discount !== '0%' && (
                           <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
                             {product.discount} Off
@@ -550,12 +529,35 @@ export default function CategoryPage() {
                           )}
                           <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
                         </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                          className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                        >
-                          ADD
-                        </button>
+                        {(() => {
+                          const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
+                          return cartItem ? (
+                            <div className="flex h-7 md:h-8 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                                onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                              >
+                                <FiMinus className="h-3 w-3" />
+                              </button>
+                              <span className="grid h-7 md:h-8 min-w-7 md:min-w-8 place-items-center bg-white text-[10px] md:text-xs font-extrabold border-x border-gray-100">
+                                {cartItem.quantity}
+                              </span>
+                              <button
+                                className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                                onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                              >
+                                <FiPlus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                              className="shrink-0 bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
+                            >
+                              ADD
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
