@@ -48,7 +48,7 @@ export default function VariantPopup({ isOpen, onClose, product, onAddToCart }) 
     <>
       {/* Background Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-400 ${
+        className={`fixed inset-0 bg-black/50 z-[150] transition-opacity duration-400 ${
           isClosing ? 'opacity-0' : 'opacity-100'
         }`}
         onClick={handleClose}
@@ -56,7 +56,7 @@ export default function VariantPopup({ isOpen, onClose, product, onAddToCart }) 
 
       {/* Popup Container */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-3xl md:rounded-3xl md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md shadow-2xl transition-all duration-400 ${
+        className={`fixed bottom-0 left-0 right-0 z-[160] bg-white rounded-t-3xl md:rounded-3xl md:top-1/2 md:bottom-auto md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md shadow-2xl transition-all duration-400 ${
           isClosing
             ? 'translate-y-full md:translate-y-[100%] md:opacity-0 md:scale-95'
             : 'translate-y-0 md:-translate-y-1/2 md:opacity-100 md:scale-100'

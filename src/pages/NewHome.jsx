@@ -10,6 +10,7 @@ import OffersBanner from '../components/Banner';
 import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
+import ProductCard from '../components/ProductCard';
 import { FiChevronRight, FiChevronDown, FiGift, FiShield, FiStar} from 'react-icons/fi';
 import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
@@ -218,6 +219,16 @@ export default function NewHome() {
     addProductToCart(product);
   };
 
+  const handleOpenProduct = (product) => {
+    sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleOpenVariants = (product) => {
+    setVariantPopupProduct(product);
+    setIsVariantPopupOpen(true);
+  };
+
   const handleLoginSuccess = async () => {
     const storedUser = localStorage.getItem('petric_user');
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -410,98 +421,14 @@ export default function NewHome() {
 
             <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
               {topHomeSection.products.map((product, i) => (
-                <div
-                  key={i}
-                  onClick={() => {
-                    sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
-                    navigate(`/product/${product.id}`);
-                  }}
-                  className="bg-white rounded-3xl w-[45vw] md:w-[260px] lg:w-[280px] shrink-0 snap-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
-                >
-                  <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
-                    <img
-                      src={product.img}
-                      alt={product.name}
-                      className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
-                    />
-
-                    <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-                      {product.isBestSeller && (
-                        <div className="bg-black text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          Best Seller
-                        </div>
-                      )}
-
-                      {!product.isBestSeller && product.isBestAvailable && (
-                        <div className="bg-green-600 text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          Best Available
-                        </div>
-                      )}
-
-                      {product.discount && product.discount !== '0%' && (
-                        <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          {product.discount} Off
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col flex-grow">
-                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">
-                      {product.name}
-                    </h3>
-
-                    <div
-                      className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${
-                        product.variants && product.variants.length > 1
-                          ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded'
-                          : ''
-                      }`}
-                      onClick={(e) => {
-                        if (product.variants && product.variants.length > 1) {
-                          e.stopPropagation();
-                          setVariantPopupProduct(product);
-                          setIsVariantPopupOpen(true);
-                        }
-                      }}
-                    >
-                      {product.weight}
-                      {product.variants && product.variants.length > 1 && (
-                        <FiChevronDown className="h-3 w-3" />
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between gap-2 mt-auto">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-black text-sm md:text-base">
-                          {product.price}
-                        </span>
-
-                        {product.oldPrice && (
-                          <span className="text-[10px] md:text-xs text-gray-400 line-through">
-                            {product.oldPrice}
-                          </span>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-
-                          if (product.variants && product.variants.length > 1) {
-                            setVariantPopupProduct(product);
-                            setIsVariantPopupOpen(true);
-                          } else {
-                            handleAddToCart(product);
-                          }
-                        }}
-                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                      >
-                        ADD
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <ProductCard
+                  key={product.id || i}
+                  product={product}
+                  onOpenProduct={handleOpenProduct}
+                  onAddToCart={handleAddToCart}
+                  onOpenVariants={handleOpenVariants}
+                  className="md:w-[260px] lg:w-[280px] md:max-w-[280px]"
+                />
               ))}
             </div>
           </div>
@@ -678,85 +605,13 @@ export default function NewHome() {
               } gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:px-2 md:pb-5`}
             >
               {section.products.map((product, i) => (
-                <div
-                  key={i}
-                  onClick={() => {
-                    sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
-                    navigate(`/product/${product.id}`);
-                  }}
-                  className="bg-white rounded-3xl w-[45vw] md:w-full shrink-0 snap-center md:snap-none cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm"
-                >
-                  
-                  <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
-
-                    <img
-                      src={product.img}
-                      alt={product.name}
-                      className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
-                    />
-
-                    <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-
-                      {product.isBestSeller && (
-                        <div className="bg-black text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          Best Seller
-                        </div>
-                      )}
-
-                      {!product.isBestSeller && product.isBestAvailable && (
-                        <div className="bg-green-600 text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          Best Available
-                        </div>
-                      )}
-
-                      {product.discount && product.discount !== '0%' && (
-                        <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                          {product.discount} Off
-                        </div>
-                      )}
-
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col flex-grow">
-                    <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
-                    <div
-                      className={`text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1 w-fit ${product.variants && product.variants.length > 1 ? 'cursor-pointer hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-1.5 py-0.5 rounded' : ''}`}
-                      onClick={(e) => {
-                        if (product.variants && product.variants.length > 1) {
-                          e.stopPropagation();
-                          setVariantPopupProduct(product);
-                          setIsVariantPopupOpen(true);
-                        }
-                      }}
-                    >
-                      {product.weight}
-                      {product.variants && product.variants.length > 1 && <FiChevronDown className="w-3 h-3" />}
-                    </div>
-                    <div className="mt-auto flex items-center justify-between">
-                      <div className="flex flex-col">
-                        {product.oldPrice && product.oldPrice !== product.price && (
-                          <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                        )}
-                        <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (product.variants && product.variants.length > 1) {
-                            setVariantPopupProduct(product);
-                            setIsVariantPopupOpen(true);
-                          } else {
-                            handleAddToCart(product);
-                          }
-                        }}
-                        className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 hover:shadow-md transition-all"
-                      >
-                        ADD
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <ProductCard
+                  key={product.id || i}
+                  product={product}
+                  onOpenProduct={handleOpenProduct}
+                  onAddToCart={handleAddToCart}
+                  onOpenVariants={handleOpenVariants}
+                />
               ))}
             </div>
           </div>

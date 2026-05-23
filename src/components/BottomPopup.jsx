@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
-import laptopImage from '../assets/laptop_hi.png';
-import mobileImage from '../assets/hi.jpg';
+
+import desktopPopupImage from '../assets/App_download_popup/desktop_popup.png';
+import mobilePopupImage from '../assets/App_download_popup/mobile_popup.png';
+
+const POPUP_DELAY_MS = 10000;
 
 export default function BottomPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,53 +18,47 @@ export default function BottomPopup() {
       return;
     }
 
-    sessionStorage.setItem('petric_download_popup_seen', 'true');
+    const popupTimer = setTimeout(() => {
+      sessionStorage.setItem('petric_download_popup_seen', 'true');
 
-    requestAnimationFrame(() => {
       setIsEntering(true);
-
       document.body.classList.add('popup-open');
 
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         setIsVisible(true);
-      }, 50);
-    });
+      });
+    }, POPUP_DELAY_MS);
 
     return () => {
+      clearTimeout(popupTimer);
       document.body.classList.remove('popup-open');
     };
   }, []);
 
-  // Auto-close when scrolling near footer
   useEffect(() => {
     if (!isVisible) return;
 
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
+      const footerSection =
+        document.querySelector('[class*="p-6 sm:p-8 md:p-10"]') ||
+        document.querySelector('footer');
 
-      // Calculate when footer image would be near the popup
-      const footerSection = document.querySelector('[class*="p-6 sm:p-8 md:p-10"]') ||
-                           document.querySelector('footer');
+      if (!footerSection) return;
 
-      if (footerSection) {
-        const footerRect = footerSection.getBoundingClientRect();
-        const footerTop = scrollY + footerRect.top;
+      const footerRect = footerSection.getBoundingClientRect();
 
-        // If user scrolled so that footer is within 300px of viewport bottom
-        if (footerTop - scrollY < windowHeight + 200) {
-          handleClose();
-        }
+      if (footerRect.top < window.innerHeight + 200) {
+        handleClose();
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isVisible]);
 
   const handleClose = () => {
     document.body.classList.remove('popup-open');
-
     setIsClosing(true);
 
     setTimeout(() => {
@@ -75,42 +72,48 @@ export default function BottomPopup() {
 
   return (
     <>
-      {/* Background Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-all duration-700 ${
-          isClosing ? 'opacity-0' : 'opacity-100'
+        className={`fixed inset-0 z-[9998] bg-black/60 transition-opacity duration-700 ${
+          isClosing || !isVisible ? 'opacity-0' : 'opacity-100'
         } ${!isVisible ? 'pointer-events-none' : ''}`}
         onClick={handleClose}
       />
 
-      {/* Popup Container */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 ${
-          isClosing
-            ? 'animate-slideDownOut'
-            : 'animate-slideUpIn'
+        className={`fixed inset-x-0 bottom-0 z-[9999] ${
+          isClosing ? 'animate-slideDownOut' : 'animate-slideUpIn'
         }`}
       >
-        <div className="relative w-full max-w-7xl px-2 sm:px-4 md:px-6 py-2 mx-auto">
-          {/* Image */}
-          <div className="relative overflow-hidden shadow-2xl rounded-2xl sm:rounded-3xl">
+        <div className="relative mx-auto w-full max-w-7xl px-3 pb-3 sm:px-5 sm:pb-5 md:px-8 md:pb-6">
+          <div className="relative overflow-hidden rounded-2xl bg-white shadow-2xl sm:rounded-3xl">
             <button
+              type="button"
               onClick={handleClose}
-              className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/70 backdrop-blur border border-gray-200 rounded-full p-1.5 sm:p-2 z-20 "
-              aria-label="Close popup"
+              className="absolute right-2 top-2 z-20 rounded-full border border-white/40 bg-black/75 p-2 text-white backdrop-blur transition hover:bg-black sm:right-3 sm:top-3"
+              aria-label="Close download app popup"
             >
-              <FiX className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <FiX className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
+
             <img
-              src={laptopImage}
-              alt="Welcome to Petric"
-              className="hidden md:block w-full max-h-[320px] object-cover"
+              src={desktopPopupImage}
+              alt="Download the Petric app"
+              className="hidden max-h-[340px] w-full object-cover md:block"
             />
-            <img
-              src={mobileImage}
-              alt="Welcome to Petric"
-              className="md:hidden w-full max-h-[260px] object-cover"
-            />
+
+            <a
+              href="https://petric.in/download/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block md:hidden"
+              aria-label="Download the Petric app"
+            >
+              <img
+                src={mobilePopupImage}
+                alt="Download the Petric app"
+                className="max-h-[420px] w-full object-cover"
+              />
+            </a>
           </div>
         </div>
       </div>
