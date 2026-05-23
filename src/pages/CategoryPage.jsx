@@ -16,7 +16,9 @@ import headerbg from '../assets/petsproductherobg.png';
 import { Link } from 'react-router-dom';
 import useCart from '../hooks/useCart';
 import { logPageVisit } from '../helper/analytics';
-import { FiMinus, FiPlus } from 'react-icons/fi';
+import ProductCard from '../components/ProductCard';
+import VariantPopup from '../components/VariantPopup';
+import useProductCoupons from '../hooks/useProductCoupons';
 const LIMIT = 20;
 
 export default function CategoryPage() {
@@ -41,9 +43,12 @@ export default function CategoryPage() {
     handleUpdateQuantity,
     handleLoginSuccess,
   } = useCart();
-
   const { cartRef, flyItems, toasts, cartShake, triggerFlyToCart, onFlyComplete, dismissToast } =
     useCartAnimation();
+
+  const productCoupons = useProductCoupons();
+  const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
+  const [variantPopupProduct, setVariantPopupProduct] = useState(null);
 
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
@@ -319,6 +324,15 @@ export default function CategoryPage() {
     addProductToCart(product);
   };
 
+  const handleOpenProduct = (product) => {
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleOpenVariants = (product) => {
+    setVariantPopupProduct(product);
+    setIsVariantPopupOpen(true);
+  };
+
   const handleSubcategoryClick = (sub) => {
     setActiveSubcategory(sub);
     const params = sub ? `?subCategory=${sub._id}` : '';
@@ -367,6 +381,14 @@ export default function CategoryPage() {
         toasts={toasts}
         onFlyComplete={onFlyComplete}
         onDismissToast={dismissToast}
+      />
+
+      <VariantPopup
+        isOpen={isVariantPopupOpen}
+        onClose={() => setIsVariantPopupOpen(false)}
+        product={variantPopupProduct}
+        onAddToCart={handleAddToCart}
+        onAnimateToCart={triggerFlyToCart}
       />
 
       {/* Hero Banner */}
@@ -518,78 +540,17 @@ export default function CategoryPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
                 {products.map((product, i) => (
-                  <div
+                  <ProductCard
                     key={`${product.id}-${i}`}
-                    data-product-card=""
-                    onClick={() => navigate(`/product/${product.id}`)}
-                    className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl w-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm"
-                  >
-                    <div className="w-full h-24 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl mb-2 md:mb-4 p-1.5 md:p-2 relative">
-                      <img
-                        src={product.img}
-                        alt={product.name}
-                        className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute top-1 right-1 md:top-2 md:right-2 flex flex-col gap-1 items-end">
-                        {product.discount && product.discount !== '0%' && (
-                          <div className="bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
-                            {product.discount} Off
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col flex-grow">
-                      <h3 className="font-bold text-black text-[11px] md:text-sm line-clamp-2 mb-1">{product.name}</h3>
-                      <span className="text-[10px] md:text-xs text-gray-500 mb-2">{product.weight}</span>
-                      <div className="mt-auto flex items-center justify-between">
-                        <div className="flex flex-col">
-                          {product.oldPrice && product.oldPrice !== product.price && (
-                            <span className="text-gray-400 text-[9px] md:text-[10px] line-through">{product.oldPrice}</span>
-                          )}
-                          <span className="font-bold text-black text-sm md:text-lg">{product.price}</span>
-                        </div>
-                        {(() => {
-                          const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
-                          return cartItem ? (
-                            <div className="flex h-7 md:h-8 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                              <button
-                                className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
-                                onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
-                              >
-                                <FiMinus className="h-3 w-3" />
-                              </button>
-                              <span className="grid h-7 md:h-8 min-w-7 md:min-w-8 place-items-center bg-white text-[10px] md:text-xs font-extrabold border-x border-gray-100">
-                                {cartItem.quantity}
-                              </span>
-                              <button
-                                className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
-                                onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
-                              >
-                                <FiPlus className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Button bounce: remove + re-add class via the DOM for reliable restart
-                                e.currentTarget.classList.remove('animate-add-btn-bounce');
-                                void e.currentTarget.offsetWidth;
-                                e.currentTarget.classList.add('animate-add-btn-bounce');
-                                handleAddToCart(product, e);
-                              }}
-                              onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-add-btn-bounce')}
-                              className="shrink-0 bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-2.5 md:px-6 py-1 md:py-2 rounded-lg md:rounded-full hover:bg-[#ffdb33] transition-colors"
-                            >
-                              ADD
-                            </button>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
+                    product={product}
+                    coupons={productCoupons}
+                    onOpenProduct={handleOpenProduct}
+                    onAddToCart={handleAddToCart}
+                    onOpenVariants={handleOpenVariants}
+                    onAnimateToCart={triggerFlyToCart}
+                  />
                 ))}
 
                 {/* Skeleton cards while fetching more */}

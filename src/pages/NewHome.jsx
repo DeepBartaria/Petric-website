@@ -13,9 +13,10 @@ import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import ProductCard from '../components/ProductCard';
-import { FiChevronRight, FiChevronDown, FiGift, FiShield, FiStar} from 'react-icons/fi';
+import { FiChevronDown } from "react-icons/fi";
 import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
+import useProductCoupons from '../hooks/useProductCoupons';
 
 import banner1 from '../assets/banner/homepage.png';
 import banner2 from '../assets/banner/oldimg.png';
@@ -62,6 +63,8 @@ export default function NewHome() {
 
   const { cartRef, flyItems, toasts, cartShake, triggerFlyToCart, onFlyComplete, dismissToast } =
     useCartAnimation();
+
+  const productCoupons = useProductCoupons();  
 
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
@@ -234,6 +237,16 @@ export default function NewHome() {
     setVariantPopupProduct(product);
     setIsVariantPopupOpen(true);
   };
+
+  // const handleOpenProduct = (product) => {
+  //   sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
+  //   navigate(`/product/${product.id}`);
+  // };
+
+  // const handleOpenVariants = (product) => {
+  //   setVariantPopupProduct(product);
+  //   setIsVariantPopupOpen(true);
+  // };
 
   const handleLoginSuccess = async () => {
     const storedUser = localStorage.getItem('petric_user');
@@ -435,11 +448,14 @@ export default function NewHome() {
               {topHomeSection.title}
             </h2>
 
-            <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
+            <div className="flex gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-5 pt-2 px-1 md:px-2">
               {topHomeSection.products.map((product, i) => (
                 <ProductCard
                   key={product.id || i}
                   product={product}
+                  coupons={productCoupons}
+                  mobileMode="carousel"
+                  desktopMode="carousel"
                   onOpenProduct={handleOpenProduct}
                   onAddToCart={handleAddToCart}
                   onOpenVariants={handleOpenVariants}
@@ -619,12 +635,14 @@ export default function NewHome() {
                 section.products.length <= 8
                   ? 'md:grid-cols-4'
                   : 'md:grid-flow-col md:grid-rows-2 md:auto-cols-[minmax(220px,260px)] lg:auto-cols-[minmax(240px,280px)]'
-              } gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2 md:px-2 md:pb-5`}
+              } gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-1 md:px-2 md:pb-5`}
             >
               {section.products.map((product, i) => (
                 <ProductCard
                   key={product.id || i}
                   product={product}
+                  coupons={productCoupons}
+                  mobileMode="carousel"
                   onOpenProduct={handleOpenProduct}
                   onAddToCart={handleAddToCart}
                   onOpenVariants={handleOpenVariants}
