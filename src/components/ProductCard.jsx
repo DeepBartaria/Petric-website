@@ -104,13 +104,13 @@ export default function ProductCard({
         />
 
         {discount && discount !== '0%' && (
-          <div className="absolute right-1.5 top-1.5 rounded-md bg-green-600 px-2 py-1 text-[9px] font-bold leading-tight text-white shadow-sm">
+          <div className="absolute right-1.5 top-1.5 rounded-md bg-[#2563EB] px-2 py-1 text-[9px] font-bold leading-tight text-white shadow-sm">
             {discount} off
           </div>
         )}
 
         {couponText && (
-          <div className="absolute right-1.5 top-8 inline-flex max-w-[78%] items-center gap-1 rounded-md border border-dashed border-green-500 bg-green-50 px-2 py-1 text-[9px] font-bold leading-tight text-green-700 shadow-sm">
+          <div className="absolute right-1.5 top-8 inline-flex max-w-[78%] items-center gap-1 rounded-md border border-dashed border-green-500 bg--50 px-2 py-1 text-[9px] font-bold leading-tight text-green-700 shadow-sm">
             <FiTag className="h-3 w-3 shrink-0" />
             <span className="line-clamp-1">{couponText}</span>
           </div>
@@ -126,9 +126,8 @@ export default function ProductCard({
           <button
             type="button"
             onClick={handleVariantClick}
-            className={`flex max-w-full items-center gap-1 rounded-md bg-gray-100 px-2.5 py-1.5 text-left text-[11px] font-semibold text-gray-700 ${
-              hasMultipleVariants ? 'hover:bg-gray-200' : ''
-            }`}
+            className={`flex max-w-full items-center gap-1 rounded-md bg-gray-100 px-2.5 py-1.5 text-left text-[11px] font-semibold text-gray-700 ${hasMultipleVariants ? 'hover:bg-gray-200' : ''
+              }`}
           >
             <span className="truncate">
               {product.weight || product.variantName || product.unit}
@@ -209,9 +208,8 @@ export default function ProductCard({
             type="button"
             onClick={handleAddClick}
             onAnimationEnd={() => setBtnBounce(false)}
-            className={`mt-auto h-10 w-full rounded-lg bg-[#FFD000] text-[13px] font-black text-black shadow-sm transition-all hover:bg-[#ffdb33] active:scale-[0.98]${
-              btnBounce ? ' animate-add-btn-bounce' : ''
-            }`}
+            className={`mt-auto h-10 w-full rounded-lg bg-[#FFD000] text-[13px] font-black text-black shadow-sm transition-all hover:bg-[#ffdb33] active:scale-[0.98]${btnBounce ? ' animate-add-btn-bounce' : ''
+              }`}
           >
             ADD
           </button>
