@@ -358,7 +358,7 @@ export default function AllCategories() {
       <main className="max-w-[1400px] mx-auto px-3 md:px-8 py-4 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-4 md:gap-8 items-start">
 
         {/* Left Sidebar: Categories (Desktop only) */}
-        <aside className="hidden md:flex w-56 lg:w-64 shrink-0 flex-col gap-2 sticky top-6 self-start max-h-[calc(100vh-5rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden pb-6">
+        <aside className="hidden md:flex w-56 lg:w-64 shrink-0 flex-col gap-2 sticky top-[150px] self-start max-h-[calc(100vh-170px)] overflow-y-auto [&::-webkit-scrollbar]:hidden pb-6">
           {categoriesData.map((category) => (
             <div
               key={category._id}
@@ -488,7 +488,7 @@ export default function AllCategories() {
           {/* Product Grid */}
           {!activeCategory && !searchQuery && !brandId ? (
             <div className="flex flex-col w-full">
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 sm:gap-6 mt-4">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5 mt-4">
                 {categoriesData.map((cat, index) => {
                   return (
                     <div
