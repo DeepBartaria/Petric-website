@@ -19,6 +19,7 @@ import { logPageVisit } from '../helper/analytics';
 import ProductCard from '../components/ProductCard';
 import VariantPopup from '../components/VariantPopup';
 import useProductCoupons from '../hooks/useProductCoupons';
+import { getFullProductForVariantPopup } from '../utils/variantPopupProduct';
 const LIMIT = 20;
 
 export default function CategoryPage() {
@@ -73,6 +74,7 @@ export default function CategoryPage() {
   const fetchKeyRef = useRef(0);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchPageData();
   }, [categoryId]);
 
@@ -327,9 +329,34 @@ export default function CategoryPage() {
     navigate(`/product/${product.id}`);
   };
 
-  const handleOpenVariants = (product) => {
-    setVariantPopupProduct(product);
-    setIsVariantPopupOpen(true);
+  const handleOpenVariants = async (product) => {
+    setIsCartOpen(false);
+    window.dispatchEvent(new Event('closeCart'));
+
+    try {
+      const fullProduct = await getFullProductForVariantPopup(product, get);
+      const variants = Array.isArray(fullProduct?.variants) ? fullProduct.variants : [];
+
+      if (variants.length > 1) {
+        setVariantPopupProduct(fullProduct);
+        setIsVariantPopupOpen(true);
+        return;
+      }
+
+      addProductToCart(fullProduct);
+    } catch (error) {
+      console.error('Variant popup product fetch failed:', error);
+
+      const variants = Array.isArray(product?.variants) ? product.variants : [];
+
+      if (variants.length > 1) {
+        setVariantPopupProduct(product);
+        setIsVariantPopupOpen(true);
+        return;
+      }
+
+      addProductToCart(product);
+    }
   };
 
   const handleSubcategoryClick = (sub) => {
@@ -392,31 +419,25 @@ export default function CategoryPage() {
 
       {/* Hero Banner */}
       <section
-              className="w-full bg-white bg-cover bg-center bg-no-repeat h-[20vh] sm:h-[25vh] md:h-[30vh] flex items-center"
+              className="w-full bg-white bg-cover bg-center bg-no-repeat h-[140px] md:h-[180px] flex items-center"
               style={{ backgroundImage: `url(${headerbg})` }}
             >
               <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
-                <h1 className="text-4xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold balsamiq-sans-bold text-black leading-tight mb-4 max-w-3xl drop-shadow-sm">
-                  All Categories
+                <h1 className="text-3xl md:text-4xl font-bold balsamiq-sans-bold text-black leading-tight mb-2 max-w-3xl drop-shadow-sm">
+                  {categoryName || 'Category'}
                 </h1>
-                <p className="text-lg sm:text-xl md:text-xl font-bold text-[#FF5757] max-w-xl bg-white/90 p-4 rounded-xl shadow-sm inline-block">
-                  Everything your pet needs 
+                <p className="text-xs md:text-sm font-semibold text-[#FF5757] bg-white/85 px-4 py-2 rounded-lg shadow-sm inline-block">
+                  Essentials for your pet
                 </p>
               </div>
             </section>
 
-      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-6 md:gap-10">
+      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-8 w-full flex-grow flex flex-col md:flex-row gap-4 md:gap-8">
 
         {/* Mobile Subcategory Selector */}
-        <div className="flex md:hidden flex-col gap-3 sticky top-[160px] z-[80] bg-[#FCFCFC] pt-8 pb-3 -mx-4 px-4 shadow-sm border-b border-gray-100 mb-4">
+        <div className="flex md:hidden flex-col sticky top-[133px] z-[80] bg-[#FCFCFC] py-2 -mx-4 px-4 shadow-sm border-b border-gray-100 mb-3">
           {subcategories.length > 0 && (
-            <div className="flex overflow-x-auto gap-2 pb-2 [&::-webkit-scrollbar]:hidden">
-              <button
-                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shrink-0 ${!activeSubcategory ? 'bg-[#FFD000] text-black' : 'bg-gray-100 text-gray-600'}`}
-                onClick={() => handleSubcategoryClick(null)}
-              >
-                All
-              </button>
+            <div className="flex overflow-x-auto gap-2 [&::-webkit-scrollbar]:hidden">
               {subcategories.map((sub) => (
                 <button
                   key={sub._id}
@@ -463,62 +484,6 @@ export default function CategoryPage() {
         {/* Right Content: Products Grid */}
         <div className="w-full md:w-3/4 lg:w-4/5 flex flex-col">
 
-          {/* Breadcrumbs & Header */}
-          <div className="mb-6 md:mb-8 border-b border-gray-200 pb-4 md:pb-6">
-            <div className="text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex flex-wrap items-center gap-1.5 md:gap-2">
-              <Link
-              to="/"
-              className="underline decoration-black underline-offset-2 decoration-[1.5px] hover:text-black transition-colors"
-            >
-              HOMEPAGE
-            </Link>
-
-            <span>&gt;</span>
-
-            <Link
-              to={`/category/${categoryId}`}
-              state={{ categoryName }}
-              className="underline decoration-black underline-offset-2 decoration-[1.5px] hover:text-black transition-colors"
-            >
-              {categoryName}
-            </Link>
-
-            {activeSubcategory && (
-              <>
-                <span>&gt;</span>
-
-                <Link
-                  to={`/category/${categoryId}?subCategory=${activeSubcategory._id}`}
-                  state={{
-                    categoryName,
-                    subCategoryName: activeSubcategory.name
-                  }}
-                  className="underline decoration-black underline-offset-2 decoration-[1.5px] text-black hover:text-gray-700 transition-colors"
-                >
-                  {activeSubcategory.name}
-                </Link>
-              </>
-            )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-black tracking-tight">
-                {activeSubcategory?.name || categoryName}
-              </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-400 font-bold tracking-wide">
-                  PRODUCTS IN CATEGORY: {totalProducts}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Sort By */}
-          <div className="flex justify-end mb-6">
-            <span className="text-xs text-gray-500 font-bold tracking-wider cursor-pointer hover:text-black transition-colors">
-              SORT BY: <span className="text-black ml-1">POPULARITY ∨</span>
-            </span>
-          </div>
 
           {/* Product Grid */}
           {isInitialLoading ? (
