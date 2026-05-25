@@ -40,7 +40,7 @@ function ProductCard({ product }) {
 
   return (
     <article
-      onClick={() => { navigate(`/product/${product.id}`); window.scrollTo(0, 0); }}
+      onClick={() => { navigate(`/product/${product.id}`); }}
       className="bg-white border border-gray-100 rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm shrink-0 w-[44vw] md:w-full snap-center md:snap-none"
     >
       <div className="w-full h-24 md:h-36 flex items-center justify-center bg-gray-50 rounded-xl mb-2 md:mb-3 p-1 relative">

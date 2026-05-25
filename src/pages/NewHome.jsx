@@ -210,29 +210,13 @@ export default function NewHome() {
   }, []);
 
 
-  useEffect(() => {
-    const savedScrollY = sessionStorage.getItem('petric_home_scroll_y');
 
-    if (!savedScrollY) return;
-
-    const timer = setTimeout(() => {
-      window.scrollTo({
-        top: Number(savedScrollY),
-        behavior: 'auto',
-      });
-
-      sessionStorage.removeItem('petric_home_scroll_y');
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [homePageSections.length]);
 
   const handleAddToCart = (product) => {
     addProductToCart(product);
   };
 
   const handleOpenProduct = (product) => {
-    sessionStorage.setItem('petric_home_scroll_y', String(window.scrollY));
     navigate(`/product/${product.id}`);
   };
 

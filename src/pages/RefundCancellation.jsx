@@ -6,7 +6,7 @@ export default function RefundCancellation() {
     useEffect(() => {
         // Only scroll to top if there is no hash in the URL
         if (!window.location.hash) {
-            window.scrollTo(0, 0);
+            // let ScrollToTop handle it
         }
     }, []);
 

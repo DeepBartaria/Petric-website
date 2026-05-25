@@ -4,7 +4,7 @@ import NewHomeNavbar from '../components/NewHomeNavbar';
 export default function PrivacyPolicy() {
     useEffect(() => {
         if (!window.location.hash) {
-            window.scrollTo(0, 0);
+            // let ScrollToTop handle it
         }
     }, []);
 

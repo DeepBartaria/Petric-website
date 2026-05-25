@@ -13,7 +13,6 @@ import teamImage2 from '../assets/image-2.png';
 export default function Story() {
   
   useEffect(() => {
-    window.scrollTo(0, 0);
   }, []);
 
   return (
