@@ -18,9 +18,9 @@ import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
 import useProductCoupons from '../hooks/useProductCoupons';
 
-import banner1 from '../assets/banner/homepage.png';
-import banner2 from '../assets/banner/oldimg.png';
-import banner3 from '../assets/banner/newimg.png';
+import banner1 from '../assets/main_banner1.webp';
+import banner2 from '../assets/main_banner2.webp';
+import banner3 from '../assets/main_banner3.webp';
 
 import pedigree from '../assets/pedigree.png';
 import drools from '../assets/drools.png';
@@ -262,6 +262,7 @@ export default function NewHome() {
 
   return (
     <div className="min-h-screen bg-white font-sans relative">
+
       <BottomPopup />
       <NewHomeNavbar />
 
@@ -303,35 +304,31 @@ export default function NewHome() {
         {/* Top Banners Section */}
         {/* Desktop View */}
         <div className="hidden md:grid grid-cols-3 gap-6 mb-12">
-          <div className="col-span-2 bg-[#D9D9D9] rounded-[2rem] h-[500px] w-full overflow-hidden relative cursor-pointer group">
+          <div className="col-span-2 bg-[#D9D9D9] rounded-[2rem] h-[500px] w-full overflow-hidden relative group">
             <img src={banner1} alt="Banner 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           </div>
           <div className="grid grid-rows-2 gap-6 h-[500px]">
-            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative cursor-pointer group">
+            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative group">
               <img src={banner2} alt="Banner 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
-            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative cursor-pointer group">
+            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative group">
               <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
           </div>
         </div>
 
-        {/* Mobile View - Sliding Cards */}
         <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-4 mb-10 pb-2">
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
-            <img src={banner1} alt="Banner 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative">
+            <img src={banner1} alt="Banner 1" className="w-full h-full object-cover" />
           </div>
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
-            <img src={banner2} alt="Banner 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative">
+            <img src={banner2} alt="Banner 2" className="w-full h-full object-cover" />
           </div>
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer group">
-            <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-active:opacity-100" />
+          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative">
+            <img src={banner3} alt="Banner 3" className="w-full h-full object-cover" />
           </div>
         </div>
 
@@ -537,9 +534,9 @@ export default function NewHome() {
                   <Link
                     key={i}
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center gap-1.5 w-[72px] shrink-0 cursor-pointer group"
+                    className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px]"
                   >
-                    <div className="w-[72px] h-[72px] rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95">
+                    <div className="rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px]">
                       <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
                     </div>
                     {brand.alt && (
@@ -559,9 +556,9 @@ export default function NewHome() {
                   <Link
                     key={i}
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center gap-1.5 w-[72px] shrink-0 cursor-pointer group"
+                    className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px]"
                   >
-                    <div className="w-[72px] h-[72px] rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95">
+                    <div className="rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px]">
                       <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
                     </div>
                     {brand.alt && (

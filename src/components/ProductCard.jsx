@@ -104,14 +104,14 @@ export default function ProductCard({
         />
 
         {discount && discount !== '0%' && (
-          <div className="absolute right-1.5 top-1.5 rounded-md bg-[#2563EB] px-2 py-1 text-[9px] font-bold leading-tight text-white shadow-sm">
+          <div className="absolute right-1.5 top-1.5 rounded-lg bg-[#00A650] px-2 py-1 text-[10px] font-extrabold tracking-wide leading-tight text-white shadow-sm">
             {discount} off
           </div>
         )}
 
         {couponText && (
-          <div className="absolute right-1.5 top-8 inline-flex max-w-[78%] items-center gap-1 rounded-md border border-dashed border-green-500 bg--50 px-2 py-1 text-[9px] font-bold leading-tight text-green-700 shadow-sm">
-            <FiTag className="h-3 w-3 shrink-0" />
+          <div className="absolute right-1.5 top-8 inline-flex max-w-[78%] items-center gap-1 rounded-lg border-[1.5px] border-dashed border-[#00A650] bg-[#E8F8EE] px-2 py-1 text-[10px] font-extrabold leading-tight text-[#00A650] shadow-sm">
+            <FiTag className="h-3 w-3 shrink-0" strokeWidth={2.5} />
             <span className="line-clamp-1">{couponText}</span>
           </div>
         )}

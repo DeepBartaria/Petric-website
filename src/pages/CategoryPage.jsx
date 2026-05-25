@@ -73,7 +73,6 @@ export default function CategoryPage() {
   const fetchKeyRef = useRef(0);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     fetchPageData();
   }, [categoryId]);
 

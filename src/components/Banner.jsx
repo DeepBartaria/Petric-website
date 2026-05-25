@@ -11,12 +11,10 @@ import 'slick-carousel/slick/slick-theme.css';
 // import Banner3Mobile from '../assets/banner/banner3-mobile.jpg';
 // import Banner4Mobile from '../assets/banner/banner4-mobile.jpg';
 
-import Banner1 from '../assets/banner/BestOfferBanner1.png';
-import Banner2 from '../assets/banner/BestOfferBanner2.png';
-import Banner3 from '../assets/banner/BestOfferBanner3.png';
-import Banner1Mobile from '../assets/banner/BestOfferBanner1.png';
-import Banner2Mobile from '../assets/banner/BestOfferBanner2.png';
-import Banner3Mobile from '../assets/banner/BestOfferBanner3.png';
+import Banner1 from '../assets/bottom_banner1.webp';
+import Banner2 from '../assets/bottom_banner2.webp';
+import Banner3 from '../assets/bottom_banner3.webp';
+import Banner4 from '../assets/bottom_banner4.webp';
 
 // Hook to detect mobile screen
 function useIsMobile() {
@@ -50,10 +48,10 @@ const settings = {
 };
 
 const offers = [
-  { image: Banner1, mobileImage: Banner1Mobile },
-  { image: Banner2, mobileImage: Banner2Mobile },
-  { image: Banner3, mobileImage: Banner3Mobile },
- 
+  { image: Banner1, mobileImage: Banner1 },
+  { image: Banner2, mobileImage: Banner2 },
+  { image: Banner3, mobileImage: Banner3 },
+  { image: Banner4, mobileImage: Banner4 },
 ];
 
 export default function OffersBanner() {

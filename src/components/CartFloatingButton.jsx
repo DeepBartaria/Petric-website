@@ -42,7 +42,7 @@ const CartFloatingButton = forwardRef(function CartFloatingButton(
       onClick={onClick}
       data-cart-button=""
       aria-label="Open My Cart"
-      className="fixed z-50 bottom-6 right-6 group"
+      className="hidden md:block fixed z-50 bottom-6 right-6 group"
     >
       {/* Count badge — pops when the number increments */}
       <span

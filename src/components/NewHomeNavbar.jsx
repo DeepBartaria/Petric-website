@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin, FiChevronDown, FiX, FiTrendingUp, FiArrowLeft } from 'react-icons/fi';
+import { FiSearch, FiUser, FiGrid, FiChevronRight, FiMenu, FiMapPin, FiChevronDown, FiX, FiTrendingUp, FiArrowLeft, FiShoppingCart, FiPhone } from 'react-icons/fi';
 import { BsArrowRepeat } from 'react-icons/bs';
 import logo from '../assets/logo.png';
+import LogoBar from './LogoBar';
 import DeliveryLocationModal from './DeliveryLocationModal';
 import ProfileSidebar from './ProfileSidebar';
+import OrdersSidebar from './OrdersSidebar';
 import { getHomePageProductsApi } from '../api/homeApi';
 import { get } from '../helper/api';
 import { post } from '../helper/api';
+import useCart from '../hooks/useCart';
 
 // Popular/trending searches shown when input is focused but empty
 const TRENDING_SEARCHES = [
@@ -47,6 +50,7 @@ export default function NewHomeNavbar() {
   const [deliveryTime, setDeliveryTime] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   // Prebuilt search index: array of { product, nameText, fullText, tokens, nameTokens }
   const searchIndexRef = useRef([]);
@@ -62,6 +66,23 @@ export default function NewHomeNavbar() {
   const searchContainerRef = useRef(null);
 
   const navigate = useNavigate();
+
+  const { cartItems } = useCart();
+  const itemCount = cartItems?.reduce((total, item) => total + (item.quantity || 0), 0) || 0;
+  const prevCountRef = useRef(itemCount);
+  const [countPop, setCountPop] = useState(false);
+
+  useEffect(() => {
+    if (itemCount !== prevCountRef.current && itemCount > 0) {
+      prevCountRef.current = itemCount;
+      setCountPop(false);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => setCountPop(true))
+      );
+    } else {
+      prevCountRef.current = itemCount;
+    }
+  }, [itemCount]);
 
   const showDropdown = isFocused && (inputValue.trim().length > 0 ? searchResults.length > 0 : true);
 
@@ -366,15 +387,15 @@ export default function NewHomeNavbar() {
     <>
       <div className="sticky top-0 z-[90] w-full flex flex-col font-sans bg-white shadow-[0_4px_24px_0_rgba(0,0,0,0.18)] ring-2 ring-black/10">
       {/* Top Navbar */}
-      <div className="bg-white py-3 px-4 md:px-8 flex items-center justify-between gap-3 md:gap-4">
+      <div className="bg-white flex flex-col md:flex-row md:items-center justify-between w-full">
         {/* Logo */}
-        <Link to="/" className="flex-shrink-0">
-          <img src={logo} alt="Petric Logo" className="h-15 md:h-18 object-contain" />
-        </Link>
+        <LogoBar />
 
-        {/* Search */}
-        <div className="flex-1 max-w-3xl relative group" ref={searchContainerRef}>
-          <div className={`relative flex items-center w-full h-10 md:h-12 rounded-full border bg-white overflow-hidden transition-colors duration-200 ${isFocused ? 'border-black shadow-md' : 'border-gray-400 group-hover:border-black'}`}>
+        {/* Search & Hamburger */}
+        <div className="flex w-full md:w-auto flex-1 items-center gap-3 px-4 py-1.5 md:py-0 md:px-4 lg:px-8 border-t border-gray-100 md:border-0 order-last md:order-none">
+          {/* Search */}
+          <div className="flex-1 max-w-full xl:max-w-5xl relative group" ref={searchContainerRef}>
+          <div className={`relative flex items-center w-full h-9 md:h-12 rounded-full border bg-white overflow-hidden transition-colors duration-200 ${isFocused ? 'border-black shadow-md' : 'border-gray-400 group-hover:border-black'}`}>
             {/* Mobile-only transparent tap overlay — opens fullscreen search */}
             <button
               type="button"
@@ -694,8 +715,109 @@ export default function NewHomeNavbar() {
           )}
         </div>
 
+        {/* Hamburger and Cart (Mobile) */}
+        <div className="lg:hidden flex items-center gap-3 shrink-0 relative">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`text-black p-1 transition-transform duration-300 active:scale-95 ${isMobileMenuOpen ? 'rotate-90' : 'rotate-0'}`}>
+            {isMobileMenuOpen ? <FiX className="h-6 w-6" /> : <FiMenu className="h-6 w-6" />}
+          </button>
+          <button 
+            data-cart-button=""
+            onClick={() => window.dispatchEvent(new CustomEvent('openCart'))} 
+            className="text-black p-1 transition-transform duration-200 hover:scale-110 active:scale-95 relative"
+          >
+            <FiShoppingCart className="h-6 w-6" />
+            {itemCount > 0 && (
+              <span
+                className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#FFD000] text-black text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm${
+                  countPop ? ' animate-count-pop' : ''
+                }`}
+                onAnimationEnd={() => setCountPop(false)}
+              >
+                {itemCount}
+              </span>
+            )}
+          </button>
+          {isMobileMenuOpen && (
+            <div className="absolute top-10 right-0 w-48 bg-white shadow-xl rounded-xl border border-gray-100 flex flex-col py-2 z-50">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  window.open('https://petric.in/download/', '_blank');
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-bold text-black hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span className="bg-[#FFD000] text-black px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">App</span> Download App
+              </button>
+              <Link to="/reorder" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
+                <BsArrowRepeat className="h-4 w-4" /> Reorder
+              </Link>
+              <Link to="/contactus" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
+                <FiPhone className="h-4 w-4" /> Contact Us
+              </Link>
+              {!user && (
+                <button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <FiUser className="h-4 w-4" /> Account
+                </button>
+              )}
+              {user && (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsProfileOpen(true);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Your Profile
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsOrdersOpen(true);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Your Orders
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate('/saved-addresses');
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Saved Address
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('petric_user');
+                      localStorage.removeItem('petric_token');
+                      setUser(null);
+                      window.location.reload();
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        </div>
+
         {/* Actions (Desktop) */}
-        <div className="hidden lg:flex items-center gap-4 md:gap-8 flex-shrink-0">
+        <div className="hidden lg:flex items-center gap-4 md:gap-8 flex-shrink-0 px-4 md:px-8 md:py-3">
+
           <button
             onClick={() => window.open('https://petric.in/download/', '_blank')}
             className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2.5 rounded-full font-bold transition-all shadow-sm transform hover:scale-105"
@@ -732,10 +854,22 @@ export default function NewHomeNavbar() {
                     Your Profile
                   </button>
                   <button
+                    onClick={() => setIsOrdersOpen(true)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Your Orders
+                  </button>
+                  <button
                     onClick={() => navigate('/saved-addresses')}
-                    className="block w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50"
+                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                   >
                     Saved Address
+                  </button>
+                  <button
+                    onClick={() => navigate('/about/#contact')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Contact Us
                   </button>
                   <button
                     onClick={() => {
@@ -754,74 +888,6 @@ export default function NewHomeNavbar() {
           </div>
         </div>
 
-        {/* Hamburger (Mobile) */}
-        <div className="lg:hidden flex items-center shrink-0 relative">
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-black p-1">
-            <FiMenu className="h-6 w-6" />
-          </button>
-          {isMobileMenuOpen && (
-            <div className="absolute top-10 right-0 w-48 bg-white shadow-xl rounded-xl border border-gray-100 flex flex-col py-2 z-50">
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  window.open('https://petric.in/download/', '_blank');
-                }}
-                className="w-full text-left px-4 py-3 text-sm font-bold text-black hover:bg-gray-50 flex items-center gap-2"
-              >
-                <span className="bg-[#FFD000] text-black px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">App</span> Download App
-              </button>
-              <Link to="/reorder" className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
-                <BsArrowRepeat className="h-4 w-4" /> Reorder
-              </Link>
-              <button 
-                onClick={() => {
-                  if (!user) {
-                    setIsMobileMenuOpen(false);
-                    window.dispatchEvent(new CustomEvent('openCart', { detail: { step: 'mobile' } }));
-                  }
-                }}
-                className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2"
-              >
-                <FiUser className="h-4 w-4" /> {user ? user.mobileNo : 'Account'}
-              </button>
-              {user && (
-                <>
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsProfileOpen(true);
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
-                  >
-                    Your Profile
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      navigate('/saved-addresses');
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
-                  >
-                    Saved Address
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('petric_user');
-                      localStorage.removeItem('petric_token');
-                      setUser(null);
-                      window.location.reload();
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Categories Sub-navbar */}
@@ -949,21 +1015,7 @@ export default function NewHomeNavbar() {
 
       </div>
 
-      {/* Mobile Delivery Time Bar */}
-      <div className="md:hidden bg-black px-4 py-2.5 flex items-center justify-between text-white shadow-sm z-30 relative">
-        <div className="flex items-center gap-2">
-          <FiMapPin className="text-[#FFD000] h-4 w-4 shrink-0" />
-          <span className="text-xs font-medium truncate max-w-[200px]">
-            {deliveryTime ? `Delivery in ${deliveryTime} mins to your location` : 'Want to check delivery time?'}
-          </span>
-        </div>
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('openDeliveryLocation'))}
-          className="bg-[#FFD000] text-black px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wide transition-transform active:scale-95 shrink-0"
-        >
-          {deliveryTime ? 'Change' : 'Check Now'}
-        </button>
-      </div>
+
 
       </div>
 
@@ -975,6 +1027,11 @@ export default function NewHomeNavbar() {
       <ProfileSidebar
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
+      />
+
+      <OrdersSidebar
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
       />
     </>
   );

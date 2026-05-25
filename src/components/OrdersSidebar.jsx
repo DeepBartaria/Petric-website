@@ -120,12 +120,12 @@ export default function OrdersSidebar({ isOpen, onClose }) {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        className="fixed inset-0 bg-black/50 z-[100] transition-opacity"
         onClick={onClose}
       />
       
       {/* Sidebar */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#f8f9fa] z-50 flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-0 font-sans">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#f8f9fa] z-[110] flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-0 font-sans">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10">

@@ -44,7 +44,6 @@ export default function AllBrands() {
   const [catBrands, setCatBrands] = useState([]);
   
   useEffect(() => {
-    window.scrollTo(0, 0);
     logPageVisit('Visited All Brands page');
 
     const fetchBrands = async () => {

@@ -14,8 +14,8 @@ import logo from '../assets/logo.png';
 import appstore from '../assets/appstore.svg';
 import playstore from '../assets/playstore.svg';
 import mobiles from "../assets/mobiles.png";
-import hi from '../assets/hi.jpg';
-import laptop_hi from '../assets/laptop_hi.png';
+import hi from '../assets/popup_phone.webp';
+import laptop_hi from '../assets/popup_web1.webp';
 import cataloguePdf from '../assets/Petric_Catalogue.pdf';
 
 export default function Footer() {
@@ -61,8 +61,8 @@ export default function Footer() {
         className="w-full bg-cover bg-no-repeat p-6 sm:p-8 md:p-10"
         style={{ backgroundImage: `url(${f2})` }}
       >
-        <img src={laptop_hi} alt="Hi" className="hidden md:block w-full mb-6 sm:mb-8" />
-        <img src={hi} alt="Hi" className="md:hidden w-full mb-6 sm:mb-8" />
+        <img src={laptop_hi} alt="Hi" className="hidden md:block w-full mb-6 sm:mb-8 rounded-3xl" />
+        <img src={hi} alt="Hi" className="md:hidden w-full mb-6 sm:mb-8 rounded-3xl" />
         <div className="w-full flex justify-center px-4">
           <div className="w-full max-w-4xl rounded-[32px] bg-gradient-to-br from-[#FFD000] to-[#FFF1A6] border border-[#F5C400]/40 shadow-sm px-6 sm:px-10 py-8 sm:py-10 flex flex-col items-center text-center">
             
@@ -78,7 +78,7 @@ export default function Footer() {
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-7 w-full sm:w-auto">
               <Link to="/faqs">
-                <button className="w-full sm:w-auto bg-[#1D3557] hover:bg-[#162944] text-white px-7 sm:px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.03] shadow-md">
+                <button className="w-full sm:w-auto bg-[#FFD000] hover:bg-[#ffdb33] text-black px-7 sm:px-8 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] shadow-md">
                   Explore FAQs
                 </button>
               </Link>

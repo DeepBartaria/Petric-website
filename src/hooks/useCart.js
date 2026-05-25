@@ -86,15 +86,46 @@ export default function useCart() {
       return availability;
     }
 
-    // Always fetch fresh — protects against app/web concurrent edits
-    const current = await getBackendProductCart();
-    const currentItems = current?.cartItems || [];
-
-    
     const addQty = product.quantity || 1;
 
+    // --- Optimistic UI Update ---
+    let nextCart;
+    const existingInPrev = cartItems.find(
+      (i) => String(i.productId) === String(productId) &&
+             (i.variantId ? String(i.variantId) : null) === (variantId ? String(variantId) : null)
+    );
+
+    if (existingInPrev) {
+      nextCart = cartItems.map((item) => 
+        (String(item.productId) === String(productId) && (item.variantId ? String(item.variantId) : null) === (variantId ? String(variantId) : null))
+          ? { ...item, quantity: item.quantity + addQty }
+          : item
+      );
+    } else {
+      const newItem = {
+        id: `temp-${Date.now()}`,
+        productId: String(productId),
+        variantId: variantId ? String(variantId) : null,
+        quantity: addQty,
+        name: product.name || '',
+        img: product.img || product.productImage || '',
+        weight: product.weight || product.variantName || product.unit || '',
+        price: String(product.price || product.discountedPrice || '0'),
+        oldPrice: String(product.oldPrice || product.originalPrice || '0'),
+        product: { name: product.name, productImage: product.img },
+        variant: { name: product.weight, discountedPrice: product.discountedPrice || product.price, originalPrice: product.originalPrice || product.oldPrice }
+      };
+      nextCart = [...cartItems, newItem];
+    }
+    
+    setCartItems(nextCart);
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: nextCart } }));
+
+    // --- Background Network Request ---
+    const current = await getBackendProductCart();
+    const currentItems = current?.cartItems || [];
     const existing = currentItems.find(
-      (i) => i.productId === String(productId) &&
+      (i) => String(i.productId) === String(productId) &&
              (i.variantId ? String(i.variantId) : null) === (variantId ? String(variantId) : null)
     );
 
@@ -111,11 +142,12 @@ export default function useCart() {
 
     if (resp?.type !== 'success') {
       alert(resp?.message || 'Failed to add product to cart');
+      const syncedItems = await syncCartFromBackend();
+      window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: syncedItems } }));
       return resp;
     }
 
     const syncedItems = await syncCartFromBackend();
-
     window.dispatchEvent(
       new CustomEvent('cartUpdated', {
         detail: { cartItems: syncedItems },
@@ -123,13 +155,26 @@ export default function useCart() {
     );
 
     return resp;
-  }, [syncCartFromBackend]);
+  }, [cartItems, syncCartFromBackend]);
 
   // +/- and remove — always hits backend, then re-syncs
   const handleUpdateQuantity = useCallback(async (id, newQuantity) => {
     const item = cartItems.find((i) => i.id === id);
     if (!item) return;
 
+    // --- Optimistic UI Update ---
+    let nextCart;
+    if (newQuantity < 1) {
+      nextCart = cartItems.filter((i) => i.id !== id);
+    } else {
+      nextCart = cartItems.map((i) => (i.id === id ? { ...i, quantity: newQuantity } : i));
+    }
+    
+    setCartItems(nextCart);
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: nextCart } }));
+    if (nextCart.length === 0) setIsCartOpen(false);
+
+    // --- Background Network Request ---
     let resp;
     if (newQuantity < 1) {
       resp = await removeBackendCartProduct({
@@ -146,17 +191,17 @@ export default function useCart() {
 
     if (resp?.type !== 'success' && resp?.message) {
       console.warn('Cart update failed:', resp.message);
+      const syncedItems = await syncCartFromBackend();
+      window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: syncedItems } }));
+      return;
     }
 
     const items = await syncCartFromBackend();
-
     window.dispatchEvent(
       new CustomEvent('cartUpdated', {
         detail: { cartItems: items },
       })
     );
-
-    if (items.length === 0) setIsCartOpen(false);
   }, [cartItems, syncCartFromBackend]);
 
   const handleLoginSuccess = useCallback(async () => {

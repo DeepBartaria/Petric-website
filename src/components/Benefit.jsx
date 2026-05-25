@@ -45,12 +45,12 @@ export default function Benefit() {
       {/* Benefits — horizontal scroll on mobile, grid on desktop */}
       <div className="w-full max-w-5xl relative z-10">
 
-        {/* Mobile: horizontal scroll */}
-        <div className="flex sm:hidden gap-3 overflow-x-auto pb-3 px-1 [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
+        {/* Mobile: 2x3 grid */}
+        <div className="grid grid-cols-2 sm:hidden gap-3 pb-3 px-1">
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="shrink-0 snap-center w-36 bg-white rounded-2xl shadow-md p-3 flex flex-col items-center text-center cursor-pointer hover:-translate-y-1 transition-all duration-300 group"
+              className="w-full bg-white rounded-2xl shadow-md p-3 flex flex-col items-center text-center cursor-pointer hover:-translate-y-1 transition-all duration-300 group"
             >
               <div className="mb-2 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                 <img src={benefit.icon} alt={benefit.title} className="w-18 h-18 object-contain transition-transform duration-300 group-hover:scale-110" />

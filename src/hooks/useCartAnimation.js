@@ -30,8 +30,12 @@ export default function useCartAnimation() {
 
     const sourceRect = imageEl.getBoundingClientRect();
 
-    // Resolve cart button position — fall back to bottom-right if not yet visible
-    const cartEl = cartRef.current || document.querySelector('[data-cart-button]');
+    // Resolve cart button position — fall back to the first VISIBLE cart button
+    let cartEl = cartRef.current;
+    if (!cartEl || cartEl.offsetWidth === 0) {
+      const allBtns = document.querySelectorAll('[data-cart-button]');
+      cartEl = Array.from(allBtns).find(el => el.offsetWidth > 0 && el.offsetHeight > 0);
+    }
     let endX, endY;
     if (cartEl) {
       const r = cartEl.getBoundingClientRect();

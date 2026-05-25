@@ -80,7 +80,6 @@ export default function AllCategories() {
   const mobileSubcategoryScrollRef = useRef(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     fetchInitialData();
   }, []);
 
@@ -334,7 +333,7 @@ export default function AllCategories() {
         {activeCategory && activeCategory.subcategories.length > 0 && (
           <div
             ref={mobileSubcategoryScrollRef}
-            className="flex gap-2 overflow-x-auto px-4 pt-8 pb-3 [&::-webkit-scrollbar]:hidden"
+            className="flex gap-2 overflow-x-auto px-4 pt-3 pb-3 [&::-webkit-scrollbar]:hidden"
           >
             {categoriesData
               .find(c => c._id === activeCategory._id)

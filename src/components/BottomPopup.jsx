@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
 
-import desktopPopupImage from '../assets/App_download_popup/desktop_popup.png';
-import mobilePopupImage from '../assets/App_download_popup/mobile_popup.png';
+import desktopPopupImage from '../assets/popup_web1.webp';
+import mobilePopupImage from '../assets/popup_phone.webp';
 
-const POPUP_DELAY_MS = 10000;
+const POPUP_DELAY_MS = 3000; // Reduced to 3s for testing
 
 export default function BottomPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -12,14 +12,12 @@ export default function BottomPopup() {
   const [isEntering, setIsEntering] = useState(false);
 
   useEffect(() => {
-    const hasSeenPopup = sessionStorage.getItem('petric_download_popup_seen');
-
-    if (hasSeenPopup) {
-      return;
-    }
+    // Commented out session storage limit so it appears on reload during testing
+    // const hasSeenPopup = sessionStorage.getItem('petric_download_popup_seen');
+    // if (hasSeenPopup) return;
 
     const popupTimer = setTimeout(() => {
-      sessionStorage.setItem('petric_download_popup_seen', 'true');
+      // sessionStorage.setItem('petric_download_popup_seen', 'true');
 
       setIsEntering(true);
       document.body.classList.add('popup-open');
