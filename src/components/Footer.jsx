@@ -61,8 +61,12 @@ export default function Footer() {
         className="w-full bg-cover bg-no-repeat p-6 sm:p-8 md:p-10"
         style={{ backgroundImage: `url(${f2})` }}
       >
-        <img src={laptop_hi} alt="Hi" className="hidden md:block w-full mb-6 sm:mb-8 rounded-3xl" />
-        <img src={hi} alt="Hi" className="md:hidden w-full mb-6 sm:mb-8 rounded-3xl" />
+        <a href="https://petric.in/download/" target="_blank" rel="noopener noreferrer" className="hidden md:block w-full mb-6 sm:mb-8">
+          <img src={laptop_hi} alt="Download App" className="w-full rounded-3xl" />
+        </a>
+        <a href="https://petric.in/download/" target="_blank" rel="noopener noreferrer" className="md:hidden block w-full mb-6 sm:mb-8">
+          <img src={hi} alt="Download App" className="w-full rounded-3xl" />
+        </a>
         <div className="w-full flex justify-center px-4">
           <div className="w-full max-w-4xl rounded-[32px] bg-gradient-to-br from-[#FFD000] to-[#FFF1A6] border border-[#F5C400]/40 shadow-sm px-6 sm:px-10 py-8 sm:py-10 flex flex-col items-center text-center">
             
