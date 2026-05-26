@@ -17,6 +17,7 @@ import {
 
 import { BsClockHistory } from 'react-icons/bs';
 import { post, get, put, del } from '../helper/api';
+import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import {
   addSavedAddress,
   getSavedAddresses,
@@ -30,6 +31,10 @@ const ADDRESS_TYPES = {
   2: { label: 'Work', icon: FiBriefcase },
   3: { label: 'Others', icon: FiMapPin },
 };
+
+const STORE_COORDINATES = { lat: 28.4416870, lng: 77.0759438 };
+const DEFAULT_CENTER = { lat: 28.6139, lng: 77.2090 };
+const LIBRARIES = ['places'];
 
 const emptyAddressForm = {
   username: '',
@@ -60,6 +65,7 @@ const getAddressPart = (components, type) => {
 };
 
 export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuantity, onLoginSuccess, loginBackCloses = false }) {
+  const scrollContainerRef = React.useRef(null);
   const totalMrp = cartItems.reduce((total, item) => {
     const priceStr = item.oldPrice ? item.oldPrice : item.price;
     const numericPrice = parseInt(priceStr.replace('₹', '').replace(',', '')) || 0;
@@ -92,6 +98,34 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [isCouponsLoading, setIsCouponsLoading] = useState(false);
+
+  const { isLoaded: isMapLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: LIBRARIES,
+  });
+  const [map, setMap] = useState(null);
+  const onMapLoad = React.useCallback((m) => setMap(m), []);
+  const onMapUnmount = React.useCallback(() => setMap(null), []);
+  const autocompleteRef = React.useRef(null);
+
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.geometry?.location) {
+        panToLocation({
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (checkoutStep === 'addAddress' && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [checkoutStep]);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -166,6 +200,90 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     setIsAddressLoading(false);
   };
 
+  const calculateFallbackTime = (dest) => {
+    const R = 6371;
+    const dLat = (dest.lat - STORE_COORDINATES.lat) * Math.PI / 180;
+    const dLon = (dest.lng - STORE_COORDINATES.lng) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(STORE_COORDINATES.lat * Math.PI / 180) * Math.cos(dest.lat * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.ceil((R * c / 20) * 60) + 20;
+  };
+
+  const updateDeliveryTimeForLocation = (location) => {
+    if (!window.google) return;
+    const service = new window.google.maps.DistanceMatrixService();
+    service.getDistanceMatrix(
+      {
+        origins: [STORE_COORDINATES],
+        destinations: [location],
+        travelMode: 'DRIVING',
+        unitSystem: window.google.maps.UnitSystem.METRIC,
+      },
+      (response, status) => {
+        const time =
+          status === 'OK' && response.rows[0].elements[0].status === 'OK'
+            ? Math.ceil(response.rows[0].elements[0].duration.value / 60) + 20
+            : calculateFallbackTime(location);
+
+        const deliveryLocation = {
+          lat: location.lat,
+          lng: location.lng,
+          time,
+        };
+
+        setDeliveryTime(time);
+        localStorage.setItem('petric_delivery_time', time.toString());
+        localStorage.setItem('petric_delivery_location', JSON.stringify(deliveryLocation));
+
+        window.dispatchEvent(new CustomEvent('deliveryTimeUpdated', { detail: time }));
+        window.dispatchEvent(new CustomEvent('deliveryLocationUpdated', { detail: deliveryLocation }));
+      }
+    );
+  };
+
+  const panToLocation = (location) => {
+    setAddressForm((prev) => ({
+      ...prev,
+      lat: location.lat,
+      lng: location.lng,
+    }));
+    if (map) {
+      map.panTo(location);
+      map.setZoom(15);
+    }
+    
+    // Reverse geocode to fill in address
+    if (window.google) {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ location }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const result = results[0];
+          const components = result.address_components || [];
+          setAddressForm((prev) => ({
+            ...prev,
+            address: result.formatted_address || '',
+            pincode: getAddressPart(components, 'postal_code') || prev.pincode,
+            city: getAddressPart(components, 'locality') || getAddressPart(components, 'administrative_area_level_3') || prev.city,
+            state: getAddressPart(components, 'administrative_area_level_1') || prev.state,
+            area: getAddressPart(components, 'sublocality_level_1') || getAddressPart(components, 'sublocality_level_2') || prev.area,
+            landmark: getAddressPart(components, 'premise') || getAddressPart(components, 'neighborhood') || prev.landmark,
+          }));
+        }
+      });
+    }
+  };
+
+  const onMapClick = (e) => {
+    if (e.latLng) panToLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+  };
+
+  const onMarkerDragEnd = (e) => {
+    if (e.latLng) panToLocation({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+  };
+
   const openAddAddressForm = () => {
     const user = getStoredUser();
 
@@ -196,54 +314,11 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
     setAddressError('');
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-
-        try {
-          const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-          let detectedAddress = { lat, lng };
-
-          if (apiKey) {
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            const result = data.results?.[0];
-
-            if (result) {
-              const components = result.address_components || [];
-
-              detectedAddress = {
-                lat,
-                lng,
-                address: result.formatted_address || '',
-                pincode: getAddressPart(components, 'postal_code'),
-                city:
-                  getAddressPart(components, 'locality') ||
-                  getAddressPart(components, 'administrative_area_level_3'),
-                state: getAddressPart(components, 'administrative_area_level_1'),
-                area:
-                  getAddressPart(components, 'sublocality_level_1') ||
-                  getAddressPart(components, 'sublocality_level_2'),
-                landmark:
-                  getAddressPart(components, 'premise') ||
-                  getAddressPart(components, 'neighborhood'),
-              };
-            }
-          }
-
-          setAddressForm((prev) => ({
-            ...prev,
-            ...detectedAddress,
-          }));
-        } catch {
-          setAddressForm((prev) => ({
-            ...prev,
-            lat,
-            lng,
-          }));
-        }
-
+        
+        panToLocation({ lat, lng });
         setIsLocationLoading(false);
       },
       () => {
@@ -255,6 +330,11 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
   const handleSaveCheckoutAddress = async (event) => {
     event.preventDefault();
+
+    if (!addressForm.lat || !addressForm.lng) {
+      setAddressError('Please select a location on the map.');
+      return;
+    }
 
     if (
       !addressForm.username ||
@@ -281,6 +361,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
         if (newAddress?._id) {
           setSelectedAddress(newAddress);
+          updateDeliveryTimeForLocation({ lat: Number(newAddress.lat), lng: Number(newAddress.lng) });
         }
 
         await loadSavedAddresses();
@@ -297,6 +378,10 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
   const handleSelectAddress = async (address) => {
     setSelectedAddress(address);
+
+    if (address.lat && address.lng) {
+      updateDeliveryTimeForLocation({ lat: Number(address.lat), lng: Number(address.lng) });
+    }
 
     if (!address.isDefault) {
       await setDefaultAddress(address._id);
@@ -754,7 +839,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 pb-28">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 pb-28">
           {checkoutStep === 'cart' && (
             <>
 
@@ -1085,11 +1170,72 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
               <button
                 type="button"
                 onClick={handleDetectAddressLocation}
-                className="mb-4 w-full border border-black rounded-xl p-3 font-bold text-black flex items-center justify-center gap-2"
+                className="mb-4 w-full border border-black rounded-xl p-3 font-bold text-black flex items-center justify-center gap-2 transition-colors hover:bg-gray-50"
               >
                 {isLocationLoading ? <FiLoader className="animate-spin" /> : <FiNavigation />}
                 Use current location
               </button>
+
+              <div className="mb-4 flex flex-col gap-3">
+                <p className="text-sm font-bold text-gray-700">Select location on map</p>
+                {isMapLoaded && (
+                  <Autocomplete
+                    onLoad={(ac) => (autocompleteRef.current = ac)}
+                    onPlaceChanged={onPlaceChanged}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Search for your area or address..."
+                      className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-black shadow-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') e.preventDefault();
+                      }}
+                    />
+                  </Autocomplete>
+                )}
+                <div className="w-full h-[220px] rounded-xl overflow-hidden border border-gray-200">
+                  {isMapLoaded ? (
+                    <GoogleMap
+                      mapContainerStyle={{ width: '100%', height: '100%' }}
+                      center={
+                        addressForm.lat && addressForm.lng
+                          ? { lat: Number(addressForm.lat), lng: Number(addressForm.lng) }
+                          : DEFAULT_CENTER
+                      }
+                      zoom={addressForm.lat && addressForm.lng ? 15 : 10}
+                      onLoad={onMapLoad}
+                      onUnmount={onMapUnmount}
+                      onClick={onMapClick}
+                      options={{ disableDefaultUI: true, zoomControl: true }}
+                    >
+                      {addressForm.lat && addressForm.lng && (
+                        <Marker
+                          position={{ lat: Number(addressForm.lat), lng: Number(addressForm.lng) }}
+                          draggable
+                          onDragEnd={onMarkerDragEnd}
+                        />
+                      )}
+                    </GoogleMap>
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-gray-50">
+                      <FiLoader className="animate-spin text-gray-400 h-6 w-6" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click on the map or drag the pin to set your exact location
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nameInput = document.getElementById('address-name-input');
+                    if (nameInput) nameInput.focus();
+                  }}
+                  className="w-full bg-[#FFD000] text-black rounded-xl p-3 font-bold mt-2 hover:bg-[#ffdb33] transition-colors shadow-sm"
+                >
+                  Confirm Location
+                </button>
+              </div>
 
               {addressError && (
                 <p className="mb-3 text-sm text-red-600 font-medium">{addressError}</p>
@@ -1097,6 +1243,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
               <div className="flex flex-col gap-3">
                 <input
+                  id="address-name-input"
                   value={addressForm.username}
                   onChange={(e) => handleAddressChange('username', e.target.value)}
                   placeholder="Full name"
@@ -1184,8 +1331,8 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
                 <button
                   type="submit"
-                  disabled={isAddressSaving}
-                  className="w-full bg-black text-white rounded-xl p-4 font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                  disabled={isAddressSaving || !addressForm.lat || !addressForm.lng}
+                  className="w-full bg-black text-white rounded-xl p-4 font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isAddressSaving && <FiLoader className="animate-spin" />}
                   Save Address
