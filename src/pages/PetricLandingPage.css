@@ -14,7 +14,6 @@
   --radius-sm:    10px;
   --radius-btn:   12px;
   
-  font-family: 'Nunito', sans-serif;
   background: var(--white);
   color: var(--text);
   margin: 0 auto;
@@ -88,11 +87,22 @@
    SECTION 2 — HERO
 ───────────────────────────────────────── */
 .petric-landing .hero {
-  background: var(--off-white);
+  background: transparent;
   padding: 36px 20px 40px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  z-index: 1;
+}
+.petric-landing .hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url('../assets/temphello.png') no-repeat center center;
+  background-size: cover;
+  opacity: 0.9;
+  z-index: -1;
+  pointer-events: none;
 }
 .petric-landing .hero::after {
   content: "";
@@ -125,7 +135,7 @@
 }
 @keyframes blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.7; }
 }
 .petric-landing .hero h1 {
   font-size: 46px;
@@ -144,6 +154,14 @@
   font-weight: 500;
   padding: 0 4px;
 }
+.petric-landing .hero-img {
+  width: 100%;
+  max-width: 800px;
+  margin: 36px auto 0;
+  display: block;
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
 .petric-landing .hero-btns {
   display: flex;
   flex-direction: column;
@@ -153,7 +171,6 @@
   display: block;
   background: var(--yellow);
   color: var(--black);
-  font-family: 'Nunito', sans-serif;
   font-size: 16px;
   font-weight: 800;
   padding: 16px 24px;
@@ -173,7 +190,6 @@
   gap: 8px;
   background: transparent;
   color: var(--text);
-  font-family: 'Nunito', sans-serif;
   font-size: 15px;
   font-weight: 700;
   padding: 15px 24px;
@@ -199,69 +215,91 @@
   grid-template-columns: 1fr;
   gap: 12px;
 }
-.petric-landing .offer-card {
-  background: var(--white);
-  border: 2px solid var(--yellow);
+.petric-landing .offer-card.premium {
+  background: linear-gradient(135deg, #FFFDF0 0%, #FFFFFF 100%);
+  border: 3px dashed var(--yellow);
   border-radius: var(--radius-card);
-  padding: 20px 16px;
+  padding: 24px 20px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(255, 208, 0, 0.2);
+  text-align: center;
 }
-.petric-landing .offer-card::before {
-  content: "";
+.petric-landing .offer-card.premium::before {
+  content: "🎁";
   position: absolute;
-  width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(255,208,0,0.15) 0%, transparent 70%);
-  top: -30px; right: -30px;
-  border-radius: 50%;
+  font-size: 120px;
+  opacity: 0.08;
+  top: -20px; right: -20px;
+  transform: rotate(15deg);
+  pointer-events: none;
+}
+.petric-landing .offer-tag-container {
+  margin-bottom: 14px;
 }
 .petric-landing .offer-tag {
   display: inline-block;
-  background: var(--yellow);
-  color: var(--black);
-  font-size: 9px;
+  background: var(--text);
+  color: var(--yellow);
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
-  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.petric-landing .pulse-animation {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 .petric-landing .offer-headline {
-  font-size: 19px;
-  font-weight: 900;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text);
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-  margin-bottom: 12px;
+  line-height: 1.4;
+  margin-bottom: 16px;
 }
-.petric-landing .offer-headline .yellow { color: var(--yellow); }
+.petric-landing .highlight-discount {
+  display: inline-block;
+  font-size: 26px;
+  font-weight: 900;
+  background: var(--yellow);
+  color: var(--text);
+  padding: 4px 12px;
+  border-radius: 8px;
+  transform: rotate(-2deg);
+  margin: 6px 0;
+  box-shadow: 0 4px 12px rgba(255, 208, 0, 0.4);
+}
+.petric-landing .offer-divider {
+  width: 40px;
+  height: 4px;
+  background: var(--yellow);
+  margin: 0 auto 16px;
+  border-radius: 4px;
+}
 .petric-landing .offer-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
+  align-items: center;
 }
 .petric-landing .offer-list li {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--text);
 }
-.petric-landing .offer-list li::before {
-  content: "✓";
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px; height: 16px;
-  background: var(--yellow);
-  color: var(--black);
-  border-radius: 50%;
-  font-size: 9px;
-  font-weight: 900;
-  flex-shrink: 0;
+.petric-landing .check-icon {
+  font-size: 16px;
 }
 
 /* How It Works card */
@@ -348,7 +386,7 @@
 }
 .petric-landing .cat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 .petric-landing .cat-card {
@@ -560,7 +598,6 @@
   background: var(--white);
   color: var(--text);
   border: 1.5px solid var(--gray);
-  font-family: 'Nunito', sans-serif;
   font-size: 15px;
   font-weight: 800;
   padding: 15px 20px;
@@ -573,7 +610,6 @@
   display: block;
   background: transparent;
   color: var(--black);
-  font-family: 'Nunito', sans-serif;
   font-size: 14px;
   font-weight: 700;
   padding: 13px 20px;
@@ -621,18 +657,35 @@
 .petric-landing .sticky-bar {
   position: fixed;
   bottom: 0; left: 50%;
-  transform: translateX(-50%);
   width: 100%; max-width: 430px;
   background: var(--white);
   padding: 10px 16px 20px;
   z-index: 100;
   border-top: 2px solid var(--yellow);
+  opacity: 0;
+  transform: translateY(150%) translateX(-50%);
+  pointer-events: none;
+}
+.petric-landing .sticky-enter {
+  pointer-events: auto;
+  animation: slideUpBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.petric-landing .sticky-exit {
+  animation: slideDownFade 0.4s ease-in forwards;
+}
+@keyframes slideUpBounce {
+  0% { transform: translateY(150%) translateX(-50%); opacity: 0; }
+  50% { transform: translateY(-10px) translateX(-50%); opacity: 1; }
+  100% { transform: translateY(0) translateX(-50%); opacity: 1; }
+}
+@keyframes slideDownFade {
+  0% { transform: translateY(0) translateX(-50%); opacity: 1; }
+  100% { transform: translateY(150%) translateX(-50%); opacity: 0; }
 }
 .petric-landing .sticky-bar a {
   display: block;
   background: var(--yellow);
   color: var(--black);
-  font-family: 'Nunito', sans-serif;
   font-size: 15px;
   font-weight: 900;
   padding: 14px 20px;
@@ -645,15 +698,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 7px;
 }
-.petric-landing .sticky-sub span {
+.petric-landing .sticky-sub .sub-item {
   font-size: 11px;
   font-weight: 700;
   color: var(--gray-mid);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: popInItem 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-.petric-landing .sticky-sub span:not(:last-child)::after {
+@keyframes popInItem {
+  0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.petric-landing .sticky-sub .sub-item:not(:last-child)::after {
   content: " ·";
   margin-left: 8px;
 }

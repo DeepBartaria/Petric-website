@@ -1,8 +1,28 @@
 import React from "react";
 import "./PetricLandingPage.css";
+import landingPageImg from "../assets/landing_page.png";
+import logoImg from "../assets/logocrop.png";
 
 const PetricLandingPage = () => {
   const [activeTesti, setActiveTesti] = React.useState(0);
+  const whatsappRef = React.useRef(null);
+  const offerRef = React.useRef(null);
+  const [showSticky, setShowSticky] = React.useState(false);
+  const [showStickySub, setShowStickySub] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (whatsappRef.current) {
+        setShowSticky(whatsappRef.current.getBoundingClientRect().bottom < 0);
+      }
+      if (offerRef.current) {
+        setShowStickySub(offerRef.current.getBoundingClientRect().bottom < 0);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -25,7 +45,9 @@ const PetricLandingPage = () => {
 
       {/* ── NAVBAR ── */}
       <nav className="navbar">
-        <a href="https://www.petric.in" className="nav-logo">petric<span>.</span></a>
+        <a href="https://www.petric.in" className="nav-logo">
+          <img src={logoImg} alt="Petric Logo" style={{ height: '32px', display: 'block' }} />
+        </a>
         <a href="https://www.petric.in" className="nav-cta">Shop Now</a>
       </nav>
 
@@ -39,7 +61,7 @@ const PetricLandingPage = () => {
         <p className="hero-body">Everything you need delivered straight to your door. Fast, reliable, and hassle-free.</p>
         <div className="hero-btns">
           <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
-          <a href="https://wa.me/918295756962" className="btn-secondary">
+          <a ref={whatsappRef} href="https://wa.me/918295756962" className="btn-secondary">
             <span className="whatsapp-icon">💬</span>
             Order via WhatsApp
           </a>
@@ -47,17 +69,21 @@ const PetricLandingPage = () => {
       </section>
 
       {/* ── SECTION 3: OFFER ── */}
-      <div className="offer-section">
+      <div ref={offerRef} className="offer-section">
         <div className="offer-grid">
 
-          {/* Left: Offer */}
-          <div className="offer-card">
-            <div className="offer-tag">Limited Offer</div>
-            <div className="offer-headline">Extra <span className="yellow">8% off</span> your first 4 orders</div>
+          <div className="offer-card premium">
+            <div className="offer-tag-container">
+              <span className="offer-tag pulse-animation">🐾 Limited Offer</span>
+            </div>
+            <div className="offer-headline">
+              Grab <span className="highlight-discount">Extra 8% OFF</span><br/>on your first 4 orders!
+            </div>
+            <div className="offer-divider"></div>
             <ul className="offer-list">
-              <li>Zero delivery fees</li>
-              <li>Zero platform fees</li>
-              <li>Zero COD charges</li>
+              <li><span className="check-icon">✨</span> Zero delivery fees</li>
+              <li><span className="check-icon">✨</span> Zero platform fees</li>
+              <li><span className="check-icon">✨</span> Zero COD charges</li>
             </ul>
           </div>
 
@@ -128,7 +154,7 @@ const PetricLandingPage = () => {
           <div className="section-title">Why Petric</div>
         </div>
         <div className="why-grid">
-          <div className="why-card dark" data-icon="⚡">
+          <div className="why-card" data-icon="⚡">
             <span className="why-icon">⚡</span>
             <div className="why-title">Minutes, not hours</div>
             <div className="why-desc">Gurgaon's fastest pet supply delivery</div>
@@ -143,7 +169,7 @@ const PetricLandingPage = () => {
             <div className="why-title">Best offers</div>
             <div className="why-desc">Discounts on MRP plus coupon off</div>
           </div>
-          <div className="why-card dark" data-icon="₹">
+          <div className="why-card" data-icon="₹">
             <span className="why-icon">₹</span>
             <div className="why-title">No hidden charges</div>
             <div className="why-desc">What you see is what you pay</div>
@@ -218,7 +244,7 @@ const PetricLandingPage = () => {
 
       {/* Footer */}
       <div className="footer">
-        <strong>Petric</strong> · Gurgaon ka apna pet care app<br/>
+        <strong>Petric</strong><br/>
         Delivering in Gurgaon &amp; nearby areas<br/>
         No delivery · No platform · No COD fees
       </div>
@@ -226,13 +252,15 @@ const PetricLandingPage = () => {
       <div className="sticky-spacer"></div>
 
       {/* ── SECTION 8: STICKY BAR ── */}
-      <div className="sticky-bar">
+      <div className={`sticky-bar ${showSticky ? 'sticky-enter' : 'sticky-exit'}`}>
         <a href="https://www.petric.in">🛒 Shop Now — Extra 8% Off First 4 Orders</a>
-        <div className="sticky-sub">
-          <span>No delivery fee</span>
-          <span>No platform fee</span>
-          <span>No COD charges</span>
-        </div>
+        {showStickySub && (
+          <div className="sticky-sub">
+            <span className="sub-item" style={{ animationDelay: '0s' }}>No delivery fee</span>
+            <span className="sub-item" style={{ animationDelay: '0.1s' }}>No platform fee</span>
+            <span className="sub-item" style={{ animationDelay: '0.2s' }}>No COD charges</span>
+          </div>
+        )}
       </div>
 
     </div>
