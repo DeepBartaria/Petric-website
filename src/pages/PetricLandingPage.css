@@ -121,6 +121,10 @@
   pointer-events: none;
 }
 .petric-landing .hero-badge {
+  position: absolute;
+  top: 24px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -757,7 +761,7 @@
   }
 
   .petric-landing .hero {
-    padding: 80px 40px 100px;
+    padding: 0;
   }
   .petric-landing .hero h1 {
     font-size: 72px;
