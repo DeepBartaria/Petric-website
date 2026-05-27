@@ -1,0 +1,833 @@
+.petric-landing *, .petric-landing *::before, .petric-landing *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.petric-landing {
+  --yellow:       #FFD000;
+  --yellow-hover: #F0C300;
+  --black:        #000000;
+  --white:        #FFFFFF;
+  --off-white:    #F5F5F5;
+  --gray:         #D9D9D9;
+  --gray-mid:     #888888;
+  --text:         #111111;
+  --radius-pill:  9999px;
+  --radius-card:  16px;
+  --radius-sm:    10px;
+  --radius-btn:   12px;
+  
+  font-family: 'Nunito', sans-serif;
+  background: var(--white);
+  color: var(--text);
+  margin: 0 auto;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────
+   SECTION 1 — RUNNING STRIP
+───────────────────────────────────────── */
+.petric-landing .ticker-wrap {
+  background: var(--yellow);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 9px 0;
+}
+.petric-landing .ticker-track {
+  display: inline-block;
+  animation: ticker 18s linear infinite;
+}
+.petric-landing .ticker-track span {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--black);
+  letter-spacing: 0.1px;
+  padding: 0 32px;
+}
+.petric-landing .ticker-track span::before {
+  content: "🐾 ";
+}
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─────────────────────────────────────────
+   NAVBAR
+───────────────────────────────────────── */
+.petric-landing .navbar {
+  background: var(--white);
+  border-bottom: 2px solid var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.petric-landing .nav-logo {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+.petric-landing .nav-logo span { color: var(--yellow); }
+.petric-landing .nav-cta {
+  background: var(--yellow);
+  color: var(--black);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────
+   SECTION 2 — HERO
+───────────────────────────────────────── */
+.petric-landing .hero {
+  background: var(--off-white);
+  padding: 36px 20px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.petric-landing .hero::after {
+  content: "";
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,208,0,0.12) 0%, transparent 65%);
+  bottom: -80px; right: -80px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.petric-landing .hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,208,0,0.12);
+  border: 1px solid rgba(255,208,0,0.3);
+  border-radius: var(--radius-pill);
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--yellow);
+  letter-spacing: 0.3px;
+  margin-bottom: 20px;
+}
+.petric-landing .hero-badge .live-dot {
+  width: 6px; height: 6px;
+  background: var(--yellow);
+  border-radius: 50%;
+  animation: blink 1.6s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.petric-landing .hero h1 {
+  font-size: 46px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 6px;
+}
+.petric-landing .hero h1 .highlight { color: var(--yellow); }
+.petric-landing .hero-body {
+  font-size: 15px;
+  color: var(--gray-mid);
+  line-height: 1.55;
+  margin-bottom: 30px;
+  font-weight: 500;
+  padding: 0 4px;
+}
+.petric-landing .hero-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.petric-landing .btn-primary {
+  display: block;
+  background: var(--yellow);
+  color: var(--black);
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 16px 24px;
+  border-radius: var(--radius-btn);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: -0.2px;
+  transition: background 0.15s;
+}
+.petric-landing .btn-primary:active { background: var(--yellow-hover); }
+.petric-landing .btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 15px 24px;
+  border-radius: var(--radius-btn);
+  text-decoration: none;
+  border: 1.5px solid var(--gray);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.petric-landing .btn-secondary:active { border-color: var(--yellow); color: var(--yellow); }
+.petric-landing .whatsapp-icon { font-size: 18px; }
+
+/* ─────────────────────────────────────────
+   SECTION 3 — OFFER
+───────────────────────────────────────── */
+.petric-landing .offer-section {
+  padding: 24px 16px;
+  background: var(--off-white);
+}
+.petric-landing .offer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.petric-landing .offer-card {
+  background: var(--white);
+  border: 2px solid var(--yellow);
+  border-radius: var(--radius-card);
+  padding: 20px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.petric-landing .offer-card::before {
+  content: "";
+  position: absolute;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(255,208,0,0.15) 0%, transparent 70%);
+  top: -30px; right: -30px;
+  border-radius: 50%;
+}
+.petric-landing .offer-tag {
+  display: inline-block;
+  background: var(--yellow);
+  color: var(--black);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 10px;
+}
+.petric-landing .offer-headline {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+.petric-landing .offer-headline .yellow { color: var(--yellow); }
+.petric-landing .offer-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.petric-landing .offer-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.petric-landing .offer-list li::before {
+  content: "✓";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  background: var(--yellow);
+  color: var(--black);
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* How It Works card */
+.petric-landing .how-card {
+  background: var(--white);
+  border-radius: var(--radius-card);
+  padding: 20px 16px;
+  border: 1.5px solid var(--gray);
+}
+.petric-landing .how-card-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  margin-bottom: 16px;
+}
+.petric-landing .how-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.petric-landing .how-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.petric-landing .step-num {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--black);
+  background: var(--yellow);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+.petric-landing .step-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+  padding-top: 3px;
+}
+.petric-landing .step-text .code {
+  display: inline-block;
+  background: var(--black);
+  color: var(--yellow);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 1px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* ─────────────────────────────────────────
+   SECTION 4 — CATEGORIES
+───────────────────────────────────────── */
+.petric-landing .section {
+  padding: 28px 16px 0;
+}
+.petric-landing .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.petric-landing .section-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.petric-landing .see-all {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+  text-decoration: none;
+  background: var(--yellow);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+}
+.petric-landing .cat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.petric-landing .cat-card {
+  background: var(--off-white);
+  border-radius: var(--radius-sm);
+  padding: 14px 6px 10px;
+  text-align: center;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+  cursor: pointer;
+}
+.petric-landing .cat-card:active {
+  border-color: var(--yellow);
+  background: #FFFBEA;
+}
+.petric-landing .cat-icon { font-size: 28px; display: block; margin-bottom: 7px; }
+.petric-landing .cat-name {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.petric-landing .cat-card.see-more {
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+.petric-landing .cat-card.see-more .cat-icon { filter: grayscale(0); }
+.petric-landing .cat-card.see-more .cat-name { color: var(--text); }
+
+/* ─────────────────────────────────────────
+   SECTION 5 — WHY PETRIC
+───────────────────────────────────────── */
+.petric-landing .why-section {
+  padding: 28px 16px 0;
+}
+.petric-landing .why-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.petric-landing .why-card {
+  background: var(--off-white);
+  border-radius: var(--radius-card);
+  padding: 18px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.petric-landing .why-card.dark {
+  background: var(--yellow);
+}
+.petric-landing .why-card::after {
+  content: attr(data-icon);
+  position: absolute;
+  font-size: 64px;
+  opacity: 0.07;
+  bottom: -10px;
+  right: -6px;
+  pointer-events: none;
+}
+.petric-landing .why-icon {
+  font-size: 26px;
+  margin-bottom: 10px;
+  display: block;
+}
+.petric-landing .why-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.petric-landing .why-card.dark .why-title { color: var(--text); }
+.petric-landing .why-desc {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-mid);
+  line-height: 1.4;
+}
+.petric-landing .why-card.dark .why-desc { color: var(--text); }
+
+/* ─────────────────────────────────────────
+   SECTION 6 — TESTIMONIALS
+───────────────────────────────────────── */
+.petric-landing .testi-section {
+  padding: 28px 16px 0;
+}
+.petric-landing .testi-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.petric-landing .testi-scroll::-webkit-scrollbar { display: none; }
+.petric-landing .testi-card {
+  background: var(--white);
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-card);
+  padding: 20px 18px;
+  min-width: 270px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.petric-landing .testi-card::before {
+  content: '"';
+  position: absolute;
+  font-size: 100px;
+  font-weight: 900;
+  color: var(--yellow);
+  opacity: 0.08;
+  top: -10px;
+  left: 10px;
+  line-height: 1;
+}
+.petric-landing .testi-stars {
+  color: var(--yellow);
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.petric-landing .testi-text {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+.petric-landing .testi-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.petric-landing .author-dot {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.petric-landing .author-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+.petric-landing .author-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-mid);
+}
+
+/* ─────────────────────────────────────────
+   SECTION 7 — FINAL CTA
+───────────────────────────────────────── */
+.petric-landing .final-cta {
+  margin: 28px 16px 0;
+  background: var(--yellow);
+  border-radius: var(--radius-card);
+  padding: 28px 20px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.petric-landing .final-cta::before {
+  content: "🐾";
+  position: absolute;
+  font-size: 90px;
+  opacity: 0.08;
+  bottom: -15px;
+  right: -10px;
+}
+.petric-landing .final-cta-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.4);
+  margin-bottom: 10px;
+}
+.petric-landing .final-cta h2 {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--black);
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  margin-bottom: 6px;
+}
+.petric-landing .final-cta-sub {
+  font-size: 14px;
+  color: rgba(0,0,0,0.55);
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.petric-landing .final-cta-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.petric-landing .btn-dark {
+  display: block;
+  background: var(--white);
+  color: var(--text);
+  border: 1.5px solid var(--gray);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 15px 20px;
+  border-radius: var(--radius-btn);
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: -0.2px;
+}
+.petric-landing .btn-outline-dark {
+  display: block;
+  background: transparent;
+  color: var(--black);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 20px;
+  border-radius: var(--radius-btn);
+  text-decoration: none;
+  text-align: center;
+  border: 2px solid rgba(0,0,0,0.2);
+}
+
+/* ─────────────────────────────────────────
+   WHATSAPP + FOOTER
+───────────────────────────────────────── */
+.petric-landing .wa-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 16px 0;
+  background: #F0FDF4;
+  border: 1.5px solid #BBF7D0;
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  text-decoration: none;
+}
+.petric-landing .wa-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #15803D;
+}
+.petric-landing .wa-num { font-weight: 900; }
+
+.petric-landing .footer {
+  text-align: center;
+  padding: 22px 16px 28px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-mid);
+  line-height: 2;
+}
+.petric-landing .footer strong { color: var(--text); font-weight: 900; }
+
+/* ─────────────────────────────────────────
+   SECTION 8 — STICKY FOOTER
+───────────────────────────────────────── */
+.petric-landing .sticky-bar {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  background: var(--white);
+  padding: 10px 16px 20px;
+  z-index: 100;
+  border-top: 2px solid var(--yellow);
+}
+.petric-landing .sticky-bar a {
+  display: block;
+  background: var(--yellow);
+  color: var(--black);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  padding: 14px 20px;
+  border-radius: var(--radius-btn);
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: -0.2px;
+}
+.petric-landing .sticky-sub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+.petric-landing .sticky-sub span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-mid);
+}
+.petric-landing .sticky-sub span:not(:last-child)::after {
+  content: " ·";
+  margin-left: 8px;
+}
+
+.petric-landing .sticky-spacer { height: 88px; }
+
+/* divider */
+.petric-landing .divider {
+  height: 1px;
+  background: var(--off-white);
+  margin: 28px 16px 0;
+}
+
+/* ─────────────────────────────────────────
+   DESKTOP RESPONSIVE
+───────────────────────────────────────── */
+@media (min-width: 768px) {
+  .petric-landing .navbar {
+    padding: 20px 80px;
+    background: var(--white);
+    border-bottom: 2px solid var(--yellow);
+    max-width: none;
+    margin: 0;
+  }
+
+  .petric-landing .nav-logo {
+    font-size: 28px;
+  }
+  .petric-landing .nav-cta {
+    font-size: 16px;
+    padding: 12px 24px;
+  }
+
+  .petric-landing .hero {
+    padding: 80px 40px 100px;
+  }
+  .petric-landing .hero h1 {
+    font-size: 72px;
+  }
+  .petric-landing .hero-body {
+    font-size: 20px;
+    max-width: 600px;
+    margin: 0 auto 40px;
+  }
+  .petric-landing .hero-btns {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+  .petric-landing .btn-primary, .petric-landing .btn-secondary {
+    padding: 16px 32px;
+    font-size: 18px;
+  }
+
+  .petric-landing .offer-section {
+    padding: 60px 40px;
+  }
+  .petric-landing .offer-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .petric-landing .offer-card {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .petric-landing .offer-headline {
+    font-size: 32px;
+  }
+  .petric-landing .offer-list {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+  .petric-landing .offer-list li {
+    font-size: 16px;
+  }
+  .petric-landing .offer-list li::before {
+    width: 24px; height: 24px;
+    font-size: 12px;
+  }
+
+  .petric-landing .section, 
+  .petric-landing .why-section, 
+  .petric-landing .testi-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 40px 0;
+  }
+  
+  .petric-landing .section-title {
+    font-size: 32px;
+  }
+  
+  .petric-landing .cat-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+  }
+  
+  .petric-landing .cat-card {
+    padding: 24px 10px 16px;
+  }
+  .petric-landing .cat-icon { font-size: 40px; margin-bottom: 12px; }
+  .petric-landing .cat-name { font-size: 14px; }
+  
+  .petric-landing .why-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .petric-landing .why-card {
+    padding: 30px 20px;
+  }
+  .petric-landing .why-icon { font-size: 32px; }
+  .petric-landing .why-title { font-size: 18px; }
+  .petric-landing .why-desc { font-size: 14px; }
+
+  .petric-landing .testi-scroll {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    overflow-x: visible;
+  }
+  
+  .petric-landing .final-cta {
+    max-width: 1000px;
+    margin: 80px auto 0;
+    padding: 80px 40px;
+  }
+  .petric-landing .final-cta h2 {
+    font-size: 48px;
+  }
+  .petric-landing .final-cta-sub {
+    font-size: 18px;
+  }
+  .petric-landing .final-cta-btns {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .petric-landing .sticky-bar {
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+  }
+  .petric-landing .sticky-bar a {
+    width: auto;
+    padding: 16px 40px;
+  }
+  .petric-landing .sticky-sub {
+    margin-top: 0;
+  }
+}
+
+/* ─────────────────────────────────────────
+   MOBILE SPECIFIC TWEAKS
+───────────────────────────────────────── */
+@media (max-width: 767px) {
+  .petric-landing .testi-card {
+    display: none;
+    width: 100%;
+    min-width: 100%;
+    white-space: normal;
+  }
+  .petric-landing .testi-card.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+}

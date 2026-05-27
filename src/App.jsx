@@ -11,6 +11,7 @@ import ProductDetails from './pages/ProductDetails';
 import SavedAddresses from './pages/SavedAddresses';
 import Front from './pages/Front';
 import Newtemp from './pages/newtemp';
+import Hello from './pages/hello';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/front" element={<Front />} />
         <Route path="/front.jsx" element={<Front />} />
         <Route path="/newtemp.jsx" element={<Newtemp />} />
+        <Route path="/hello" element={<Hello />} />
         <Route path="/*" element={<MainLayout />} />
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         <Route path="/saved-addresses" element={<SavedAddresses />} />
