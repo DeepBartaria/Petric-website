@@ -7,12 +7,12 @@ const axiosApi = axios.create({
   baseURL: API_URL,
 });
 
-axiosApi.interceptors.request.use((config) => {
+// axiosApi.interceptors.request.use((config) => {
 
-  config.headers["x-platform"] = "website";
+//   config.headers["x-platform"] = "website";
 
-  return config;
-});
+//   return config;
+// });
 
 axiosApi.interceptors.response.use(
   (response) => response,
