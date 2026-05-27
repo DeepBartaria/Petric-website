@@ -2,13 +2,17 @@ import React from "react";
 import "./PetricLandingPage.css";
 import landingPageImg from "../assets/landing_page.png";
 import logoImg from "../assets/logocrop.png";
+import lpWebVideo from "../assets/lp_web.mp4";
+import lpMobVideo from "../assets/lp_mob.mp4";
 
 const PetricLandingPage = () => {
   const [activeTesti, setActiveTesti] = React.useState(0);
-  const whatsappRef = React.useRef(null);
-  const offerRef = React.useRef(null);
   const [showSticky, setShowSticky] = React.useState(false);
   const [showStickySub, setShowStickySub] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+  const whatsappRef = React.useRef(null);
+  const offerRef = React.useRef(null);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -28,7 +32,14 @@ const PetricLandingPage = () => {
     const interval = setInterval(() => {
       setActiveTesti((prev) => (prev + 1) % 3);
     }, 4000);
-    return () => clearInterval(interval);
+    
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (
@@ -52,20 +63,31 @@ const PetricLandingPage = () => {
       </nav>
 
       {/* ── SECTION 2: HERO ── */}
-      <section className="hero">
+      <section ref={whatsappRef} className={`hero ${isMobile ? 'hero-mobile' : 'hero-desktop'}`}>
+        <video
+          key={isMobile ? 'mobile' : 'desktop'}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="hero-bg-video"
+          src={isMobile ? lpMobVideo : lpWebVideo}
+        />
         <div className="hero-badge">
           <div className="live-dot"></div>
           Delivering right now
         </div>
+        {/*
         <h1>Pet supplies.<br/><span className="highlight">In minutes.</span></h1>
         <p className="hero-body">Everything you need delivered straight to your door. Fast, reliable, and hassle-free.</p>
         <div className="hero-btns">
           <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
-          <a ref={whatsappRef} href="https://wa.me/918295756962" className="btn-secondary">
+          <a href="https://wa.me/918295756962" className="btn-secondary">
             <span className="whatsapp-icon">💬</span>
             Order via WhatsApp
           </a>
         </div>
+        */}
       </section>
 
       {/* ── SECTION 3: OFFER ── */}
@@ -227,12 +249,11 @@ const PetricLandingPage = () => {
 
       {/* ── SECTION 7: FINAL CTA ── */}
       <div className="final-cta">
-        <div className="final-cta-label">We've got you covered</div>
         <h2>Every pet.<br/>Every need.<br/>Every time.</h2>
         <p className="final-cta-sub">Can't find an item? Tell us — we'll get it for you.</p>
         <div className="final-cta-btns">
-          <a href="https://www.petric.in" className="btn-dark">See Products →</a>
           <a href="https://wa.me/918295756962" className="btn-outline-dark">💬 Request an Item</a>
+          <a href="https://www.petric.in" className="btn-dark">See Products →</a>
         </div>
       </div>
 

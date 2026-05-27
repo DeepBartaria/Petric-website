@@ -88,21 +88,28 @@
 ───────────────────────────────────────── */
 .petric-landing .hero {
   background: transparent;
-  padding: 36px 20px 40px;
+  padding: 0;
   text-align: center;
   position: relative;
   overflow: hidden;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
-.petric-landing .hero::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: url('../assets/temphello.png') no-repeat center center;
-  background-size: cover;
-  opacity: 0.9;
+.petric-landing .hero-desktop {
+  /* Let video dictate height */
+}
+.petric-landing .hero-mobile {
+  /* Let video dictate height */
+}
+.petric-landing .hero-bg-video {
+  position: relative;
+  width: 100%; height: auto;
+  display: block;
   z-index: -1;
-  pointer-events: none;
+  opacity: 1;
 }
 .petric-landing .hero::after {
   content: "";
