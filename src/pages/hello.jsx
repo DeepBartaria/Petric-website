@@ -5,6 +5,7 @@ import logoImg from "../assets/logocrop.png";
 import lpWebVideo from "../assets/lp_web.mp4";
 import lpMobVideo from "../assets/lp_mob.mp4";
 import { get } from "../helper/api";
+import HelloFooter from "../components/HelloFooter";
 
 const PetricLandingPage = () => {
   const [activeTesti, setActiveTesti] = React.useState(0);
@@ -278,6 +279,9 @@ const PetricLandingPage = () => {
         No delivery · No platform · No COD fees
       </div> 
       */}
+
+      {/* Global Footer component */}
+      <HelloFooter />
 
       <div className="sticky-spacer"></div>
 

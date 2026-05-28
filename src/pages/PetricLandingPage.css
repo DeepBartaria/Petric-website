@@ -689,7 +689,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: 12px 16px 0;
+  margin: 12px 16px 40px;
   background: #FFFBEA; /* Light yellow */
   border: 1.5px solid var(--yellow);
   border-radius: var(--radius-sm);
