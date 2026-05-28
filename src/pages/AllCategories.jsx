@@ -42,6 +42,7 @@ export default function AllCategories() {
   const productCoupons = useProductCoupons();
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
+  const [bouncingProductId, setBouncingProductId] = useState(null);
 
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
@@ -296,6 +297,13 @@ export default function AllCategories() {
   }, [isFetchingMore, isInitialLoading, currentPage, totalPages]);
 
   const handleAddToCart = (product) => {
+    setBouncingProductId(product.id || product._id);
+    // Restart animation by clearing and setting it again in next frame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setBouncingProductId(product.id || product._id);
+      });
+    });
     addProductToCart(product);
   };
 
@@ -604,7 +612,13 @@ export default function AllCategories() {
                                 </button>
                               </div>
                             ) : (
-                              <button onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }} className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-4 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all">ADD</button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                onAnimationEnd={() => setBouncingProductId(null)}
+                                className={`bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-4 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all${bouncingProductId === (product.id || product._id) ? ' animate-add-btn-bounce' : ''}`}
+                              >
+                                ADD
+                              </button>
                             );
                           })()}
                         </div>
@@ -659,7 +673,13 @@ export default function AllCategories() {
                                 </button>
                               </div>
                             ) : (
-                              <button onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }} className="bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-4 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all">ADD</button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                onAnimationEnd={() => setBouncingProductId(null)}
+                                className={`bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-4 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all${bouncingProductId === (product.id || product._id) ? ' animate-add-btn-bounce' : ''}`}
+                              >
+                                ADD
+                              </button>
                             );
                           })()}
                         </div>
