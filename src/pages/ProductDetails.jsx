@@ -23,8 +23,12 @@ function getPetParentCount(id = '') {
 function ProductCard({ product }) {
   const navigate = useNavigate();
   const { cartItems, addProductToCart, handleUpdateQuantity } = useCart();
+  const [btnBounce, setBtnBounce] = useState(false);
 
   const handleAddToCart = (p) => {
+    setBtnBounce(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setBtnBounce(true)));
+
     const cartProduct = {
       id: p.id || p._id,
       productId: p.id || p._id,
@@ -90,7 +94,8 @@ function ProductCard({ product }) {
             ) : (
               <button
                 onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                className="bg-[#FFD000] text-black text-[9px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all shadow-sm"
+                onAnimationEnd={() => setBtnBounce(false)}
+                className={`bg-[#FFD000] text-black text-[9px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full hover:bg-[#ffdb33] hover:scale-105 shadow-sm transition-all${btnBounce ? ' animate-add-btn-bounce' : ''}`}
               >
                 ADD
               </button>
@@ -122,6 +127,7 @@ export default function ProductDetails() {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [brandProducts, setBrandProducts] = useState([]);
   const loggedProductDetailsRef = useRef(null);
+  const [btnBounce, setBtnBounce] = useState(false);
   
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
@@ -133,6 +139,9 @@ export default function ProductDetails() {
 
   const handleAddToCart = () => {
     if (!product) return;
+
+    setBtnBounce(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setBtnBounce(true)));
 
     const cartProduct = {
       id: product._id,
@@ -453,7 +462,8 @@ export default function ProductDetails() {
               </div>
               <button
                 onClick={handleAddToCart}
-                className="flex-1 flex h-10 md:h-11 items-center justify-center gap-2 rounded-full bg-[#FFD000] px-4 text-sm font-extrabold hover:bg-[#ffdb33] hover:scale-[1.02] hover:shadow-md transition-all"
+                onAnimationEnd={() => setBtnBounce(false)}
+                className={`flex-1 flex h-10 md:h-11 items-center justify-center gap-2 rounded-full bg-[#FFD000] px-4 text-sm font-extrabold hover:bg-[#ffdb33] hover:scale-[1.02] hover:shadow-md transition-all${btnBounce ? ' animate-add-btn-bounce' : ''}`}
               >
                 <FiShoppingBag className="h-4 w-4" />
                 Add to Cart
