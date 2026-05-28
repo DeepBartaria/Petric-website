@@ -186,12 +186,18 @@
   flex-direction: column;
   gap: 10px;
   position: absolute;
-  bottom: 90px;
+  bottom: 45px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   width: 90%;
   max-width: 340px;
+  animation: popInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  opacity: 0;
+}
+@keyframes popInUp {
+  0% { opacity: 0; transform: translate(-50%, 20px) scale(0.95); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 .petric-landing .btn-primary {
   display: block;
@@ -805,6 +811,7 @@
     justify-content: center;
     gap: 20px;
     max-width: max-content;
+    bottom: 90px;
   }
   .petric-landing .btn-primary, .petric-landing .btn-secondary {
     padding: 16px 32px;

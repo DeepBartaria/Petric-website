@@ -108,10 +108,12 @@ const PetricLandingPage = () => {
           className="hero-bg-video"
           src={isMobile ? lpMobVideo : lpWebVideo}
         />
+        {/*
         <div className="hero-badge">
           <div className="live-dot"></div>
           Delivering right now
         </div>
+        */}
         {/*
         <h1>Pet supplies.<br/><span className="highlight">In minutes.</span></h1>
         <p className="hero-body">Everything you need delivered straight to your door. Fast, reliable, and hassle-free.</p>
