@@ -25,24 +25,31 @@
    SECTION 1 — RUNNING STRIP
 ───────────────────────────────────────── */
 .petric-landing .ticker-wrap {
-  background: var(--yellow);
+  background: linear-gradient(90deg, #FFD000, #FFEA75, #FFD000);
+  background-size: 200% 100%;
+  animation: gradientShift 6s linear infinite;
   overflow: hidden;
   white-space: nowrap;
-  padding: 9px 0;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+@keyframes gradientShift {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 .petric-landing .ticker-track {
   display: inline-block;
-  animation: ticker 18s linear infinite;
+  animation: ticker 25s linear infinite;
 }
 .petric-landing .ticker-track span {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 900;
   color: var(--black);
-  letter-spacing: 0.1px;
+  letter-spacing: 0.6px;
   padding: 0 32px;
-}
-.petric-landing .ticker-track span::before {
-  content: "🐾 ";
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
 }
 @keyframes ticker {
   0%   { transform: translateX(0); }
@@ -178,6 +185,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 90%;
+  max-width: 340px;
 }
 .petric-landing .btn-primary {
   display: block;
@@ -193,6 +207,7 @@
   text-align: center;
   letter-spacing: -0.2px;
   transition: background 0.15s;
+  white-space: nowrap;
 }
 .petric-landing .btn-primary:active { background: var(--yellow-hover); }
 .petric-landing .btn-secondary {
@@ -200,19 +215,21 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: transparent;
-  color: var(--text);
+  background: rgba(40, 40, 40, 0.85); /* Premium dark grey */
+  color: #ffffff;
   font-size: 15px;
   font-weight: 700;
-  padding: 15px 24px;
+  padding: 16px 24px;
   border-radius: var(--radius-btn);
   text-decoration: none;
-  border: 1.5px solid var(--gray);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   cursor: pointer;
-  text-align: center;
-  transition: border-color 0.15s;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
-.petric-landing .btn-secondary:active { border-color: var(--yellow); color: var(--yellow); }
+.petric-landing .btn-secondary:hover { background: rgba(60, 60, 60, 0.95); transform: translateY(-1px); }
 .petric-landing .whatsapp-icon { font-size: 18px; }
 
 /* ─────────────────────────────────────────
@@ -410,12 +427,23 @@
   border: 1.5px solid transparent;
   transition: border-color 0.15s, background 0.15s;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .petric-landing .cat-card:active {
   border-color: var(--yellow);
   background: #FFFBEA;
 }
-.petric-landing .cat-icon { font-size: 28px; display: block; margin-bottom: 7px; }
+.petric-landing .cat-icon { font-size: 40px; display: block; margin: 0 auto 8px; }
+.petric-landing .cat-icon-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  margin: 0 auto 8px;
+  display: block;
+}
 .petric-landing .cat-name {
   font-size: 10.5px;
   font-weight: 800;
@@ -776,6 +804,7 @@
     flex-direction: row;
     justify-content: center;
     gap: 20px;
+    max-width: max-content;
   }
   .petric-landing .btn-primary, .petric-landing .btn-secondary {
     padding: 16px 32px;

@@ -4,15 +4,44 @@ import landingPageImg from "../assets/landing_page.png";
 import logoImg from "../assets/logocrop.png";
 import lpWebVideo from "../assets/lp_web.mp4";
 import lpMobVideo from "../assets/lp_mob.mp4";
+import { get } from "../helper/api";
 
 const PetricLandingPage = () => {
   const [activeTesti, setActiveTesti] = React.useState(0);
   const [showSticky, setShowSticky] = React.useState(false);
   const [showStickySub, setShowStickySub] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+  const [shopCategories, setShopCategories] = React.useState([]);
+  const [showHeroButtons, setShowHeroButtons] = React.useState(false);
 
   const whatsappRef = React.useRef(null);
   const offerRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const fetchShopCategories = async () => {
+      try {
+        const response = await get('product/category');
+        if (response?.categories) {
+          const formattedCategories = response.categories
+            .sort((a, b) => (a.order || 999) - (b.order || 999))
+            .map((category) => ({
+              id: category._id,
+              name: category.name,
+              img: category.categoryImage || category.image || '',
+            }));
+          setShopCategories(formattedCategories.slice(0, 11));
+        }
+      } catch (error) {
+        console.error('Error fetching shop categories:', error);
+      }
+    };
+    fetchShopCategories();
+  }, []);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowHeroButtons(true), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -47,10 +76,16 @@ const PetricLandingPage = () => {
       {/* ── SECTION 1: RUNNING STRIP ── */}
       <div className="ticker-wrap">
         <div className="ticker-track">
-          <span>Now delivering in Gurgaon &amp; nearby areas</span>
-          <span>Now delivering in Gurgaon &amp; nearby areas</span>
-          <span>Now delivering in Gurgaon &amp; nearby areas</span>
-          <span>Now delivering in Gurgaon &amp; nearby areas</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
         </div>
       </div>
 
@@ -80,14 +115,16 @@ const PetricLandingPage = () => {
         {/*
         <h1>Pet supplies.<br/><span className="highlight">In minutes.</span></h1>
         <p className="hero-body">Everything you need delivered straight to your door. Fast, reliable, and hassle-free.</p>
-        <div className="hero-btns">
-          <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
-          <a href="https://wa.me/918295756962" className="btn-secondary">
-            <span className="whatsapp-icon">💬</span>
-            Order via WhatsApp
-          </a>
-        </div>
         */}
+        {showHeroButtons && (
+          <div className="hero-btns">
+            <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
+            <a href="https://wa.me/918295756962" className="btn-secondary">
+              <span className="whatsapp-icon">💬</span>
+              Order via WhatsApp
+            </a>
+          </div>
+        )}
       </section>
 
       {/* ── SECTION 3: OFFER ── */}
@@ -119,50 +156,16 @@ const PetricLandingPage = () => {
           <a href="https://www.petric.in/all-categories" className="see-all">See all</a>
         </div>
         <div className="cat-grid">
-          <a href="https://www.petric.in/category/688bb653d965e37b6406d2f0" className="cat-card">
-            <span className="cat-icon">🐕</span>
-            <span className="cat-name">Dog Food</span>
-          </a>
-          <a href="https://www.petric.in/category/688bb661d965e37b6406d2f5" className="cat-card">
-            <span className="cat-icon">🐈</span>
-            <span className="cat-name">Cat Food</span>
-          </a>
-          <a href="https://www.petric.in/category/688bb67cd965e37b6406d2fe" className="cat-card">
-            <span className="cat-icon">🦴</span>
-            <span className="cat-name">Treats</span>
-          </a>
-          <a href="https://www.petric.in/category/688bb8d2d965e37b6406d3af" className="cat-card">
-            <span className="cat-icon">🏥</span>
-            <span className="cat-name">Vet Food</span>
-          </a>
-          <a href="https://www.petric.in/category/689dd0df62fd763e5a773308" className="cat-card">
-            <span className="cat-icon">💊</span>
-            <span className="cat-name">Pharmacy</span>
-          </a>
-          <a href="https://www.petric.in/category/69e7dd7bbfdbb023ad83b8bb" className="cat-card">
-            <span className="cat-icon">🪣</span>
-            <span className="cat-name">Cat Litter</span>
-          </a>
-          <a href="https://www.petric.in/category/688bc48cd965e37b6406d4e8" className="cat-card">
-            <span className="cat-icon">🧴</span>
-            <span className="cat-name">Essentials</span>
-          </a>
-          <a href="https://www.petric.in/category/69e8021dbfdbb023ad876b89" className="cat-card">
-            <span className="cat-icon">🎾</span>
-            <span className="cat-name">Toys</span>
-          </a>
-          <a href="https://www.petric.in/category/69d0ca2227624a14c7c44c10" className="cat-card">
-            <span className="cat-icon">🦮</span>
-            <span className="cat-name">Walking Gear</span>
-          </a>
-          <a href="https://www.petric.in/category/688bc4dcd965e37b6406d4ed" className="cat-card">
-            <span className="cat-icon">✂️</span>
-            <span className="cat-name">Grooming</span>
-          </a>
-          <a href="https://www.petric.in/category/68b66de432dd7dfb3033009a" className="cat-card">
-            <span className="cat-icon">🐟</span>
-            <span className="cat-name">Fish &amp; Birds</span>
-          </a>
+          {shopCategories.map((category) => (
+            <a key={category.id} href={`https://www.petric.in/category/${category.id}`} className="cat-card">
+              {category.img ? (
+                <img src={category.img} alt={category.name} className="cat-icon-img" />
+              ) : (
+                <span className="cat-icon">{category.name?.charAt(0)}</span>
+              )}
+              <span className="cat-name">{category.name}</span>
+            </a>
+          ))}
           <a href="https://www.petric.in/all-categories" className="cat-card see-more">
             <span className="cat-icon">＋</span>
             <span className="cat-name">More</span>
