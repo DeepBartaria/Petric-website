@@ -234,14 +234,14 @@ const PetricLandingPage = () => {
                   <a
                     key={i}
                     href={`https://www.petric.in/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center shrink-0 cursor-pointer group px-2"
+                    className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-28 cursor-pointer group mt-4 pb-4"
                   >
-                    <div className="w-[120px] h-[120px] bg-white rounded-[24px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col items-center justify-start pt-3 relative hover:shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300">
-                      <div className="w-[90px] h-[90px] relative rounded-full overflow-hidden">
-                        <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                    <div className="relative group cursor-pointer w-24 h-24 mx-2">
+                      <div className="w-24 h-24 rounded-full overflow-visible shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 bg-white border border-gray-100 flex items-center justify-center">
+                        <img src={brand.img} alt={brand.alt} className="w-[85%] h-[85%] rounded-full object-contain transition-transform duration-300 group-hover:scale-105" />
                       </div>
                       {brand.discount && (
-                        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-[72px] h-[34px] z-10 drop-shadow-sm pointer-events-none">
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[76px] h-[36px] z-10 drop-shadow-sm pointer-events-none">
                           <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
                             <path 
                               d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z" 
@@ -260,7 +260,7 @@ const PetricLandingPage = () => {
                       )}
                     </div>
                     {brand.alt && (
-                      <span className="text-[13px] font-bold text-[#111827] text-center w-full mt-3 tracking-wide">{brand.alt}</span>
+                      <span className="text-[12px] font-bold text-[#4B5563] text-center w-full mt-2 tracking-wide truncate">{brand.alt}</span>
                     )}
                   </a>
                 ))}
@@ -285,14 +285,14 @@ const PetricLandingPage = () => {
                   <a
                     key={i}
                     href={`https://www.petric.in/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center shrink-0 cursor-pointer group px-1 pb-2"
+                    className="flex flex-col items-center shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px] pt-2 pb-4 gap-3"
                   >
-                    <div className="w-[100px] h-[100px] bg-white rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col items-center justify-start pt-2 relative active:scale-95 transition-all duration-300">
-                      <div className="w-[76px] h-[76px] relative rounded-full overflow-hidden">
-                        <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain" />
+                    <div className="relative">
+                      <div className="rounded-full overflow-visible shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px] bg-white border border-gray-50 flex items-center justify-center">
+                        <img src={brand.img} alt={brand.alt} className="w-[85%] h-[85%] rounded-full object-contain" />
                       </div>
                       {brand.discount && (
-                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[66px] h-[32px] z-10 drop-shadow-sm pointer-events-none">
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[72px] h-[34px] z-10 drop-shadow-sm pointer-events-none">
                           <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
                             <path 
                               d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z" 
@@ -311,7 +311,7 @@ const PetricLandingPage = () => {
                       )}
                     </div>
                     {brand.alt && (
-                      <span className="text-[11.5px] font-bold text-[#111827] text-center w-full mt-2.5 tracking-wide">{brand.alt}</span>
+                      <span className="text-[12px] font-bold text-[#4B5563] text-center truncate w-full tracking-wide">{brand.alt}</span>
                     )}
                   </a>
                 ))}
@@ -322,14 +322,14 @@ const PetricLandingPage = () => {
                   <a
                     key={i}
                     href={`https://www.petric.in/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center shrink-0 cursor-pointer group px-1 pb-2"
+                    className="flex flex-col items-center shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px] pt-2 pb-4 gap-3"
                   >
-                    <div className="w-[100px] h-[100px] bg-white rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col items-center justify-start pt-2 relative active:scale-95 transition-all duration-300">
-                      <div className="w-[76px] h-[76px] relative rounded-full overflow-hidden">
-                        <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain" />
+                    <div className="relative">
+                      <div className="rounded-full overflow-visible shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px] bg-white border border-gray-50 flex items-center justify-center">
+                        <img src={brand.img} alt={brand.alt} className="w-[85%] h-[85%] rounded-full object-contain" />
                       </div>
                       {brand.discount && (
-                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[66px] h-[32px] z-10 drop-shadow-sm pointer-events-none">
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[72px] h-[34px] z-10 drop-shadow-sm pointer-events-none">
                           <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
                             <path 
                               d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z" 
@@ -348,7 +348,7 @@ const PetricLandingPage = () => {
                       )}
                     </div>
                     {brand.alt && (
-                      <span className="text-[11.5px] font-bold text-[#111827] text-center w-full mt-2.5 tracking-wide">{brand.alt}</span>
+                      <span className="text-[12px] font-bold text-[#4B5563] text-center truncate w-full tracking-wide">{brand.alt}</span>
                     )}
                   </a>
                 ))}

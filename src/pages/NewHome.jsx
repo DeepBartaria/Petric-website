@@ -585,7 +585,7 @@ export default function NewHome() {
                       <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
                     </div>
                     {brand.alt && (
-                      <span className="text-[10px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                      <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
                     )}
                     {brand.discount && (
                       <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
