@@ -36,33 +36,19 @@ import brand4 from '../assets/brand4.png';
 import brand5 from '../assets/brand5.png';
 import brand6 from '../assets/brand6.png';
 
-const BRAND_IMAGE_MAP = {
-  'Pedigree': pedigree,
-  'Royal Canin': royalcanin,
-  'Farmina N&D': brand1,
-  'Vet-Life': brand2,
-  'Sheba': sheba,
-  'Whiskas': whiskas,
-  'Drools': drools,
-  'HUFT': brand3,
-  'JerHigh': brand4,
-  'Purina Pro': brand5,
-  'Farmina Matisse': brand6,
-};
-
-const BRAND_DISCOUNT_MAP = {
-  'Pedigree': '26%',
-  'Royal Canin': '27%',
-  'Farmina N&D': '28%',
-  'Vet-Life': '23%',
-  'Sheba': '24%',
-  'Whiskas': '24%',
-  'Drools': '28%',
-  'HUFT': '17%',
-  'JerHigh': '15%',
-  'Purina Pro': '23%',
-  'Farmina Matisse': '24%',
-};
+const brands = [
+  { img: pedigree, alt: 'Pedigree', discount: '26%' },
+  { img: royalcanin, alt: 'Royal Canin', discount: '27%' },
+  { img: brand1, alt: 'Farmina N&D', discount: '28%' },
+  { img: brand2, alt: 'Vet-Life', discount: '23%' },
+  { img: sheba, alt: 'Sheba', discount: '24%' },
+  { img: whiskas, alt: 'Whiskas', discount: '24%' },
+  { img: drools, alt: 'Drools', discount: '28%' },
+  { img: brand3, alt: 'HUFT', discount: '17%' },
+  { img: brand4, alt: 'JerHigh', discount: '15%' },
+  { img: brand5, alt: 'Purina Pro', discount: '23%' },
+  { img: brand6, alt: 'Farmina Matisse', discount: '24%' },
+];
 
 export default function NewHome() {
   const navigate = useNavigate();
@@ -209,10 +195,9 @@ export default function NewHome() {
           .sort((a, b) => (a.order || 999) - (b.order || 999))
           .map((brand) => ({
             id: brand._id,
-            img: BRAND_IMAGE_MAP[brand.name] || brand.image,
+            img: brand.image,
             alt: brand.name,
             name: brand.name,
-            discount: BRAND_DISCOUNT_MAP[brand.name] || null,  // ← add this line
           }));
 
         setBrands(formattedBrands);
@@ -504,44 +489,26 @@ export default function NewHome() {
         {/* Shop by Brands */}
         <div className="mb-14">
           <div className="flex justify-between items-end mb-6">
-            <h2 className="text-2xl font-bold text-black transition-colors duration-300 hover:text-gray-700 cursor-pointer">
-              Shop by Brands
-            </h2>
-
-            <Link
-              to="/all-brands"
-              className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2"
-            >
-              See all
-            </Link>
+            <h2 className="text-2xl font-bold text-black transition-colors duration-300 hover:text-gray-700 cursor-pointer">Shop by Brands</h2>
+            <Link to="/all-brands" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</Link>
           </div>
 
           {/* ── DESKTOP: single scrollable row ── */}
           <div className="hidden md:flex items-center gap-2">
             {brandsScrollPos > 0 && (
               <button
-                onClick={() =>
-                  brandsScrollRef.current?.scrollBy({
-                    left: -200,
-                    behavior: "smooth",
-                  })
-                }
-                className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                onClick={() => brandsScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+                className="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-black p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-200 hover:scale-110"
               >
-                <FiChevronRight
-                  className="h-5 w-5 text-[#FFD000] rotate-180"
-                  strokeWidth={3}
-                />
+                <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
               </button>
             )}
 
             <div className="relative flex-1 overflow-hidden">
               <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10" />
-
               {brandsScrollPos > 0 && (
                 <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
               )}
-
               <div
                 ref={brandsScrollRef}
                 onScroll={(e) => setBrandsScrollPos(e.target.scrollLeft)}
@@ -550,247 +517,83 @@ export default function NewHome() {
                 {brands.map((brand, i) => (
                   <Link
                     key={i}
-                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(
-                      brand.name
-                    )}`}
-                    onClick={() =>
-                      logActivity(
-                        `Click HomePageBrands ${brand.name}`,
-                        "Web_ViewBrands"
-                      )
-                    }
-                    className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-28 cursor-pointer group mt-4 pb-4"
+                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    onClick={() => logActivity(`Click HomePageBrands ${brand.name}`, 'Web_ViewBrands')}
+                    className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-24 cursor-pointer group"
                   >
-                    <div className="relative group cursor-pointer w-24 h-24 mx-2">
-                      <div className="w-24 h-24 rounded-full overflow-visible shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 bg-white border border-gray-100 flex items-center justify-center">
-                        <img
-                          src={brand.img}
-                          alt={brand.alt}
-                          className="w-[85%] h-[85%] rounded-full object-contain transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </div>
-
-                      {brand.discount && (
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[76px] h-[36px] z-10 drop-shadow-sm pointer-events-none">
-                          <svg
-                            viewBox="0 0 100 40"
-                            className="w-full h-full overflow-visible"
-                          >
-                            <path
-                              d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z"
-                              fill="#E32731"
-                            />
-
-                            <defs>
-                              <path
-                                id={`textPath-desktop-${i}`}
-                                d="M 10,27 Q 50,7 90,27"
-                              />
-                            </defs>
-
-                            <text
-                              fill="white"
-                              fontSize="16"
-                              fontWeight="900"
-                              fontFamily='"Balsamiq Sans", cursive'
-                              letterSpacing="0.5px"
-                            >
-                              <textPath
-                                href={`#textPath-desktop-${i}`}
-                                startOffset="50%"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                              >
-                                {brand.discount} off
-                              </textPath>
-                            </text>
-                          </svg>
-                        </div>
-                      )}
+                    <div className="w-24 h-24 rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                      <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                     </div>
-
                     {brand.alt && (
-                      <span className="text-[12px] font-bold text-[#4B5563] text-center w-full mt-2 tracking-wide truncate">
-                        {brand.alt}
+                      <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                    {brand.discount && (
+                      <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
+                        {brand.discount} off
                       </span>
                     )}
                   </Link>
                 ))}
-
                 <div className="shrink-0 w-10" />
               </div>
             </div>
 
             <button
-              onClick={() =>
-                brandsScrollRef.current?.scrollBy({
-                  left: 200,
-                  behavior: "smooth",
-                })
-              }
+              onClick={() => brandsScrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
               className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
             >
-              <FiChevronRight
-                className="h-5 w-5 text-[#FFD000]"
-                strokeWidth={3}
-              />
+              <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
             </button>
           </div>
 
           {/* ── MOBILE: two scrollable rows ── */}
           <div className="md:hidden overflow-x-auto [&::-webkit-scrollbar]:hidden">
-            <div
-              className="flex flex-col gap-4 pb-2"
-              style={{ width: "max-content" }}
-            >
-              {/* Row 1 */}
+            <div className="flex flex-col gap-4 pb-2" style={{ width: 'max-content' }}>
+              {/* Row 1 — odd-indexed brands */}
               <div className="flex gap-4 px-2">
-                {brands
-                  .filter((_, i) => i % 2 === 0)
-                  .map((brand, i) => (
-                    <Link
-                      key={i}
-                      to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(
-                        brand.name
-                      )}`}
-                      onClick={() =>
-                        logActivity(
-                          `Click HomePageBrands ${brand.name}`,
-                          "Web_ViewBrands"
-                        )
-                      }
-                      className="flex flex-col items-center shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px] pt-2 pb-4 gap-3"
-                    >
-                      <div className="relative">
-                        <div className="rounded-full overflow-visible shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px] bg-white border border-gray-50 flex items-center justify-center">
-                          <img
-                            src={brand.img}
-                            alt={brand.alt}
-                            className="w-[85%] h-[85%] rounded-full object-contain"
-                          />
-                        </div>
-
-                        {brand.discount && (
-                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[72px] h-[34px] z-10 drop-shadow-sm pointer-events-none">
-                            <svg
-                              viewBox="0 0 100 40"
-                              className="w-full h-full overflow-visible"
-                            >
-                              <path
-                                d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z"
-                                fill="#E32731"
-                              />
-
-                              <defs>
-                                <path
-                                  id={`textPath-mob1-${i}`}
-                                  d="M 10,27 Q 50,7 90,27"
-                                />
-                              </defs>
-
-                              <text
-                                fill="white"
-                                fontSize="16"
-                                fontWeight="900"
-                                fontFamily='"Balsamiq Sans", cursive'
-                                letterSpacing="0.5px"
-                              >
-                                <textPath
-                                  href={`#textPath-mob1-${i}`}
-                                  startOffset="50%"
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                >
-                                  {brand.discount} off
-                                </textPath>
-                              </text>
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-
-                      {brand.alt && (
-                        <span className="text-[12px] font-bold text-[#4B5563] text-center truncate w-full tracking-wide">
-                          {brand.alt}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
+                {brands.filter((_, i) => i % 2 === 0).map((brand, i) => (
+                  <Link
+                    key={i}
+                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    onClick={() => logActivity(`Click HomePageBrands ${brand.name}`, 'Web_ViewBrands')}
+                    className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px]"
+                  >
+                    <div className="rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px]">
+                      <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                    {brand.discount && (
+                      <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
+                        {brand.discount} off
+                      </span>
+                    )}
+                  </Link>
+                ))}
               </div>
-
-              {/* Row 2 */}
+              {/* Row 2 — even-indexed brands */}
               <div className="flex gap-4 px-2">
-                {brands
-                  .filter((_, i) => i % 2 === 1)
-                  .map((brand, i) => (
-                    <Link
-                      key={i}
-                      to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(
-                        brand.name
-                      )}`}
-                      onClick={() =>
-                        logActivity(
-                          `Click HomePageBrands ${brand.name}`,
-                          "Web_ViewBrands"
-                        )
-                      }
-                      className="flex flex-col items-center shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px] pt-2 pb-4 gap-3"
-                    >
-                      <div className="relative">
-                        <div className="rounded-full overflow-visible shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px] bg-white border border-gray-50 flex items-center justify-center">
-                          <img
-                            src={brand.img}
-                            alt={brand.alt}
-                            className="w-[85%] h-[85%] rounded-full object-contain"
-                          />
-                        </div>
-
-                        {brand.discount && (
-                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[72px] h-[34px] z-10 drop-shadow-sm pointer-events-none">
-                            <svg
-                              viewBox="0 0 100 40"
-                              className="w-full h-full overflow-visible"
-                            >
-                              <path
-                                d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z"
-                                fill="#E32731"
-                              />
-
-                              <defs>
-                                <path
-                                  id={`textPath-mob2-${i}`}
-                                  d="M 10,27 Q 50,7 90,27"
-                                />
-                              </defs>
-
-                              <text
-                                fill="white"
-                                fontSize="16"
-                                fontWeight="900"
-                                fontFamily='"Balsamiq Sans", cursive'
-                                letterSpacing="0.5px"
-                              >
-                                <textPath
-                                  href={`#textPath-mob2-${i}`}
-                                  startOffset="50%"
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                >
-                                  {brand.discount} off
-                                </textPath>
-                              </text>
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-
-                      {brand.alt && (
-                        <span className="text-[12px] font-bold text-[#4B5563] text-center truncate w-full tracking-wide">
-                          {brand.alt}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
+                {brands.filter((_, i) => i % 2 === 1).map((brand, i) => (
+                  <Link
+                    key={i}
+                    to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    onClick={() => logActivity(`Click HomePageBrands ${brand.name}`, 'Web_ViewBrands')}
+                    className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px]"
+                  >
+                    <div className="rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px]">
+                      <img src={brand.img} alt={brand.alt} className="w-full h-full object-cover" />
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[11px] font-medium text-gray-600 text-center truncate w-full">{brand.alt}</span>
+                    )}
+                    {brand.discount && (
+                      <span className="text-[10px] font-bold text-[#FF5757] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full leading-none">
+                        {brand.discount} off
+                      </span>
+                    )}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
