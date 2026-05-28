@@ -72,6 +72,7 @@ export default function AllCategories() {
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   
   const [expandedCategory, setExpandedCategory] = useState(null);
+  const [mostBroughtProducts, setMostBroughtProducts] = useState([]);
 
   const sentinelRef = useRef(null);
   const fetchKeyRef = useRef(0);
@@ -99,6 +100,51 @@ export default function AllCategories() {
         }));
 
         setCategoriesData(combined);
+
+        // Fetch Most Brought Products from Essentials & Toys
+        try {
+          const targetCategories = combined.filter(c => 
+            c.name.toLowerCase().includes('essential') || 
+            c.name.toLowerCase().includes('toy')
+          ).map(c => c._id);
+          
+          if (targetCategories.length > 0) {
+            const productsRes = await post('product/list/all/forUser', {
+              page: 1,
+              limit: 20,
+              productCategory: targetCategories,
+            });
+            if (productsRes && productsRes.products) {
+              let fetchedProducts = productsRes.products.map(p => {
+                const variant = p.variants?.[0] || {};
+                return {
+                  id: p._id,
+                  productId: p._id,
+                  variantId: variant._id || null,
+                  variantName: variant.name || '',
+                  unit: variant.unit || '',
+                  img: p.productImage,
+                  name: p.name,
+                  weight: variant.name || '',
+                  price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
+                  oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+                  originalPrice: variant.originalPrice || 0,
+                  discountedPrice: variant.discountedPrice || variant.originalPrice || 0,
+                  discount:
+                    variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
+                      ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
+                      : '',
+                  variants: p.variants || [],
+                };
+              });
+              fetchedProducts = fetchedProducts.sort(() => 0.5 - Math.random()).slice(0, 5);
+              setMostBroughtProducts(fetchedProducts);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching most brought products:", err);
+        }
+
         if (combined.length > 0 && !searchQuery && !brandId) {
           // No longer automatically setting activeCategory to show category grid
         }
@@ -509,7 +555,7 @@ export default function AllCategories() {
                 })}
               </div>
 
-              {/* Best Seller Section */}
+              {/* Best Seller Section 
               <div className="mt-16 pt-8 border-t border-gray-100">
                 <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">Best Seller</h2>
                 <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
@@ -566,19 +612,15 @@ export default function AllCategories() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> 
+              */}
 
               {/* Most Brought Section */}
+              {mostBroughtProducts.length > 0 && (
               <div className="mt-10 mb-10">
                 <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">Most Brought</h2>
                 <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
-                  {[
-                    { id: 'd6', name: "Pedigree Adult Meat & Rice", img: "https://placehold.co/200/FFF/000?text=Product", weight: "3 kg", price: "₹650", oldPrice: "₹720", discount: "10%" },
-                    { id: 'd7', name: "Sheba Rich Fish Premium", img: "https://placehold.co/200/FFF/000?text=Product", weight: "70 g", price: "₹45", oldPrice: "₹50", discount: "10%" },
-                    { id: 'd8', name: "Goodies Energy Treats", img: "https://placehold.co/200/FFF/000?text=Product", weight: "500 g", price: "₹350", oldPrice: "₹400", discount: "12%" },
-                    { id: 'd9', name: "TickFree Flea Comb", img: "https://placehold.co/200/FFF/000?text=Product", weight: "1 Pc", price: "₹150", oldPrice: "₹199", discount: "25%" },
-                    { id: 'd10', name: "Chappi Adult Chicken", img: "https://placehold.co/200/FFF/000?text=Product", weight: "3 kg", price: "₹490", oldPrice: "₹550", discount: "11%" },
-                  ].map((product, i) => (
+                  {mostBroughtProducts.map((product, i) => (
                     <div key={i} className="bg-white rounded-3xl w-[45vw] md:w-[260px] lg:w-[280px] shrink-0 snap-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm border border-gray-50">
                       <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
                         <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
@@ -626,6 +668,7 @@ export default function AllCategories() {
                   ))}
                 </div>
               </div>
+              )}
             </div>
           ) : isInitialLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
