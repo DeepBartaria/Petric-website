@@ -462,7 +462,7 @@ const PetricLandingPage = () => {
       {/* ── SECTION 7: FINAL CTA ── */}
       <div className="final-cta">
         <h2>Every pet.<br/>Every need.<br/>Every time.</h2>
-        <p className="final-cta-sub">Can't find an item? Tell us — we'll get it for you.</p>
+        <p className="final-cta-sub">Tell us, we'll get it for you.</p>
         <div className="final-cta-btns">
           <a href="https://wa.me/918295756962" className="btn-outline-dark">Request an Item</a>
           <a href="https://www.petric.in" className="btn-dark">See Products →</a>
@@ -484,7 +484,7 @@ const PetricLandingPage = () => {
       {/* ── SECTION 8: STICKY BAR ── */}
       <div className={`sticky-bar ${showSticky ? 'sticky-enter' : 'sticky-exit'}`}>
         <a href="https://www.petric.in">
-          Shop Now — Extra 8% Off First 4 Orders
+          Shop Now Extra 8% Off First 4 Orders
         </a>
         {showStickySub && (
           <div className="sticky-sub">
