@@ -214,9 +214,9 @@ const PetricLandingPage = () => {
             {brandsScrollPos > 0 && (
               <button
                 onClick={() => brandsScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
-                className="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-black p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-200 hover:scale-110"
+                className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
               >
-                <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
+                <FiChevronRight className="h-5 w-5 text-[#FFD000] rotate-180" strokeWidth={2.5} />
               </button>
             )}
 
