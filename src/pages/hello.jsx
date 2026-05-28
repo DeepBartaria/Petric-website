@@ -78,6 +78,7 @@ const PetricLandingPage = () => {
   }, []);
 
   return (
+    <>
     <div className="petric-landing">
       {/* ── SECTION 1: RUNNING STRIP ── */}
       <div className="ticker-wrap">
@@ -280,10 +281,6 @@ const PetricLandingPage = () => {
       </div> 
       */}
 
-      {/* Global Footer component */}
-      <HelloFooter />
-
-      <div className="sticky-spacer"></div>
 
       {/* ── SECTION 8: STICKY BAR ── */}
       <div className={`sticky-bar ${showSticky ? 'sticky-enter' : 'sticky-exit'}`}>
@@ -298,6 +295,12 @@ const PetricLandingPage = () => {
       </div>
 
     </div>
+    
+    {/* Global Footer component */}
+    <HelloFooter />
+
+    <div className="sticky-spacer"></div>
+    </>
   );
 };
 
