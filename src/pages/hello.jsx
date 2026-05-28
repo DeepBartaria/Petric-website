@@ -12,7 +12,7 @@ const PetricLandingPage = () => {
   const [showStickySub, setShowStickySub] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
   const [shopCategories, setShopCategories] = React.useState([]);
-  const [showHeroButtons, setShowHeroButtons] = React.useState(false);
+  const [heroBtnState, setHeroBtnState] = React.useState('hidden'); // hidden, visible, exiting
 
   const whatsappRef = React.useRef(null);
   const offerRef = React.useRef(null);
@@ -38,10 +38,15 @@ const PetricLandingPage = () => {
     fetchShopCategories();
   }, []);
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setShowHeroButtons(true), 5000);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleTimeUpdate = (e) => {
+    const time = e.target.currentTime;
+    if (time >= 5 && time <= 17) {
+      if (heroBtnState !== 'visible') setHeroBtnState('visible');
+    } else {
+      if (heroBtnState === 'visible') setHeroBtnState('exiting');
+      else if (time < 1 && heroBtnState === 'exiting') setHeroBtnState('hidden');
+    }
+  };
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -107,6 +112,7 @@ const PetricLandingPage = () => {
           playsInline
           className="hero-bg-video"
           src={isMobile ? lpMobVideo : lpWebVideo}
+          onTimeUpdate={handleTimeUpdate}
         />
         {/*
         <div className="hero-badge">
@@ -118,15 +124,13 @@ const PetricLandingPage = () => {
         <h1>Pet supplies.<br/><span className="highlight">In minutes.</span></h1>
         <p className="hero-body">Everything you need delivered straight to your door. Fast, reliable, and hassle-free.</p>
         */}
-        {showHeroButtons && (
-          <div className="hero-btns">
-            <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
-            <a href="https://wa.me/918295756962" className="btn-secondary">
-              <span className="whatsapp-icon">💬</span>
-              Order via WhatsApp
-            </a>
-          </div>
-        )}
+        <div className={`hero-btns ${heroBtnState}`}>
+          <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
+          <a href="https://wa.me/918295756962" className="btn-secondary">
+            <span className="whatsapp-icon">💬</span>
+            Order via WhatsApp
+          </a>
+        </div>
       </section>
 
       {/* ── SECTION 3: OFFER ── */}
