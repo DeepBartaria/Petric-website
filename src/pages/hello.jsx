@@ -139,7 +139,7 @@ const PetricLandingPage = () => {
 
           <div className="offer-card premium">
             <div className="offer-tag-container">
-              <span className="offer-tag pulse-animation">🐾 Limited Offer</span>
+              <span className="offer-tag pulse-animation">Limited Offer</span>
             </div>
             <div className="offer-headline">
               Grab <span className="highlight-discount">Extra 8% OFF</span><br/>on your first 4 orders!
@@ -159,7 +159,7 @@ const PetricLandingPage = () => {
       <div className="section">
         <div className="section-header">
           <div className="section-title">Shop by Category</div>
-          <a href="https://www.petric.in/all-categories" className="see-all">See all</a>
+          <a href="https://www.petric.in/all-categories" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
         </div>
         <div className="cat-grid">
           {shopCategories.map((category) => (
@@ -287,7 +287,7 @@ const PetricLandingPage = () => {
 
       {/* ── SECTION 8: STICKY BAR ── */}
       <div className={`sticky-bar ${showSticky ? 'sticky-enter' : 'sticky-exit'}`}>
-        <a href="https://www.petric.in">🛒 Shop Now — Extra 8% Off First 4 Orders</a>
+        <a href="https://www.petric.in">Shop Now — Extra 8% Off First 4 Orders</a>
         {showStickySub && (
           <div className="sticky-sub">
             <span className="sub-item" style={{ animationDelay: '0s' }}>No delivery fee</span>
