@@ -8,6 +8,8 @@ import CartFloatingButton from '../components/CartFloatingButton';
 import { get, post } from '../helper/api';
 import { Link } from 'react-router-dom';
 import useCart from '../hooks/useCart';
+import { logActivity } from '../helper/analytics';
+
 
 
 // Deterministic "random" number from product id so it doesn't change on re-render
@@ -160,6 +162,10 @@ export default function ProductDetails() {
         setLoading(true);
         const res = await get(`product/details/single/${id}`);
         if (res.type === 'success' && res.product) {
+          logActivity(
+            `User View Details of ${res.product.name}`,
+            'Web_ProductDetails'
+          );
           const p = res.product;
           setProduct(p);
           if (p.variants?.length > 0) setSelectedSize(p.variants[0]);

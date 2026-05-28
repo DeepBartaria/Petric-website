@@ -17,6 +17,8 @@ import { FiChevronDown, FiChevronRight, FiStar, FiGift } from "react-icons/fi";
 import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
 import useProductCoupons from '../hooks/useProductCoupons';
+import { logActivity } from '../helper/analytics';
+
 
 import banner1 from '../assets/main_banner1.webp';
 import banner2 from '../assets/main_banner2.webp';
@@ -214,15 +216,29 @@ export default function NewHome() {
 
   const handleAddToCart = (product) => {
     addProductToCart(product);
+
+    logActivity(
+      `User added to Cart ${product?.name || ''}`,
+      'Web_HomeProdtoCart'
+    );
   };
 
   const handleOpenProduct = (product) => {
     navigate(`/product/${product.id}`);
+
+    logActivity(
+      `User Open ${product?.name || ''}`,
+      'Web_HomepageProdOpen'
+    );
   };
 
   const handleOpenVariants = (product) => {
     setVariantPopupProduct(product);
     setIsVariantPopupOpen(true);
+    logActivity(
+      `USer View Variant ${product?.name || ''}`,
+      'Web_HomepageProdVariants'
+    );
   };
 
   // const handleOpenProduct = (product) => {
@@ -288,16 +304,25 @@ export default function NewHome() {
         {/* Top Banners Section */}
         {/* Desktop View */}
         <div className="hidden md:grid grid-cols-3 gap-6 mb-12">
-          <div className="col-span-2 bg-[#D9D9D9] rounded-[2rem] h-[500px] w-full overflow-hidden relative group">
+          <div
+            onClick={() => logActivity('Click HomePageBanner Banner 1', 'Click_HomePageBanner')}
+            className="col-span-2 bg-[#D9D9D9] rounded-[2rem] h-[500px] w-full overflow-hidden relative group cursor-pointer"
+          >
             <img src={banner1} alt="Banner 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           </div>
           <div className="grid grid-rows-2 gap-6 h-[500px]">
-            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative group">
+            <div
+              onClick={() => logActivity('Click HomePageBanner Banner 2', 'Click_HomePageBanner')}
+              className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative group cursor-pointer"
+            >
               <img src={banner2} alt="Banner 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
-            <div className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative group">
+            <div
+              onClick={() => logActivity('Click HomePageBanner Banner 3', 'Click_HomePageBanner')}
+              className="bg-[#D9D9D9] rounded-[2rem] w-full h-full overflow-hidden relative group cursor-pointer"
+            >
               <img src={banner3} alt="Banner 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
@@ -305,13 +330,22 @@ export default function NewHome() {
         </div>
 
         <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden gap-4 mb-10 pb-2">
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative">
+          <div
+            onClick={() => logActivity('Click HomePageBanner Banner 1', 'Click_HomePageBanner')}
+            className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer"
+          >
             <img src={banner1} alt="Banner 1" className="w-full h-full object-cover" />
           </div>
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative">
+          <div
+            onClick={() => logActivity('Click HomePageBanner Banner 2', 'Click_HomePageBanner')}
+            className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer"
+          >
             <img src={banner2} alt="Banner 2" className="w-full h-full object-cover" />
           </div>
-          <div className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative">
+          <div
+            onClick={() => logActivity('Click HomePageBanner Banner 3', 'Click_HomePageBanner')}
+            className="bg-[#D9D9D9] rounded-[2rem] h-[200px] sm:h-[300px] w-[85vw] shrink-0 snap-center overflow-hidden relative cursor-pointer"
+          >
             <img src={banner3} alt="Banner 3" className="w-full h-full object-cover" />
           </div>
         </div>
@@ -359,6 +393,7 @@ export default function NewHome() {
                     key={category.id}
                     to={`/category/${category.id}`}
                     state={{ categoryName: category.name }}
+                    onClick={() => logActivity(`Click HomePageCategory ${category.name}`, 'Web_HomeCategory')} 
                     className="relative shrink-0 flex flex-col items-center justify-center gap-3 w-44 cursor-pointer group"
                   >
                     <div className="w-44 h-44 rounded-full overflow-hidden bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center">
@@ -399,6 +434,7 @@ export default function NewHome() {
                   key={category.id}
                   to={`/category/${category.id}`}
                   state={{ categoryName: category.name }}
+                  onClick={() => logActivity(`Click HomePageCategory ${category.name}`, 'Web_HomeCategory')}
                   className="flex flex-col items-center gap-2 w-32 shrink-0 cursor-pointer group"
                 >
                   <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 flex items-center justify-center">
@@ -482,6 +518,7 @@ export default function NewHome() {
                   <Link
                     key={i}
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    onClick={() => logActivity(`Click HomePageBrands ${brand.name}`, 'Web_ViewBrands')}
                     className="relative shrink-0 flex flex-col items-center justify-center gap-2 w-24 cursor-pointer group"
                   >
                     <div className="w-24 h-24 rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
@@ -518,6 +555,7 @@ export default function NewHome() {
                   <Link
                     key={i}
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    onClick={() => logActivity(`Click HomePageBrands ${brand.name}`, 'Web_ViewBrands')}
                     className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px]"
                   >
                     <div className="rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px]">
@@ -540,6 +578,7 @@ export default function NewHome() {
                   <Link
                     key={i}
                     to={`/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    onClick={() => logActivity(`Click HomePageBrands ${brand.name}`, 'Web_ViewBrands')}
                     className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group w-[calc((100vw-80px)/3.5)] max-w-[110px]"
                   >
                     <div className="rounded-full overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 group-active:scale-95 w-[calc((100vw-80px)/3.5)] h-[calc((100vw-80px)/3.5)] max-w-[110px] max-h-[110px]">

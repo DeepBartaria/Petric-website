@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import { FiX, FiMapPin, FiNavigation, FiMap } from 'react-icons/fi';
+import { logActivity } from '../helper/analytics';
 
 const libraries = ['places'];
 const STORE_COORDINATES = { lat: 28.4416870, lng: 77.0759438 };
@@ -126,6 +127,10 @@ export default function DeliveryLocationModal({ isOpen, onClose }) {
         setDeliveryTime(time);
         localStorage.setItem('petric_delivery_time', time.toString());
         localStorage.setItem('petric_delivery_location', JSON.stringify(deliveryLocation));
+        logActivity(
+          `User Entered Location lat:${deliveryLocation.lat}, lng:${deliveryLocation.lng}`,
+          'Web_UserLocation'
+        );
 
         window.dispatchEvent(new CustomEvent('deliveryTimeUpdated', { detail: time }));
         window.dispatchEvent(new CustomEvent('deliveryLocationUpdated', { detail: deliveryLocation }));

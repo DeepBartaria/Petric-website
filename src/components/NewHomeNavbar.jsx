@@ -11,6 +11,7 @@ import { getHomePageProductsApi } from '../api/homeApi';
 import { get } from '../helper/api';
 import { post } from '../helper/api';
 import useCart from '../hooks/useCart';
+import { logActivity } from '../helper/analytics';
 
 // Popular/trending searches shown when input is focused but empty
 const TRENDING_SEARCHES = [
@@ -136,6 +137,19 @@ export default function NewHomeNavbar() {
     setIsMobileSearchOpen(false);
     setIsFocused(false);
     setHighlightedIndex(-1);
+  };
+
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+
+    setInputValue(value);
+
+    if (value.trim()) {
+      logActivity(
+        `User search ${value} text`,
+        'WebProductSearch'
+      );
+    }
   };
 
   const openMobileSearch = () => {
@@ -415,7 +429,7 @@ export default function NewHomeNavbar() {
                 className="absolute inset-0 w-full h-full outline-none px-1 text-xs md:text-sm text-gray-700 bg-transparent z-10"
                 placeholder=""
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={handleSearchInputChange}
                 onFocus={() => setIsFocused(true)}
                 onKeyDown={handleKeyDown}
               />
@@ -588,7 +602,7 @@ export default function NewHomeNavbar() {
                     autoComplete="off"
                     placeholder="Search for pet food, treats, toys..."
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={handleSearchInputChange}
                     onKeyDown={handleKeyDown}
                     className="flex-1 min-w-0 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
                   />
@@ -743,12 +757,28 @@ export default function NewHomeNavbar() {
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   window.open('https://petric.in/download/', '_blank');
+
+                  logActivity(
+                    'User Click Download App button',
+                    'Web_DownloadApp'
+                  );
                 }}
                 className="w-full text-left px-4 py-3 text-sm font-bold text-black hover:bg-gray-50 flex items-center gap-2"
               >
                 <span className="bg-[#FFD000] text-black px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">App</span> Download App
               </button>
-              <Link to="/reorder" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
+              <Link
+                to="/reorder"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+
+                  logActivity(
+                    'User Click Re-order',
+                    'Web_Reorder'
+                  );
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2"
+              >
                 <BsArrowRepeat className="h-4 w-4" /> Reorder
               </Link>
               <Link to="/contactus" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-left px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2">
@@ -819,12 +849,23 @@ export default function NewHomeNavbar() {
         <div className="hidden lg:flex items-center gap-4 md:gap-8 flex-shrink-0 px-4 md:px-8 md:py-3">
 
           <button
-            onClick={() => window.open('https://petric.in/download/', '_blank')}
+            onClick={() => {
+              window.open('https://petric.in/download/', '_blank');
+
+              logActivity(
+                'User Click Download App button',
+                'Web_DownloadApp'
+              );
+            }}
             className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2.5 rounded-full font-bold transition-all shadow-sm transform hover:scale-105"
           >
             Download App
           </button>
-          <Link to="/reorder" className="group flex flex-row items-center gap-1.5 text-gray-800 hover:text-black transition-all duration-300 hover:scale-105">
+          <Link
+            to="/reorder"
+            onClick={() => logActivity('User Click Re-order', 'Web_Reorder')}
+            className="group flex flex-row items-center gap-1.5 text-gray-800 hover:text-black transition-all duration-300 hover:scale-105"
+          >
             <BsArrowRepeat className="h-5 w-5 transition-transform duration-300 group-hover:rotate-180" />
             <span className="text-sm font-medium">Reorder</span>
           </Link>

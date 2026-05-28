@@ -15,7 +15,7 @@ import { getAllCategoryProductsTemp } from '../api/categoryProductsApi';
 import headerbg from '../assets/petsproductherobg.png';
 import { Link } from 'react-router-dom';
 import useCart from '../hooks/useCart';
-import { logPageVisit } from '../helper/analytics';
+import { logActivity } from '../helper/analytics';
 import ProductCard from '../components/ProductCard';
 import VariantPopup from '../components/VariantPopup';
 import useProductCoupons from '../hooks/useProductCoupons';
@@ -104,12 +104,13 @@ export default function CategoryPage() {
     }
   };
 
-  useEffect(() => {
+    useEffect(() => {
     if (categoryName) {
       const description = activeSubcategory
-        ? `Visited category page: ${categoryName} > ${activeSubcategory.name}`
-        : `Visited category page: ${categoryName}`;
-      logPageVisit(description);
+        ? `User view ${categoryName} > ${activeSubcategory.name} subcategory`
+        : `User view ${categoryName} category`;
+
+      logActivity(description, 'Web_CategoryView');
     }
   }, [categoryName, activeSubcategory]);
 
@@ -322,15 +323,31 @@ export default function CategoryPage() {
       if (img) triggerFlyToCart(img, product.img, product.name);
     }
     addProductToCart(product);
+
+    logActivity(
+      `User Add to Cart ${product?.name || ''}`,
+      'Web_AddToCart'
+    );
+
   };
 
   const handleOpenProduct = (product) => {
     navigate(`/product/${product.id}`);
+
+     logActivity(
+      `User Click Product ${product?.name || ''}`,
+      'Web_ProductClick'
+    );
   };
 
   const handleOpenVariants = async (product) => {
     setIsCartOpen(false);
     window.dispatchEvent(new Event('closeCart'));
+    
+    logActivity(
+      `User View Variants ${product?.name || ''}`,
+      'Web_OpenVariant'
+    );    
 
     try {
       const fullProduct = await getFullProductForVariantPopup(product, get);
@@ -360,6 +377,10 @@ export default function CategoryPage() {
 
   const handleSubcategoryClick = (sub) => {
     setActiveSubcategory(sub);
+    logActivity(
+      `User View Subcategory ${categoryName} > ${sub?.name || 'All'}`,
+      'Web_SubcategoryView'
+    );
     const params = sub ? `?subCategory=${sub._id}` : '';
     navigate(`/category/${categoryId}${params}`, {
       state: { categoryName, subCategoryName: sub?.name },
@@ -369,6 +390,10 @@ export default function CategoryPage() {
 
   const handleCategoryNavClick = (cat) => {
     navigate(`/category/${cat._id}`, { state: { categoryName: cat.name } });
+    logActivity(
+      `User View Category ${cat?.name || ''}`,
+      'Web_TopBarCateogries'
+    );
   };
 
   const SkeletonCard = () => (

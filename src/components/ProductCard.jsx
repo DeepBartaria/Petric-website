@@ -3,6 +3,7 @@ import { FiChevronDown, FiMinus, FiPlus, FiTag } from 'react-icons/fi';
 import useCart from '../hooks/useCart';
 import { getBestCouponTextForProduct } from '../utils/productCoupon';
 import { getBestVariantDiscountText } from '../utils/variantDiscount';
+import { logActivity } from '../helper/analytics';
 
 const getNumber = (value) => {
   return Number(String(value ?? 0).replace(/[^\d.]/g, '')) || 0;
@@ -55,6 +56,12 @@ export default function ProductCard({
 
     if (hasMultipleVariants) {
       onOpenVariants?.(product);
+
+      logActivity(
+        `Click_addToCart ${product?.name || ''}`,
+        'Web_addToCart'
+      );
+
       return;
     }
 
@@ -63,6 +70,12 @@ export default function ProductCard({
     }
 
     onAddToCart?.(product);
+    
+    logActivity(
+      `Click_addToCart ${product?.name || ''}`,
+      'Web_addToCart'
+    );
+
   };
 
   const handleVariantClick = (event) => {
@@ -92,7 +105,14 @@ export default function ProductCard({
 
   return (
     <article
-      onClick={() => onOpenProduct?.(product)}
+      onClick={() => {
+        logActivity(
+          `USer click ${product.name}`,
+          'Web_ProductClick'
+        );
+
+        onOpenProduct?.(product);
+      }}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${mobileSizeClass} ${desktopSizeClass} ${className}`}
     >
       <div className="relative flex h-[132px] w-full items-center justify-center overflow-hidden bg-gray-50 p-2 md:h-[145px]">
