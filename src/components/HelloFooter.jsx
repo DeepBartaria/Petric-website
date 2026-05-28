@@ -24,7 +24,7 @@ export default function HelloFooter() {
             </div>
           </div>
           {/* Quick links */}
-          <div className="flex flex-col items-start text-left">
+          <div className="flex flex-col items-start text-left px-4 sm:px-0">
             <div className="mb-3 text-base sm:text-lg font-bold">Quick links</div>
             <ul className="text-xs sm:text-sm flex flex-col items-start gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
               <li><Link to="/story" className="hover:underline">Our Story</Link></li>
@@ -41,7 +41,7 @@ export default function HelloFooter() {
             </ul>
           </div>
           {/* Policies */}
-          <div className="flex flex-col items-start text-left">
+          <div className="flex flex-col items-start text-left px-4 sm:px-0">
             <div className="mb-3 text-base sm:text-lg font-bold">Policies</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
               <li><Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link></li>
@@ -51,7 +51,7 @@ export default function HelloFooter() {
             </ul>
           </div>
           {/* Popular Searches */}
-          <div className="col-span-1 sm:col-span-2 md:col-span-1 flex flex-col items-start text-left">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1 flex flex-col items-start text-left px-4 sm:px-0">
             <div className="mb-3 text-base sm:text-lg font-bold">Popular Searches Near You</div>
             <ul className="text-xs sm:text-sm flex flex-col gap-2 mt-4 sm:mt-7 text-[#3D3D3D]">
               <li><Link to="/category/688bb653d965e37b6406d2f0" className="hover:underline">Dog Food Near Me</Link></li>
