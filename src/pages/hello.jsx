@@ -81,16 +81,16 @@ const PetricLandingPage = () => {
       {/* ── SECTION 1: RUNNING STRIP ── */}
       <div className="ticker-wrap">
         <div className="ticker-track">
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
-          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS 🐾</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
+          <span>NOW DELIVERING IN GURGAON &amp; NEARBY AREAS</span>
         </div>
       </div>
 
@@ -127,7 +127,6 @@ const PetricLandingPage = () => {
         <div className={`hero-btns ${heroBtnState}`}>
           <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
           <a href="https://wa.me/918295756962" className="btn-secondary">
-            <span className="whatsapp-icon">💬</span>
             Order via WhatsApp
           </a>
         </div>
@@ -261,23 +260,24 @@ const PetricLandingPage = () => {
         <h2>Every pet.<br/>Every need.<br/>Every time.</h2>
         <p className="final-cta-sub">Can't find an item? Tell us — we'll get it for you.</p>
         <div className="final-cta-btns">
-          <a href="https://wa.me/918295756962" className="btn-outline-dark">💬 Request an Item</a>
+          <a href="https://wa.me/918295756962" className="btn-outline-dark">Request an Item</a>
           <a href="https://www.petric.in" className="btn-dark">See Products →</a>
         </div>
       </div>
 
       {/* WhatsApp Strip */}
       <a href="https://wa.me/918295756962" className="wa-strip">
-        <span style={{fontSize: '20px'}}>💬</span>
-        <span className="wa-text">Call or WhatsApp: <span className="wa-num">82957-56962</span></span>
+        <span className="wa-text">Call or WhatsApp</span>
       </a>
 
       {/* Footer */}
+      {/* 
       <div className="footer">
         <strong>Petric</strong><br/>
         Delivering in Gurgaon &amp; nearby areas<br/>
         No delivery · No platform · No COD fees
-      </div>
+      </div> 
+      */}
 
       <div className="sticky-spacer"></div>
 

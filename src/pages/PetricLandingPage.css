@@ -187,11 +187,12 @@
   gap: 10px;
   position: absolute;
   bottom: 45px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 20px;
+  right: auto;
+  margin: 0;
   z-index: 10;
-  width: 90%;
-  max-width: 340px;
+  width: 60%;
+  max-width: 280px;
   opacity: 0;
   pointer-events: none;
 }
@@ -204,12 +205,12 @@
   pointer-events: none;
 }
 @keyframes popInUp {
-  0% { opacity: 0; transform: translate(-50%, 20px) scale(0.95); }
-  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes popOutDown {
-  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, 20px) scale(0.95); }
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(20px) scale(0.95); }
 }
 .petric-landing .btn-primary {
   display: block;
@@ -286,8 +287,8 @@
 }
 .petric-landing .offer-tag {
   display: inline-block;
-  background: var(--text);
-  color: var(--yellow);
+  background: #FFFBEA; /* Light yellow */
+  color: var(--text);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 1.2px;
@@ -333,20 +334,23 @@
 .petric-landing .offer-list {
   list-style: none;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
   align-items: center;
 }
 .petric-landing .offer-list li {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 4px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text);
+  white-space: nowrap;
 }
 .petric-landing .check-icon {
-  font-size: 16px;
+  font-size: 12px;
 }
 
 /* How It Works card */
@@ -824,6 +828,10 @@
     gap: 20px;
     max-width: max-content;
     bottom: 90px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: auto;
   }
   .petric-landing .btn-primary, .petric-landing .btn-secondary {
     padding: 16px 32px;
