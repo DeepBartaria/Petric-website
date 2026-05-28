@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
 import WhatsAppStickyButton from './components/WhatsAppStickyButton';
 import BottomPopup from './components/BottomPopup';
@@ -14,6 +14,8 @@ import Newtemp from './pages/newtemp';
 import Hello from './pages/hello';
 
 function App() {
+  const location = useLocation();
+  const showWhatsApp = location.pathname !== '/hello';
   return (
     <>
       <Routes>
@@ -31,7 +33,7 @@ function App() {
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         <Route path="/saved-addresses" element={<SavedAddresses />} />
       </Routes>
-      <WhatsAppStickyButton />
+      {showWhatsApp && <WhatsAppStickyButton />}
     </>
   );
 }

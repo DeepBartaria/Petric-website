@@ -11,7 +11,7 @@ export default function HelloFooter() {
   return (
     <footer className="w-full pl-6 pr-4 sm:px-0">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-black sm:px-6 md:px-8 py-6 sm:py-8">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-black sm:px-6 md:px-8 py-6 sm:py-8">
           {/* Logo & Address */}
           <div className="flex flex-col items-start text-left gap-4 col-span-1">
             <img src={logo} alt="Petric Logo" className="h-14 sm:h-20 object-contain" />
@@ -24,7 +24,7 @@ export default function HelloFooter() {
             </div>
           </div>
           {/* Quick links */}
-          <div className="flex flex-col items-start text-left">
+          <div className="flex flex-col items-start text-left md:mx-auto">
             <div className="mb-1 text-lg sm:text-xl font-bold text-black">Quick links</div>
             <ul className="text-sm sm:text-base flex flex-col items-start gap-3 mt-3 sm:mt-5 text-[#3D3D3D] font-semibold">
               <li><Link to="/story" className="hover:underline">Our Story</Link></li>
@@ -41,7 +41,7 @@ export default function HelloFooter() {
             </ul>
           </div>
           {/* Policies */}
-          <div className="flex flex-col items-start text-left">
+          <div className="flex flex-col items-start text-left md:mx-auto">
             <div className="mb-1 text-lg sm:text-xl font-bold text-black">Policies</div>
             <ul className="text-sm sm:text-base flex flex-col gap-3 mt-3 sm:mt-5 text-[#3D3D3D] font-semibold">
               <li><Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link></li>
@@ -50,20 +50,7 @@ export default function HelloFooter() {
               <li><Link to="/terms-and-conditions" className="hover:underline">Terms & Conditions</Link></li>
             </ul>
           </div>
-          {/* Popular Searches */}
-          <div className="col-span-1 sm:col-span-2 md:col-span-1 flex flex-col items-start text-left">
-            <div className="mb-1 text-lg sm:text-xl font-bold text-black">Popular Searches Near You</div>
-            <ul className="text-sm sm:text-base flex flex-col gap-3 mt-3 sm:mt-5 text-[#3D3D3D] font-semibold">
-              <li><Link to="/category/688bb653d965e37b6406d2f0" className="hover:underline">Dog Food Near Me</Link></li>
-              <li><Link to="/category/689dd0df62fd763e5a773308" className="hover:underline">Pet Emergency Medicines</Link></li>
-              <li><Link to="/category/688bb661d965e37b6406d2f5?subCategory=688bcaedd965e37b6406da6f" className="hover:underline">Cat Wet Food Near Me</Link></li>
-              <li><Link to="/category/688bb67cd965e37b6406d2fe" className="hover:underline">Treats for Dog and Cats</Link></li>
-              <li><Link to="/all-categories" className="hover:underline">Instant Pet Food Delivery</Link></li>
-              <li><Link to="/category/69e8021dbfdbb023ad876b89" className="hover:underline">Pet Toys Near Me</Link></li>
-              <li><Link to="/category/688bb8d2d965e37b6406d3af" className="hover:underline">Vet Prescribed Pet Food</Link></li>
-              <li><Link to="/category/69e7dd7bbfdbb023ad83b8bb" className="hover:underline">Unscented Cat Litters</Link></li>
-            </ul>
-          </div>
+
         </div>
       </div>
     </footer>

@@ -6,7 +6,32 @@ import lpWebVideo from "../assets/lp_web.mp4";
 import lpMobVideo from "../assets/lp_mob.mp4";
 import { get } from "../helper/api";
 import HelloFooter from "../components/HelloFooter";
+import { FiChevronRight } from 'react-icons/fi';
+import pedigree from '../assets/pedigree.png';
+import royalcanin from '../assets/royalcanin.png';
+import brand1 from '../assets/brand1.png';
+import brand2 from '../assets/brand2.png';
+import sheba from '../assets/sheba.png';
+import whiskas from '../assets/whiskas.png';
+import drools from '../assets/drools.png';
+import brand3 from '../assets/brand3.png';
+import brand4 from '../assets/brand4.png';
+import brand5 from '../assets/brand5.png';
+import brand6 from '../assets/brand6.png';
 
+const brands = [
+  { id: 'b1', name: 'Pedigree', img: pedigree, alt: 'Pedigree', discount: '26%' },
+  { id: 'b2', name: 'Royal Canin', img: royalcanin, alt: 'Royal Canin', discount: '27%' },
+  { id: 'b3', name: 'Farmina N&D', img: brand1, alt: 'Farmina N&D', discount: '28%' },
+  { id: 'b4', name: 'Vet-Life', img: brand2, alt: 'Vet-Life', discount: '23%' },
+  { id: 'b5', name: 'Sheba', img: sheba, alt: 'Sheba', discount: '24%' },
+  { id: 'b6', name: 'Whiskas', img: whiskas, alt: 'Whiskas', discount: '24%' },
+  { id: 'b7', name: 'Drools', img: drools, alt: 'Drools', discount: '28%' },
+  { id: 'b8', name: 'HUFT', img: brand3, alt: 'HUFT', discount: '17%' },
+  { id: 'b9', name: 'JerHigh', img: brand4, alt: 'JerHigh', discount: '15%' },
+  { id: 'b10', name: 'Purina Pro', img: brand5, alt: 'Purina Pro', discount: '23%' },
+  { id: 'b11', name: 'Farmina Matisse', img: brand6, alt: 'Farmina Matisse', discount: '24%' },
+];
 const PetricLandingPage = () => {
   const [activeTesti, setActiveTesti] = React.useState(0);
   const [showSticky, setShowSticky] = React.useState(false);
@@ -14,7 +39,8 @@ const PetricLandingPage = () => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
   const [shopCategories, setShopCategories] = React.useState([]);
   const [heroBtnState, setHeroBtnState] = React.useState('hidden'); // hidden, visible, exiting
-
+  const brandsScrollRef = React.useRef(null);
+  const [brandsScrollPos, setBrandsScrollPos] = React.useState(0);
   const whatsappRef = React.useRef(null);
   const offerRef = React.useRef(null);
 
@@ -65,7 +91,7 @@ const PetricLandingPage = () => {
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTesti((prev) => (prev + 1) % 3);
+      setActiveTesti((prev) => (prev + 1) % 5);
     }, 4000);
     
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -126,12 +152,7 @@ const PetricLandingPage = () => {
         <h1>Pet supplies.<br/><span className="highlight">In minutes.</span></h1>
         <p className="hero-body">Everything you need delivered straight to your door. Fast, reliable, and hassle-free.</p>
         */}
-        <div className={`hero-btns ${heroBtnState}`}>
-          <a href="https://www.petric.in" className="btn-primary">Shop Now →</a>
-          <a href="https://wa.me/918295756962" className="btn-secondary">
-            Order via WhatsApp
-          </a>
-        </div>
+
       </section>
 
       {/* ── SECTION 3: OFFER ── */}
@@ -180,6 +201,163 @@ const PetricLandingPage = () => {
         </div>
       </div>
 
+      {/* ── SHOP BY BRANDS ── */}
+      <div className="section">
+        <div className="mb-10">
+          <div className="section-header" style={{ marginBottom: "20px" }}>
+            <div className="section-title">Shop by Brands</div>
+            <a href="https://www.petric.in/all-brands" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
+          </div>
+
+          {/* ── DESKTOP: single scrollable row ── */}
+          <div className="hidden md:flex items-center gap-2">
+            {brandsScrollPos > 0 && (
+              <button
+                onClick={() => brandsScrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+                className="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-black p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-200 hover:scale-110"
+              >
+                <FiChevronRight className="h-4 w-4 rotate-180" strokeWidth={2.5} />
+              </button>
+            )}
+
+            <div className="relative flex-1 overflow-hidden">
+              <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10" />
+              {brandsScrollPos > 0 && (
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
+              )}
+              <div
+                ref={brandsScrollRef}
+                onScroll={(e) => setBrandsScrollPos(e.target.scrollLeft)}
+                className="flex items-center gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2"
+              >
+                {brands.map((brand, i) => (
+                  <a
+                    key={i}
+                    href={`https://www.petric.in/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    className="flex flex-col items-center shrink-0 cursor-pointer group px-2"
+                  >
+                    <div className="w-[120px] h-[120px] bg-white rounded-[24px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col items-center justify-start pt-3 relative hover:shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300">
+                      <div className="w-[90px] h-[90px] relative rounded-full overflow-hidden">
+                        <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                      </div>
+                      {brand.discount && (
+                        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-[72px] h-[34px] z-10 drop-shadow-sm pointer-events-none">
+                          <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
+                            <path 
+                              d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z" 
+                              fill="#E32731" 
+                            />
+                            <defs>
+                              <path id={`textPath-desktop-${i}`} d="M 10,27 Q 50,7 90,27" />
+                            </defs>
+                            <text fill="white" fontSize="16" fontWeight="900" fontFamily='"Balsamiq Sans", cursive' letterSpacing="0.5px">
+                              <textPath href={`#textPath-desktop-${i}`} startOffset="50%" textAnchor="middle" dominantBaseline="middle">
+                                {brand.discount} off
+                              </textPath>
+                            </text>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[13px] font-bold text-[#111827] text-center w-full mt-3 tracking-wide">{brand.alt}</span>
+                    )}
+                  </a>
+                ))}
+                <div className="shrink-0 w-10" />
+              </div>
+            </div>
+
+            <button
+              onClick={() => brandsScrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+              className="shrink-0 bg-black text-white p-1 rounded-full flex items-center justify-center h-8 w-8 shadow-sm transition-all duration-300 hover:scale-110 hover:shadow-lg"
+            >
+              <FiChevronRight className="h-5 w-5 text-[#FFD000]" strokeWidth={3} />
+            </button>
+          </div>
+
+          {/* ── MOBILE: two scrollable rows ── */}
+          <div className="md:hidden overflow-x-auto [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-col gap-4 pb-2" style={{ width: 'max-content' }}>
+              {/* Row 1 — odd-indexed brands */}
+              <div className="flex gap-4 px-2">
+                {brands.filter((_, i) => i % 2 === 0).map((brand, i) => (
+                  <a
+                    key={i}
+                    href={`https://www.petric.in/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    className="flex flex-col items-center shrink-0 cursor-pointer group px-1 pb-2"
+                  >
+                    <div className="w-[100px] h-[100px] bg-white rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col items-center justify-start pt-2 relative active:scale-95 transition-all duration-300">
+                      <div className="w-[76px] h-[76px] relative rounded-full overflow-hidden">
+                        <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain" />
+                      </div>
+                      {brand.discount && (
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[66px] h-[32px] z-10 drop-shadow-sm pointer-events-none">
+                          <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
+                            <path 
+                              d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z" 
+                              fill="#E32731" 
+                            />
+                            <defs>
+                              <path id={`textPath-mob1-${i}`} d="M 10,27 Q 50,7 90,27" />
+                            </defs>
+                            <text fill="white" fontSize="16" fontWeight="900" fontFamily='"Balsamiq Sans", cursive' letterSpacing="0.5px">
+                              <textPath href={`#textPath-mob1-${i}`} startOffset="50%" textAnchor="middle" dominantBaseline="middle">
+                                {brand.discount} off
+                              </textPath>
+                            </text>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[11.5px] font-bold text-[#111827] text-center w-full mt-2.5 tracking-wide">{brand.alt}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+              {/* Row 2 — even-indexed brands */}
+              <div className="flex gap-4 px-2">
+                {brands.filter((_, i) => i % 2 === 1).map((brand, i) => (
+                  <a
+                    key={i}
+                    href={`https://www.petric.in/all-categories?brandId=${brand.id}&brandName=${encodeURIComponent(brand.name)}`}
+                    className="flex flex-col items-center shrink-0 cursor-pointer group px-1 pb-2"
+                  >
+                    <div className="w-[100px] h-[100px] bg-white rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col items-center justify-start pt-2 relative active:scale-95 transition-all duration-300">
+                      <div className="w-[76px] h-[76px] relative rounded-full overflow-hidden">
+                        <img src={brand.img} alt={brand.alt} className="w-full h-full object-contain" />
+                      </div>
+                      {brand.discount && (
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[66px] h-[32px] z-10 drop-shadow-sm pointer-events-none">
+                          <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
+                            <path 
+                              d="M 10,15 Q 50,-5 90,15 A 10,10 0 0,1 90,35 Q 50,15 10,35 A 10,10 0 0,1 10,15 Z" 
+                              fill="#E32731" 
+                            />
+                            <defs>
+                              <path id={`textPath-mob2-${i}`} d="M 10,27 Q 50,7 90,27" />
+                            </defs>
+                            <text fill="white" fontSize="16" fontWeight="900" fontFamily='"Balsamiq Sans", cursive' letterSpacing="0.5px">
+                              <textPath href={`#textPath-mob2-${i}`} startOffset="50%" textAnchor="middle" dominantBaseline="middle">
+                                {brand.discount} off
+                              </textPath>
+                            </text>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {brand.alt && (
+                      <span className="text-[11.5px] font-bold text-[#111827] text-center w-full mt-2.5 tracking-wide">{brand.alt}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── SECTION 5: WHY PETRIC ── */}
       <div className="why-section">
         <div className="section-header">
@@ -218,36 +396,60 @@ const PetricLandingPage = () => {
 
           <div className={`testi-card ${activeTesti === 0 ? 'active' : ''}`}>
             <div className="testi-stars">★★★★★</div>
-            <div className="testi-text">"My dog ran out of food at 11pm. Petric delivered in 25 minutes. This app is genuinely life-saving."</div>
+            <div className="testi-text">"You have made an app that was much much needed for pet parents"</div>
             <div className="testi-author">
               <div className="author-dot">🐕</div>
               <div>
-                <div className="author-name">Priya M.</div>
-                <div className="author-sub">Sector 56 · Labrador parent</div>
+                <div className="author-name">Nidhi</div>
+                <div className="author-sub">Gurugram · Pet parent</div>
               </div>
             </div>
           </div>
 
           <div className={`testi-card ${activeTesti === 1 ? 'active' : ''}`}>
             <div className="testi-stars">★★★★★</div>
-            <div className="testi-text">"The 24/7 pharmacy genuinely saved us during a late-night scare. Calm, fast, and totally sorted."</div>
+            <div className="testi-text">"Thanks for adding a layer of convenience for all pet parents"</div>
             <div className="testi-author">
               <div className="author-dot">🐈</div>
               <div>
-                <div className="author-name">Aakash R.</div>
-                <div className="author-sub">DLF Phase 3 · Cat parent</div>
+                <div className="author-name">Pet parent</div>
+                <div className="author-sub">Gurugram</div>
               </div>
             </div>
           </div>
 
           <div className={`testi-card ${activeTesti === 2 ? 'active' : ''}`}>
             <div className="testi-stars">★★★★★</div>
-            <div className="testi-text">"No app needed, no delivery fee. I open the site, order, done. Easiest thing in my week."</div>
+            <div className="testi-text">"This app was very much needed. Keep up the good work"</div>
             <div className="testi-author">
               <div className="author-dot">🐶</div>
               <div>
-                <div className="author-name">Simran K.</div>
-                <div className="author-sub">Sushant Lok · Beagle parent</div>
+                <div className="author-name">Utkarsh</div>
+                <div className="author-sub">Gurugram · Pet parent</div>
+              </div>
+            </div>
+          </div>
+
+          <div className={`testi-card ${activeTesti === 3 ? 'active' : ''}`}>
+            <div className="testi-stars">★★★★★</div>
+            <div className="testi-text">"I love how you operate. Will definitely put in a word with my friends"</div>
+            <div className="testi-author">
+              <div className="author-dot">🐱</div>
+              <div>
+                <div className="author-name">Pet parent</div>
+                <div className="author-sub">Gurugram</div>
+              </div>
+            </div>
+          </div>
+
+          <div className={`testi-card ${activeTesti === 4 ? 'active' : ''}`}>
+            <div className="testi-stars">★★★★★</div>
+            <div className="testi-text">"I've placed 2 orders just now and can't thank you enough for what you've created."</div>
+            <div className="testi-author">
+              <div className="author-dot">🐾</div>
+              <div>
+                <div className="author-name">Pet parent</div>
+                <div className="author-sub">Gurugram</div>
               </div>
             </div>
           </div>
@@ -267,10 +469,7 @@ const PetricLandingPage = () => {
         </div>
       </div>
 
-      {/* WhatsApp Strip */}
-      <a href="https://wa.me/918295756962" className="wa-strip">
-        <span className="wa-text">Call or WhatsApp</span>
-      </a>
+
 
       {/* Footer */}
       {/* 
@@ -284,12 +483,20 @@ const PetricLandingPage = () => {
 
       {/* ── SECTION 8: STICKY BAR ── */}
       <div className={`sticky-bar ${showSticky ? 'sticky-enter' : 'sticky-exit'}`}>
-        <a href="https://www.petric.in">Shop Now — Extra 8% Off First 4 Orders</a>
+        <a href="https://www.petric.in">
+          Shop Now — Extra 8% Off First 4 Orders
+        </a>
         {showStickySub && (
           <div className="sticky-sub">
-            <span className="sub-item" style={{ animationDelay: '0s' }}>No delivery fee</span>
-            <span className="sub-item" style={{ animationDelay: '0.1s' }}>No platform fee</span>
-            <span className="sub-item" style={{ animationDelay: '0.2s' }}>No COD charges</span>
+            <span className="sub-item" style={{ animationDelay: '0s' }}>
+              <span className="text-[#00B85C] text-sm leading-none">✓</span> No delivery fee
+            </span>
+            <span className="sub-item" style={{ animationDelay: '0.1s' }}>
+              <span className="text-[#00B85C] text-sm leading-none">✓</span> No platform fee
+            </span>
+            <span className="sub-item" style={{ animationDelay: '0.2s' }}>
+              <span className="text-[#00B85C] text-sm leading-none">✓</span> No COD charges
+            </span>
           </div>
         )}
       </div>
