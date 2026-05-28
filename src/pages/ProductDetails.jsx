@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {useParams, useNavigate } from 'react-router-dom';
 import { FiMinus, FiPlus, FiShoppingBag, FiCheck, FiUsers } from 'react-icons/fi';
 import NewHomeNavbar from '../components/NewHomeNavbar';
@@ -121,6 +121,7 @@ export default function ProductDetails() {
   } = useCart();
   const [similarProducts, setSimilarProducts] = useState([]);
   const [brandProducts, setBrandProducts] = useState([]);
+  const loggedProductDetailsRef = useRef(null);
   
   useEffect(() => {
     const handleOpenCart = () => setIsCartOpen(true);
@@ -152,6 +153,11 @@ export default function ProductDetails() {
     };
 
     addProductToCart(cartProduct);
+
+    logActivity(
+      `User Added to Cart ${product?.name || ''}${selectedSize?.name ? ` - ${selectedSize.name}` : ''}`,
+      'Web_AddToCart'
+    );
   };
 
   
@@ -162,10 +168,17 @@ export default function ProductDetails() {
         setLoading(true);
         const res = await get(`product/details/single/${id}`);
         if (res.type === 'success' && res.product) {
-          logActivity(
-            `User View Details of ${res.product.name}`,
-            'Web_ProductDetails'
-          );
+          const productLogId = res.product._id || id;
+
+          if (loggedProductDetailsRef.current !== productLogId) {
+            loggedProductDetailsRef.current = productLogId;
+
+            logActivity(
+              `User View Details of ${res.product.name}`,
+              'Web_ProductDetails'
+            );
+          }
+
           const p = res.product;
           setProduct(p);
           if (p.variants?.length > 0) setSelectedSize(p.variants[0]);

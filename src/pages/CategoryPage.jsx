@@ -72,6 +72,7 @@ export default function CategoryPage() {
   const sentinelRef = useRef(null);
   // Track fetch key to discard stale responses
   const fetchKeyRef = useRef(0);
+  const lastCategoryLogRef = useRef('');
 
   useEffect(() => {
     fetchPageData();
@@ -106,6 +107,11 @@ export default function CategoryPage() {
 
     useEffect(() => {
     if (categoryName) {
+      const logKey = `${categoryId}:${activeSubcategory?._id || 'all'}`;
+
+      if (lastCategoryLogRef.current === logKey) return;
+      lastCategoryLogRef.current = logKey;
+
       const description = activeSubcategory
         ? `User view ${categoryName} > ${activeSubcategory.name} subcategory`
         : `User view ${categoryName} category`;
@@ -324,20 +330,20 @@ export default function CategoryPage() {
     }
     addProductToCart(product);
 
-    logActivity(
-      `User Add to Cart ${product?.name || ''}`,
-      'Web_AddToCart'
-    );
+    // logActivity(
+    //   `User Add to Cart ${product?.name || ''}`,
+    //   'Web_AddToCart'
+    // );
 
   };
 
   const handleOpenProduct = (product) => {
     navigate(`/product/${product.id}`);
 
-     logActivity(
-      `User Click Product ${product?.name || ''}`,
-      'Web_ProductClick'
-    );
+    //  logActivity(
+    //   `User Click Product ${product?.name || ''}`,
+    //   'Web_ProductClick'
+    // );
   };
 
   const handleOpenVariants = async (product) => {
@@ -377,10 +383,7 @@ export default function CategoryPage() {
 
   const handleSubcategoryClick = (sub) => {
     setActiveSubcategory(sub);
-    logActivity(
-      `User View Subcategory ${categoryName} > ${sub?.name || 'All'}`,
-      'Web_SubcategoryView'
-    );
+    
     const params = sub ? `?subCategory=${sub._id}` : '';
     navigate(`/category/${categoryId}${params}`, {
       state: { categoryName, subCategoryName: sub?.name },
@@ -390,10 +393,7 @@ export default function CategoryPage() {
 
   const handleCategoryNavClick = (cat) => {
     navigate(`/category/${cat._id}`, { state: { categoryName: cat.name } });
-    logActivity(
-      `User View Category ${cat?.name || ''}`,
-      'Web_TopBarCateogries'
-    );
+    
   };
 
   const SkeletonCard = () => (

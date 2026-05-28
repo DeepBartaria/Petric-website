@@ -57,10 +57,10 @@ export default function ProductCard({
     if (hasMultipleVariants) {
       onOpenVariants?.(product);
 
-      logActivity(
-        `Click_addToCart ${product?.name || ''}`,
-        'Web_addToCart'
-      );
+      // logActivity(
+      //   `User Added to Cart ${product?.name || ''}`,
+      //   'Web_AddToCart'
+      // );
 
       return;
     }
@@ -72,8 +72,8 @@ export default function ProductCard({
     onAddToCart?.(product);
     
     logActivity(
-      `Click_addToCart ${product?.name || ''}`,
-      'Web_addToCart'
+      `User Added to Cart ${product?.name || ''}`,
+      'Web_AddToCart'
     );
 
   };
@@ -106,11 +106,6 @@ export default function ProductCard({
   return (
     <article
       onClick={() => {
-        logActivity(
-          `USer click ${product.name}`,
-          'Web_ProductClick'
-        );
-
         onOpenProduct?.(product);
       }}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${mobileSizeClass} ${desktopSizeClass} ${className}`}

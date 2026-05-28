@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FiMinus, FiPlus, FiX } from 'react-icons/fi';
 import useCart from '../hooks/useCart';
+import { logActivity } from '../helper/analytics';
 
 export default function VariantPopup({ isOpen, onClose, product, onAddToCart, onAnimateToCart }) {
   const [isClosing, setIsClosing] = useState(false);
@@ -51,7 +52,14 @@ export default function VariantPopup({ isOpen, onClose, product, onAddToCart, on
       onAnimateToCart(imageRef.current, product.img, product.name);
     }
 
+    const variantProduct = buildVariantProduct(variant);
+
     onAddToCart?.(buildVariantProduct(variant));
+
+    logActivity(
+      `User Added to Cart ${product?.name || ''} - ${variantProduct?.variantName || ''}`,
+      'Web_AddToCart'
+    );
 
     if (!localStorage.getItem('petric_token') || !localStorage.getItem('petric_delivery_location')) {
       handleClose();

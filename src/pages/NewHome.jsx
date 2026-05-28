@@ -217,19 +217,19 @@ export default function NewHome() {
   const handleAddToCart = (product) => {
     addProductToCart(product);
 
-    logActivity(
-      `User added to Cart ${product?.name || ''}`,
-      'Web_HomeProdtoCart'
-    );
+    // logActivity(
+    //   `User added to Cart ${product?.name || ''}`,
+    //   'Web_HomeProdtoCart'
+    // );
   };
 
   const handleOpenProduct = (product) => {
     navigate(`/product/${product.id}`);
 
-    logActivity(
-      `User Open ${product?.name || ''}`,
-      'Web_HomepageProdOpen'
-    );
+    // logActivity(
+    //   `User Open ${product?.name || ''}`,
+    //   'Web_HomepageProdOpen'
+    // );
   };
 
   const handleOpenVariants = (product) => {
