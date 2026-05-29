@@ -6,7 +6,8 @@ import lpWebVideo from "../assets/lp_web.mp4";
 import lpMobVideo from "../assets/lp_mob.mp4";
 import { get } from "../helper/api";
 import HelloFooter from "../components/HelloFooter";
-import { FiChevronRight } from 'react-icons/fi';
+import { FiChevronRight, FiShield, FiPackage, FiZap, FiTag } from 'react-icons/fi';
+import { FaRupeeSign } from 'react-icons/fa';
 
 // ── Hardcoded brand list REMOVED — now fetched from API ──
 
@@ -170,35 +171,11 @@ const PetricLandingPage = () => {
         </div>
       </div>
 
-      {/* ── SECTION 4: CATEGORIES ── */}
-      <div className="section">
-        <div className="section-header">
-          <div className="section-title">Shop by Category</div>
-          <a href="https://www.petric.in/all-categories" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
-        </div>
-        <div className="cat-grid">
-          {shopCategories.map((category) => (
-            <a key={category.id} href={`https://www.petric.in/category/${category.id}`} className="cat-card">
-              {category.img ? (
-                <img src={category.img} alt={category.name} className="cat-icon-img" />
-              ) : (
-                <span className="cat-icon">{category.name?.charAt(0)}</span>
-              )}
-              <span className="cat-name">{category.name}</span>
-            </a>
-          ))}
-          <a href="https://www.petric.in/all-categories" className="cat-card see-more">
-            <span className="cat-icon">＋</span>
-            <span className="cat-name">More</span>
-          </a>
-        </div>
-      </div>
-
       {/* ── SHOP BY BRANDS ── */}
       <div className="section">
         <div className="mb-10">
           <div className="section-header" style={{ marginBottom: "20px" }}>
-            <div className="section-title">Shop by Brands</div>
+            <div className="section-title">Your Favourite Brands </div>
             <a href="https://www.petric.in/all-brands" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
           </div>
 
@@ -317,31 +294,65 @@ const PetricLandingPage = () => {
         </div>
       </div>
 
+      {/* ── SECTION 4: CATEGORIES ── */}
+      <div className="section">
+        <div className="section-header">
+          <div className="section-title">Categories for You </div>
+          <a href="https://www.petric.in/all-categories" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
+        </div>
+        <div className="cat-grid">
+          {shopCategories.map((category) => (
+            <a key={category.id} href={`https://www.petric.in/category/${category.id}`} className="cat-card">
+              {category.img ? (
+                <img src={category.img} alt={category.name} className="cat-icon-img" />
+              ) : (
+                <span className="cat-icon">{category.name?.charAt(0)}</span>
+              )}
+              <span className="cat-name">{category.name}</span>
+            </a>
+          ))}
+          <a href="https://www.petric.in/all-categories" className="cat-card see-more">
+            <span className="cat-icon">＋</span>
+            <span className="cat-name">More</span>
+          </a>
+        </div>
+      </div>
+
       {/* ── SECTION 5: WHY PETRIC ── */}
       <div className="why-section">
         <div className="section-header">
           <div className="section-title">Why Petric</div>
         </div>
-        <div className="why-grid">
-          <div className="why-card" data-icon="⚡">
-            <span className="why-icon">⚡</span>
-            <div className="why-title">Minutes, not hours</div>
-            <div className="why-desc">Gurgaon's fastest pet supply delivery</div>
+        <div className="grid grid-cols-3 gap-2.5 w-full">
+          <div className="why-card col-span-2 relative">
+            <FiShield className="absolute -bottom-2 -right-1 text-black opacity-[0.03]" size={80} />
+            <span className="why-icon text-black"><FiShield size={26} /></span>
+            <div className="why-title relative z-10">Only authentic products</div>
+            <div className="why-desc relative z-10">Official sources to ensure no expired and poor-quality products</div>
           </div>
-          <div className="why-card" data-icon="📦">
-            <span className="why-icon">📦</span>
-            <div className="why-title">2000+ pet products</div>
-            <div className="why-desc">Shop your favourite brands and products</div>
+          <div className="why-card col-span-1 relative">
+            <FiPackage className="absolute -bottom-2 -right-1 text-black opacity-[0.03]" size={80} />
+            <span className="why-icon text-black"><FiPackage size={26} /></span>
+            <div className="why-title relative z-10">2000+ pet products</div>
+            <div className="why-desc relative z-10">Shop your pet’s favourite brands</div>
           </div>
-          <div className="why-card" data-icon="🏷️">
-            <span className="why-icon">🏷️</span>
-            <div className="why-title">Best offers</div>
-            <div className="why-desc">Discounts on MRP plus coupon off</div>
+          <div className="why-card col-span-1 relative">
+            <FiZap className="absolute -bottom-2 -right-1 text-black opacity-[0.03]" size={80} />
+            <span className="why-icon text-black"><FiZap size={26} /></span>
+            <div className="why-title relative z-10">Minutes, not hours</div>
+            <div className="why-desc relative z-10">Gurgaon's fastest pet supply delivery</div>
           </div>
-          <div className="why-card" data-icon="₹">
-            <span className="why-icon">₹</span>
-            <div className="why-title">No hidden charges</div>
-            <div className="why-desc">What you see is what you pay</div>
+          <div className="why-card col-span-1 relative">
+            <FiTag className="absolute -bottom-2 -right-1 text-black opacity-[0.03]" size={80} />
+            <span className="why-icon text-black"><FiTag size={26} /></span>
+            <div className="why-title relative z-10">Best deals</div>
+            <div className="why-desc relative z-10">Discounts on MRP plus coupon off</div>
+          </div>
+          <div className="why-card col-span-1 relative">
+            <FaRupeeSign className="absolute -bottom-2 -right-1 text-black opacity-[0.03]" size={80} />
+            <span className="why-icon text-black"><FaRupeeSign size={26} /></span>
+            <div className="why-title relative z-10">No hidden charges</div>
+            <div className="why-desc relative z-10">What you see is what you pay</div>
           </div>
         </div>
       </div>
@@ -359,8 +370,8 @@ const PetricLandingPage = () => {
             <div className="testi-author">
               <div className="author-dot">🐕</div>
               <div>
-                <div className="author-name">Nidhi</div>
-                <div className="author-sub">Gurugram · Pet parent</div>
+                <div className="author-name">Nidhi · Dog parent</div>
+                <div className="author-sub">Gurugram</div>
               </div>
             </div>
           </div>
@@ -371,7 +382,7 @@ const PetricLandingPage = () => {
             <div className="testi-author">
               <div className="author-dot">🐈</div>
               <div>
-                <div className="author-name">Pet parent</div>
+                <div className="author-name">Megha · Cat parent</div>
                 <div className="author-sub">Gurugram</div>
               </div>
             </div>
@@ -383,8 +394,8 @@ const PetricLandingPage = () => {
             <div className="testi-author">
               <div className="author-dot">🐶</div>
               <div>
-                <div className="author-name">Utkarsh</div>
-                <div className="author-sub">Gurugram · Pet parent</div>
+                <div className="author-name">Utkarsh · Dog parent</div>
+                <div className="author-sub">Gurugram</div>
               </div>
             </div>
           </div>
@@ -395,7 +406,7 @@ const PetricLandingPage = () => {
             <div className="testi-author">
               <div className="author-dot">🐱</div>
               <div>
-                <div className="author-name">Pet parent</div>
+                <div className="author-name">Bhawna · Cat parent</div>
                 <div className="author-sub">Gurugram</div>
               </div>
             </div>
@@ -407,7 +418,7 @@ const PetricLandingPage = () => {
             <div className="testi-author">
               <div className="author-dot">🐾</div>
               <div>
-                <div className="author-name">Pet parent</div>
+                <div className="author-name">Akshay · Dog parent</div>
                 <div className="author-sub">Gurugram</div>
               </div>
             </div>
@@ -421,17 +432,17 @@ const PetricLandingPage = () => {
       {/* ── SECTION 7: FINAL CTA ── */}
       <div className="final-cta">
         <h2>Every pet.<br/>Every need.<br/>Every time.</h2>
-        <p className="final-cta-sub">Can't find an item? Tell us — we'll get it for you.</p>
+        <p className="final-cta-sub">Can't find an item? We'll get it for you.</p>
         <div className="final-cta-btns">
-          <a href="https://wa.me/918295756962" className="btn-outline-dark">Request an Item</a>
-          <a href="https://www.petric.in" className="btn-dark">See Products →</a>
+          <a href="https://wa.me/918295756962" className="btn-outline-dark">Enquire on WhatsAp</a>
+          <a href="https://www.petric.in" className="btn-dark">See all Products →</a>
         </div>
       </div>
 
       {/* ── SECTION 8: STICKY BAR ── */}
       <div className={`sticky-bar ${showSticky ? 'sticky-enter' : 'sticky-exit'}`}>
         <a href="https://www.petric.in">
-          Shop Now — Extra 8% Off First 4 Orders
+          Shop Now (Extra 8% Off, First 4 Orders)
         </a>
         {showStickySub && (
           <div className="sticky-sub">
