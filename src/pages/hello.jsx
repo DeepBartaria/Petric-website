@@ -169,7 +169,15 @@ const PetricLandingPage = () => {
             </ul>
           </div>
 
-          <div className="offer-card premium" style={{ backgroundImage: `url(${mobLimitedImg})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '180px' }}>
+          <div className="offer-card premium" style={{ backgroundImage: `url(${mobLimitedImg})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '180px', border: 'none', boxShadow: '0 0 20px 4px rgba(255, 208, 0, 0.6)' }}>
+            <div className="offer-tag-container" style={{ position: 'absolute', top: '12px', left: '12px', margin: 0 }}>
+              <span className="offer-tag pulse-animation" style={{ padding: '4px 8px', fontSize: '9px', letterSpacing: '0.8px' }}>Limited Offer</span>
+            </div>
+            <ul className="offer-list" style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, justifyContent: 'center', gap: '6px', flexWrap: 'wrap', padding: '0 10px' }}>
+              <li style={{ background: 'white', padding: '4px 8px', borderRadius: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', fontSize: '9px', fontWeight: 700 }}><span className="check-icon">✨</span> Zero delivery fees</li>
+              <li style={{ background: 'white', padding: '4px 8px', borderRadius: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', fontSize: '9px', fontWeight: 700 }}><span className="check-icon">✨</span> Zero platform fees</li>
+              <li style={{ background: 'white', padding: '4px 8px', borderRadius: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', fontSize: '9px', fontWeight: 700 }}><span className="check-icon">✨</span> Zero COD charges</li>
+            </ul>
           </div>
 
         </div>
