@@ -1,6 +1,7 @@
 import React from "react";
 import "./PetricLandingPage.css";
 import landingPageImg from "../assets/landing_page.png";
+import mobLimitedImg from "../assets/mob_limited.png";
 import logoImg from "../assets/logocrop.png";
 import lpWebVideo from "../assets/lp_web.mp4";
 import lpMobVideo from "../assets/lp_mob.mp4";
@@ -166,6 +167,9 @@ const PetricLandingPage = () => {
               <li><span className="check-icon">✨</span> Zero platform fees</li>
               <li><span className="check-icon">✨</span> Zero COD charges</li>
             </ul>
+          </div>
+
+          <div className="offer-card premium" style={{ backgroundImage: `url(${mobLimitedImg})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '180px' }}>
           </div>
 
         </div>
