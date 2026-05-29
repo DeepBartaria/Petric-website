@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { trackAddToCart } from '../helper/metaPixel';
 import {
   getBackendProductCart,
   addProductToBackendCart,
@@ -146,7 +147,9 @@ export default function useCart() {
       window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: syncedItems } }));
       return resp;
     }
-
+    
+    trackAddToCart(product);
+    
     const syncedItems = await syncCartFromBackend();
     window.dispatchEvent(
       new CustomEvent('cartUpdated', {

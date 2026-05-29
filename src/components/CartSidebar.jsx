@@ -25,6 +25,7 @@ import {
 } from '../api/addressApi';
 
 import { getBackendProductCart } from '../api/cartApi';
+import { trackInitiateCheckout, trackPurchase } from '../helper/metaPixel';
 
 const ADDRESS_TYPES = {
   1: { label: 'Home', icon: FiHome },
@@ -633,6 +634,8 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       return;
     }
 
+    trackInitiateCheckout(cartItems, totalPayable);
+
     const bookingResponse = await createBooking(deliveryLat, deliveryLng);
 
     if (bookingResponse?.type !== 'success' || !bookingResponse.booking?._id) {
@@ -676,7 +679,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
       handler: async function (response) {
         const paymentId = response.razorpay_payment_id;
 
-        await put(
+        const bookingUpdateResponse = await put(
           `booking/update/${booking._id}`,
           {
             status: 'accepted',
@@ -693,6 +696,14 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
             },
           }
         );
+
+        if (bookingUpdateResponse?.type === 'success') {
+          trackPurchase({
+            cartItems,
+            totalPayable,
+            orderId: booking._id,
+          });
+        }
 
         await del('cart/delete?type=2', {
           headers: {

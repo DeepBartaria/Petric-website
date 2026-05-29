@@ -12,9 +12,14 @@ import SavedAddresses from './pages/SavedAddresses';
 import Front from './pages/Front';
 import Newtemp from './pages/newtemp';
 import Hello from './pages/hello';
+import { useEffect } from 'react';
+import { trackMetaPageView } from './helper/metaPixel';
 
 function App() {
   const location = useLocation();
+  useEffect(() => {
+    trackMetaPageView();
+  }, [location.pathname, location.search]);
   const showWhatsApp = location.pathname !== '/hello';
   return (
     <>
