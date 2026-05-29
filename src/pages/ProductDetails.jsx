@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import {useParams, useNavigate } from 'react-router-dom';
 import { FiMinus, FiPlus, FiShoppingBag, FiCheck, FiUsers } from 'react-icons/fi';
 import NewHomeNavbar from '../components/NewHomeNavbar';
+import ProductCard from '../components/ProductCard';
+import VariantPopup from '../components/VariantPopup';
+import useCartAnimation from '../hooks/useCartAnimation';
+import CartAnimationLayer from '../components/CartAnimationLayer';
 import Footer from '../components/Footer';
 import CartSidebar from '../components/CartSidebar';
 import CartFloatingButton from '../components/CartFloatingButton';
@@ -13,6 +17,43 @@ import { trackViewContent } from '../helper/metaPixel';
 
 
 // Deterministic "random" number from product id so it doesn't change on re-render
+function formatProductForCard(p) {
+  const variants = p.variants?.map(v => ({
+    id: v._id,
+    weight: v.name,
+    unit: v.unit || '',
+    originalPrice: v.originalPrice,
+    discountedPrice: v.discountedPrice,
+    price: `₹${v.discountedPrice}`,
+    oldPrice: `₹${v.originalPrice}`,
+    discount: Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
+  })) || [];
+
+  const defaultVariant = variants[0] || {};
+
+  return {
+    id: p._id,
+    productId: p._id,
+    variantId: defaultVariant.id || null,
+    variantName: defaultVariant.weight || '',
+    unit: defaultVariant.unit || '',
+    img: p.productImage,
+    name: p.name,
+    description: p.description || '',
+    weight: defaultVariant.weight || '',
+    price: defaultVariant.price || '',
+    oldPrice: defaultVariant.oldPrice || '',
+    originalPrice: defaultVariant.originalPrice,
+    discountedPrice: defaultVariant.discountedPrice,
+    discount: defaultVariant.discount || '',
+    variants: variants,
+    isBestSeller: p.isBestSeller,
+    isBestAvailable: p.isBestAvailable,
+    createdAt: p.createdAt,
+    brand: p.brand?.name || 'Petric'
+  };
+}
+
 function getPetParentCount(id = '') {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
@@ -20,92 +61,7 @@ function getPetParentCount(id = '') {
   return 120 + (hash % 3281);
 }
 
-function ProductCard({ product }) {
-  const navigate = useNavigate();
-  const { cartItems, addProductToCart, handleUpdateQuantity } = useCart();
-  const [btnBounce, setBtnBounce] = useState(false);
 
-  const handleAddToCart = (p) => {
-    setBtnBounce(false);
-    requestAnimationFrame(() => requestAnimationFrame(() => setBtnBounce(true)));
-
-    const cartProduct = {
-      id: p.id || p._id,
-      productId: p.id || p._id,
-      img: p.img || p.productImage,
-      brand: p.brand || 'Petric',
-      name: p.name,
-      price: (p.price || 0).toString(),
-      oldPrice: (p.oldPrice || 0).toString(),
-      originalPrice: p.oldPrice || 0,
-      discountedPrice: p.price || 0,
-      quantity: 1,
-    };
-    addProductToCart(cartProduct);
-  };
-
-  return (
-    <article
-      onClick={() => { navigate(`/product/${product.id}`); }}
-      className="bg-white border border-gray-100 rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-2.5 md:p-4 shadow-sm shrink-0 w-[44vw] md:w-full snap-center md:snap-none"
-    >
-      <div className="w-full h-24 md:h-36 flex items-center justify-center bg-gray-50 rounded-xl mb-2 md:mb-3 p-1 relative">
-        <img
-          src={product.img || product.productImage}
-          alt={product.name}
-          className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
-        />
-        {product.discount && (
-          <div className="absolute top-1.5 left-1.5 bg-[#FF5757] text-white text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-            {product.discount}
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col flex-grow px-0.5">
-        <p className="text-[9px] md:text-xs text-gray-400 mb-0.5">{product.brand}</p>
-        <h3 className="font-bold text-black text-[10px] md:text-sm line-clamp-2 mb-2">{product.name}</h3>
-        <div className="mt-auto flex items-center justify-between">
-          <div className="flex flex-col">
-            {product.oldPrice && (
-              <span className="text-gray-400 text-[8px] md:text-[10px] line-through">₹{product.oldPrice}</span>
-            )}
-            <span className="font-bold text-black text-sm md:text-base">₹{product.price}</span>
-          </div>
-          {(() => {
-            const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
-            return cartItem ? (
-              <div className="flex h-7 md:h-8 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                <button
-                  className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
-                >
-                  <FiMinus className="h-3 w-3" />
-                </button>
-                <span className="grid h-7 md:h-8 min-w-7 md:min-w-8 place-items-center bg-white text-[10px] md:text-xs font-extrabold border-x border-gray-100">
-                  {cartItem.quantity}
-                </span>
-                <button
-                  className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
-                  onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
-                >
-                  <FiPlus className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
-                onAnimationEnd={() => setBtnBounce(false)}
-                className={`bg-[#FFD000] text-black text-[9px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-full hover:bg-[#ffdb33] hover:scale-105 shadow-sm transition-all${btnBounce ? ' animate-add-btn-bounce' : ''}`}
-              >
-                ADD
-              </button>
-            );
-          })()}
-        </div>
-      </div>
-    </article>
-  );
-}
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -114,6 +70,37 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [mainImage, setMainImage] = useState(null);
+  const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
+  const [variantPopupProduct, setVariantPopupProduct] = useState(null);
+  
+  const { cartRef, flyItems, toasts, cartShake, triggerFlyToCart, onFlyComplete, dismissToast } = useCartAnimation();
+
+  const handleOpenVariants = (prod) => {
+    setVariantPopupProduct(prod);
+    setIsVariantPopupOpen(true);
+  };
+
+  const handleAddToCartForCard = (p) => {
+    // P could be from VariantPopup or direct ProductCard add.
+    // Ensure it has all required cart fields.
+    const cartProduct = {
+      id: p.id || p._id,
+      productId: p.productId || p._id,
+      img: p.img || p.productImage,
+      brand: p.brand?.name || p.brand || 'Petric',
+      name: p.name,
+      variantName: p.variantName || p.weight || '',
+      unit: p.unit || '',
+      price: (p.discountedPrice || p.originalPrice || p.price || 0).toString(),
+      oldPrice: (p.originalPrice || p.oldPrice || 0).toString(),
+      originalPrice: p.originalPrice || 0,
+      discountedPrice: p.discountedPrice || p.price || 0,
+      variantId: p.variantId || null,
+      quantity: p.quantity || 1,
+    };
+    addProductToCart(cartProduct);
+  };
+
   const {
     cartItems,
     isCartOpen,
@@ -238,17 +225,7 @@ export default function ProductDetails() {
                   brandRes.products
                     .filter(bp => bp._id !== p._id)
                     .slice(0, 5)
-                    .map(bp => {
-                      const v = bp.variants?.[0] || {};
-                      return {
-                        id: bp._id, img: bp.productImage,
-                        brand: bp.brand?.name || 'Petric', name: bp.name,
-                        price: v.discountedPrice || v.originalPrice || 0,
-                        oldPrice: v.originalPrice,
-                        discount: v.discountedPrice && v.originalPrice && v.originalPrice > v.discountedPrice
-                          ? Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%' : '',
-                      };
-                    })
+                    .map(bp => formatProductForCard(bp))
                 );
               }
             } catch (err) { console.error('Brand products error', err); }
@@ -322,9 +299,26 @@ export default function ProductDetails() {
         loginBackCloses={Boolean(pendingCartProduct)}
       />
       <CartFloatingButton
+        ref={cartRef}
         cartItems={cartItems}
         isCartOpen={isCartOpen}
+        shake={cartShake}
         onClick={() => setIsCartOpen(true)}
+      />
+
+      <CartAnimationLayer
+        flyItems={flyItems}
+        toasts={toasts}
+        onFlyComplete={onFlyComplete}
+        onDismissToast={dismissToast}
+      />
+
+      <VariantPopup
+        isOpen={isVariantPopupOpen}
+        onClose={() => setIsVariantPopupOpen(false)}
+        product={variantPopupProduct}
+        onAddToCart={handleAddToCartForCard}
+        onAnimateToCart={triggerFlyToCart}
       />
 
       <main className="mx-auto max-w-[1400px] px-3 md:px-8 py-4 md:py-10">
@@ -522,7 +516,8 @@ export default function ProductDetails() {
           </div>
         </section>
 
-        {/* More by Brand */}
+        {/* 
+// More by Brand 
         {brandProducts.length > 0 && (
           <section className="mb-10 md:mb-14">
             
@@ -557,14 +552,37 @@ export default function ProductDetails() {
 
             <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-3 md:pb-0">
               {brandProducts.map((p, i) => (
-                <ProductCard key={i} product={p} />
+                <ProductCard 
+                  key={i} 
+                  product={p} 
+                  mobileMode="carousel" 
+                  desktopMode="carousel" 
+                  onOpenProduct={(prod) => navigate(`/product/${prod.id}`)} 
+                  onOpenVariants={(prod) => navigate(`/product/${prod.id}`)}
+                  onAddToCart={(prod) => {
+                    const cartProduct = {
+                      id: prod.id,
+                      productId: prod.id,
+                      img: prod.img,
+                      brand: prod.brand || 'Petric',
+                      name: prod.name,
+                      price: (prod.discountedPrice || prod.originalPrice || 0).toString(),
+                      oldPrice: (prod.originalPrice || 0).toString(),
+                      originalPrice: prod.originalPrice || 0,
+                      discountedPrice: prod.discountedPrice || prod.originalPrice || 0,
+                      quantity: 1,
+                    };
+                    addProductToCart(cartProduct);
+                  }}
+                  className="md:w-[260px] lg:w-[280px] md:max-w-[280px]"
+                />
               ))}
             </div>
 
           </section>
         )}
 
-        {/* Similar Products */}
+        // Similar Products 
         {similarProducts.length > 0 && (
           <section className="mb-10 md:mb-14">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
@@ -572,11 +590,35 @@ export default function ProductDetails() {
             </div>
             <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-3 md:pb-0">
               {similarProducts.map((p, i) => (
-                <ProductCard key={i} product={p} />
+                <ProductCard 
+                  key={i} 
+                  product={p} 
+                  mobileMode="carousel" 
+                  desktopMode="carousel" 
+                  onOpenProduct={(prod) => navigate(`/product/${prod.id}`)} 
+                  onOpenVariants={(prod) => navigate(`/product/${prod.id}`)}
+                  onAddToCart={(prod) => {
+                    const cartProduct = {
+                      id: prod.id,
+                      productId: prod.id,
+                      img: prod.img,
+                      brand: prod.brand || 'Petric',
+                      name: prod.name,
+                      price: (prod.discountedPrice || prod.originalPrice || 0).toString(),
+                      oldPrice: (prod.originalPrice || 0).toString(),
+                      originalPrice: prod.originalPrice || 0,
+                      discountedPrice: prod.discountedPrice || prod.originalPrice || 0,
+                      quantity: 1,
+                    };
+                    addProductToCart(cartProduct);
+                  }}
+                  className="md:w-[260px] lg:w-[280px] md:max-w-[280px]"
+                />
               ))}
             </div>
           </section>
         )}
+*/}
 
       </main>
 
