@@ -2,6 +2,7 @@ import React from "react";
 import "./PetricLandingPage.css";
 import landingPageImg from "../assets/landing_page.png";
 import mobLimitedImg from "../assets/mob_limited.png";
+import webLimitedImg from "../assets/web_limited.png";
 import logoImg from "../assets/logocrop.png";
 import lpWebVideo from "../assets/lp_web.mp4";
 import lpMobVideo from "../assets/lp_mob.mp4";
@@ -154,22 +155,7 @@ const PetricLandingPage = () => {
       <div ref={offerRef} className="offer-section">
         <div className="offer-grid">
 
-          <div className="offer-card premium">
-            <div className="offer-tag-container">
-              <span className="offer-tag pulse-animation">Limited Offer</span>
-            </div>
-            <div className="offer-headline">
-              Grab <span className="highlight-discount">Extra 8% OFF</span><br/>on your first 4 orders!
-            </div>
-            <div className="offer-divider"></div>
-            <ul className="offer-list">
-              <li><span className="check-icon">✨</span> Zero delivery fees</li>
-              <li><span className="check-icon">✨</span> Zero platform fees</li>
-              <li><span className="check-icon">✨</span> Zero COD charges</li>
-            </ul>
-          </div>
-
-          <div className="offer-card premium" style={{ backgroundImage: `url(${mobLimitedImg})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '180px', border: 'none', boxShadow: '0 0 20px 4px rgba(255, 208, 0, 0.6)' }}>
+          <div className="offer-card premium" style={{ backgroundImage: `url(${isMobile ? mobLimitedImg : webLimitedImg})`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '180px', border: 'none', boxShadow: '0 0 20px 4px rgba(255, 208, 0, 0.6)' }}>
             <div className="offer-tag-container" style={{ position: 'absolute', top: '12px', left: '12px', margin: 0 }}>
               <span className="offer-tag pulse-animation" style={{ padding: '4px 8px', fontSize: '9px', letterSpacing: '0.8px' }}>Limited Offer</span>
             </div>
