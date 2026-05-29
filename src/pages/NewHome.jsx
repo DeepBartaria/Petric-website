@@ -649,14 +649,16 @@ export default function NewHome() {
         )}
 
         {/* Dynamic Sections from API */}
-        {remainingHomeSections.map((section, idx) => (
+        {remainingHomeSections.map((section, idx) => {
+          const isBestOffers = section.title.toLowerCase().includes('best offers');
+          return (
           <div key={idx} className="mb-14">
             <h2 className="text-2xl font-bold text-black mb-6">{section.title}</h2>
             <div
               className={`flex md:grid ${
-                section.products.length <= 8
-                  ? 'md:grid-cols-4'
-                  : 'md:grid-flow-col md:grid-rows-2 md:auto-cols-[minmax(220px,260px)] lg:auto-cols-[minmax(240px,280px)]'
+                isBestOffers
+                  ? (section.products.length <= 8 ? 'md:grid-cols-8' : 'md:grid-flow-col md:grid-rows-2 md:auto-cols-[minmax(110px,130px)] lg:auto-cols-[minmax(120px,140px)]')
+                  : (section.products.length <= 8 ? 'md:grid-cols-4' : 'md:grid-flow-col md:grid-rows-2 md:auto-cols-[minmax(220px,260px)] lg:auto-cols-[minmax(240px,280px)]')
               } gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-1 md:px-2 md:pb-5`}
             >
               {section.products.map((product, i) => (
@@ -673,7 +675,7 @@ export default function NewHome() {
               ))}
             </div>
           </div>
-        ))}
+        )})}
 
       </main>
 
