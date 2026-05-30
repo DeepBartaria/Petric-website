@@ -155,14 +155,14 @@ const PetricLandingPage = () => {
         <div ref={offerRef} className="offer-section">
           <div className="offer-grid">
 
-            <div className="offer-card premium" style={{ backgroundImage: `url(${isMobile ? mobLimitedImg : webLimitedImg})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', minHeight: isMobile ? '180px' : '260px', border: 'none', boxShadow: '0 0 20px 4px rgba(255, 208, 0, 0.6)', padding: 0 }}>
+            <div className="offer-card premium" style={{ backgroundImage: `url(${isMobile ? mobLimitedImg : webLimitedImg})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', minHeight: isMobile ? '240px' : '260px', border: 'none', boxShadow: '0 0 20px 4px rgba(255, 208, 0, 0.6)', padding: 0 }}>
               <div className="offer-tag-container" style={{ position: 'absolute', top: isMobile ? '12px' : '20px', left: isMobile ? '12px' : '20px', margin: 0 }}>
                 <span className="offer-tag pulse-animation" style={{ padding: isMobile ? '4px 8px' : '6px 12px', fontSize: isMobile ? '9px' : '11px', letterSpacing: isMobile ? '0.8px' : '1.2px' }}>Limited Offer</span>
               </div>
-              <ul className="offer-list" style={{ position: 'absolute', bottom: isMobile ? '20px' : '30px', left: 0, right: 0, justifyContent: 'center', gap: isMobile ? '6px' : '10px', flexWrap: 'wrap', padding: '0 10px' }}>
-                <li style={{ background: 'white', padding: isMobile ? '4px 8px' : '6px 12px', borderRadius: isMobile ? '12px' : '18px', boxShadow: isMobile ? '0 2px 6px rgba(0,0,0,0.15)' : '0 3px 8px rgba(0,0,0,0.15)', fontSize: isMobile ? '9px' : '11px', fontWeight: isMobile ? 700 : 800 }}><span className="check-icon">✨</span> Zero delivery fees</li>
-                <li style={{ background: 'white', padding: isMobile ? '4px 8px' : '6px 12px', borderRadius: isMobile ? '12px' : '18px', boxShadow: isMobile ? '0 2px 6px rgba(0,0,0,0.15)' : '0 3px 8px rgba(0,0,0,0.15)', fontSize: isMobile ? '9px' : '11px', fontWeight: isMobile ? 700 : 800 }}><span className="check-icon">✨</span> Zero platform fees</li>
-                <li style={{ background: 'white', padding: isMobile ? '4px 8px' : '6px 12px', borderRadius: isMobile ? '12px' : '18px', boxShadow: isMobile ? '0 2px 6px rgba(0,0,0,0.15)' : '0 3px 8px rgba(0,0,0,0.15)', fontSize: isMobile ? '9px' : '11px', fontWeight: isMobile ? 700 : 800 }}><span className="check-icon">✨</span> Zero COD charges</li>
+              <ul className="offer-list" style={{ position: 'absolute', bottom: isMobile ? '20px' : '30px', left: 0, right: 0, justifyContent: 'center', gap: isMobile ? '3px' : '10px', flexWrap: 'nowrap', padding: '0 4px' }}>
+                <li style={{ background: 'white', padding: isMobile ? '3px 5px' : '6px 12px', borderRadius: isMobile ? '12px' : '18px', boxShadow: isMobile ? '0 2px 6px rgba(0,0,0,0.15)' : '0 3px 8px rgba(0,0,0,0.15)', fontSize: isMobile ? '8px' : '11px', fontWeight: isMobile ? 700 : 800, whiteSpace: 'nowrap' }}><span className="check-icon">✨</span> Zero delivery fees</li>
+                <li style={{ background: 'white', padding: isMobile ? '3px 5px' : '6px 12px', borderRadius: isMobile ? '12px' : '18px', boxShadow: isMobile ? '0 2px 6px rgba(0,0,0,0.15)' : '0 3px 8px rgba(0,0,0,0.15)', fontSize: isMobile ? '8px' : '11px', fontWeight: isMobile ? 700 : 800, whiteSpace: 'nowrap' }}><span className="check-icon">✨</span> Zero platform fees</li>
+                <li style={{ background: 'white', padding: isMobile ? '3px 5px' : '6px 12px', borderRadius: isMobile ? '12px' : '18px', boxShadow: isMobile ? '0 2px 6px rgba(0,0,0,0.15)' : '0 3px 8px rgba(0,0,0,0.15)', fontSize: isMobile ? '8px' : '11px', fontWeight: isMobile ? 700 : 800, whiteSpace: 'nowrap' }}><span className="check-icon">✨</span> Zero COD charges</li>
               </ul>
             </div>
 
@@ -172,7 +172,7 @@ const PetricLandingPage = () => {
         {/* ── SECTION 4: CATEGORIES ── */}
         <div className="section">
           <div className="section-header">
-            <div className="section-title">Categories for You </div>
+            <div className="section-title">Product needs, Sorted</div>
             <a href="https://www.petric.in/all-categories" className="text-base text-black underline underline-offset-4 decoration-1 transition-all duration-300 hover:text-gray-600 hover:underline-offset-2">See all</a>
           </div>
           <div className="cat-grid">

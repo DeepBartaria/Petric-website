@@ -713,7 +713,7 @@
   position: fixed;
   bottom: 24px; left: 50%;
   width: calc(100% - 32px); max-width: 420px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.92), rgba(245,245,245,0.85));
+  background: linear-gradient(145deg, rgba(255,255,255,0.4), rgba(245,245,245,0.3));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 16px;
@@ -952,11 +952,13 @@
   }
   
   .petric-landing .sticky-bar {
-    max-width: 100%;
+    width: max-content;
+    max-width: calc(100% - 64px);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 40px;
+    gap: 20px;
+    padding: 16px 32px;
   }
   .petric-landing .sticky-bar a {
     width: auto;
@@ -964,6 +966,7 @@
   }
   .petric-landing .sticky-sub {
     margin-top: 0;
+    width: auto;
   }
 }
 
