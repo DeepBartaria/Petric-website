@@ -273,15 +273,7 @@
   box-shadow: 0 8px 24px rgba(255, 208, 0, 0.2);
   text-align: center;
 }
-.petric-landing .offer-card.premium::before {
-  content: "🎁";
-  position: absolute;
-  font-size: 120px;
-  opacity: 0.08;
-  top: -20px; right: -20px;
-  transform: rotate(15deg);
-  pointer-events: none;
-}
+
 .petric-landing .offer-tag-container {
   margin-bottom: 14px;
 }
