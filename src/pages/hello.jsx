@@ -24,6 +24,23 @@ const PetricLandingPage = () => {
   const [brandsScrollPos, setBrandsScrollPos] = React.useState(0);
   const whatsappRef = React.useRef(null);
   const offerRef = React.useRef(null);
+  
+  React.useEffect(() => {
+    document.title = 'Petric | Pet supplies delivered in minutes in Gurgaon';
+
+    let metaDescription = document.querySelector('meta[name="description"]');
+
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+
+    metaDescription.setAttribute(
+      'content',
+      'Shop for 2000+ pet supplies near Gurgaon with zero delivery fees and COD charges. Explore premium pet toys, pet food, wet food, vet food, pet pharmacy, and more.'
+    );
+  }, []);
 
   // ── NEW: brands state fetched from API ──
   const [brands, setBrands] = React.useState([]);

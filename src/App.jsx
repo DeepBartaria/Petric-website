@@ -14,13 +14,14 @@ import Newtemp from './pages/newtemp';
 import Hello from './pages/hello';
 import { useEffect } from 'react';
 import { trackMetaPageView } from './helper/metaPixel';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 
 function App() {
   const location = useLocation();
   useEffect(() => {
     trackMetaPageView();
   }, [location.pathname, location.search]);
-  const showWhatsApp = location.pathname !== '/hello';
+  const showWhatsApp = location.pathname !== '/inminutesdelivery';
   return (
     <>
       <Routes>
@@ -33,10 +34,11 @@ function App() {
         <Route path="/front" element={<Front />} />
         <Route path="/front.jsx" element={<Front />} />
         <Route path="/newtemp.jsx" element={<Newtemp />} />
-        <Route path="/hello" element={<Hello />} />
+        <Route path="/inminutesdelivery" element={<Hello />} />
         <Route path="/*" element={<MainLayout />} />
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         <Route path="/saved-addresses" element={<SavedAddresses />} />
+        <Route path="/hello" element={<Navigate to="/inminutesdelivery" replace />} />
       </Routes>
       {showWhatsApp && <WhatsAppStickyButton />}
     </>
