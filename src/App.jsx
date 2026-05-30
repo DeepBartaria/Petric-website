@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
 import WhatsAppStickyButton from './components/WhatsAppStickyButton';
 import BottomPopup from './components/BottomPopup';
@@ -14,7 +14,6 @@ import Newtemp from './pages/newtemp';
 import Hello from './pages/hello';
 import { useEffect } from 'react';
 import { trackMetaPageView } from './helper/metaPixel';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 
 function App() {
   const location = useLocation();
