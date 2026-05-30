@@ -13,7 +13,7 @@ import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import ProductCard from '../components/ProductCard';
-import { FiChevronDown, FiChevronRight, FiStar, FiGift } from "react-icons/fi";
+import { FiChevronDown, FiChevronRight, FiStar, FiGift, FiPercent, FiAward, FiClock } from "react-icons/fi";
 import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
 import useProductCoupons from '../hooks/useProductCoupons';
@@ -23,6 +23,7 @@ import { logActivity } from '../helper/analytics';
 import banner1 from '../assets/main_banner1.webp';
 import banner2 from '../assets/main_banner2.webp';
 import banner3 from '../assets/main_banner3.webp';
+import tempImg from '../assets/tempimg.png';
 
 import pedigree from '../assets/pedigree.png';
 import drools from '../assets/drools.png';
@@ -600,49 +601,60 @@ export default function NewHome() {
         </div>
         {/* Personalized Welcome Banner */}
         {!user && (
-          <div className="mb-14 bg-[#FFD000] border border-black/15 rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm transition-all duration-300 hover:-translate-y-1">
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 md:gap-6 w-full lg:w-auto shrink-0 text-center sm:text-left">
-              <h2 className="text-2xl md:text-4xl font-black text-black leading-tight">
-                Hello, <br /> Pet Parent! 👋
-              </h2>
+          <div className="mb-14 bg-gradient-to-br from-[#FFD000] via-[#FFDF33] to-[#FFF0B3] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl border border-yellow-300/40 relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+            {/* Subtle background glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 blur-3xl rounded-full pointer-events-none"></div>
+            
+            <div className="flex flex-row items-center lg:items-start justify-center lg:justify-start gap-5 md:gap-8 w-full lg:w-auto shrink-0 relative z-10">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 shrink-0 rounded-full overflow-hidden border-[3px] md:border-4 border-white shadow-[0_8px_24px_rgba(0,0,0,0.12)] bg-white relative group">
+                <img src={tempImg} alt="Pet" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              </div>
+              <div className="flex flex-col items-start gap-3 md:gap-5 text-left">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl text-black leading-[1.1] tracking-tight font-black drop-shadow-sm">
+                  Hello, <br /> Pet Parent! 👋
+                </h2>
 
-              <button
-                onClick={() =>
-                  window.dispatchEvent(
-                    new CustomEvent('openCart', {
-                      detail: { step: 'mobile', mode: 'loginOnly' },
-                    })
-                  )
-                }
-                className="inline-flex h-11 min-w-[120px] items-center justify-center rounded-full bg-black px-7 text-sm font-bold text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800"
-              >
-                Sign In
-              </button>
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(
+                      new CustomEvent('openCart', {
+                        detail: { step: 'mobile', mode: 'loginOnly' },
+                      })
+                    )
+                  }
+                  className="inline-flex h-10 md:h-12 min-w-[130px] md:min-w-[160px] items-center justify-center rounded-full bg-white px-6 md:px-8 text-[13px] md:text-[15px] font-black text-black shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] hover:text-[#FF5757] mt-1 ring-1 ring-black/5"
+                >
+                  SIGN IN NOW!
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-stretch gap-4 w-full xl:w-auto">
-              <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
-                <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                  <FiStar className="w-6 h-6" />
+            <div className="flex flex-col gap-3.5 w-full max-w-sm lg:w-[340px] shrink-0 self-center lg:self-center relative z-10">
+              <div className="bg-white/95 backdrop-blur-sm rounded-full px-5 py-3.5 flex items-center gap-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white/50 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)] cursor-pointer group">
+                <div className="bg-[#FFF4B8] p-2 rounded-full group-hover:bg-[#FFD000] transition-colors duration-300">
+                  <FiPercent className="w-5 h-5 text-black shrink-0" strokeWidth={2.5} />
                 </div>
-
-                <div className="flex flex-col">
-                  <span className="font-extrabold text-black text-[13px] md:text-sm">
-                    upto 35% off on <br /> selected brands
-                  </span>
-                </div>
+                <span className="font-bold text-gray-800 text-[14px] md:text-[15px] leading-tight">
+                  Upto 30% off on <br /> selected brand.
+                </span>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-md border-2 border-black/10 hover:border-[#FFD000] hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-w-0 w-full">
-                <div className="bg-[#FFF4B8] border border-black/10 text-black p-3 rounded-xl group-hover:scale-110 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                  <FiGift className="w-6 h-6" />
+              <div className="bg-white/95 backdrop-blur-sm rounded-full px-5 py-3.5 flex items-center gap-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white/50 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)] cursor-pointer group">
+                <div className="bg-[#FFF4B8] p-2 rounded-full group-hover:bg-[#FFD000] transition-colors duration-300">
+                  <FiAward className="w-5 h-5 text-black shrink-0" strokeWidth={2.5} />
                 </div>
+                <span className="font-bold text-gray-800 text-[14px] md:text-[15px] leading-tight">
+                  Exclusive members <br /> only deals.
+                </span>
+              </div>
 
-                <div className="flex flex-col">
-                  <span className="font-extrabold text-black text-[13px] md:text-sm">
-                    Exclusive offers just for you
-                  </span>
+              <div className="bg-white/95 backdrop-blur-sm rounded-full px-5 py-3.5 flex items-center gap-4 shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white/50 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)] cursor-pointer group">
+                <div className="bg-[#FFF4B8] p-2 rounded-full group-hover:bg-[#FFD000] transition-colors duration-300">
+                  <FiClock className="w-5 h-5 text-black shrink-0" strokeWidth={2.5} />
                 </div>
+                <span className="font-bold text-gray-800 text-[14px] md:text-[15px] leading-tight">
+                  Early access to <br /> all future sales
+                </span>
               </div>
             </div>
           </div>

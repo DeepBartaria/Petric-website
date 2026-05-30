@@ -25,21 +25,17 @@ export default function Benefit() {
       <div className="absolute bottom-20 left-1/4 text-[#FFD000]/10"><FiStar size={45} /></div>
 
       {/* Header */}
-      <div className="text-center mb-14 relative z-10">
+      <div className="text-center mb-12 relative z-10 flex flex-col items-center">
         <Link
           to="/all-categories"
-          className="inline-flex items-center gap-2 bg-[#FFD000] text-black text-xs sm:text-sm font-bold px-5 py-2 rounded-full mb-6 shadow-md hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer"
+          className="inline-flex items-center gap-3 bg-[#FFD000] text-black text-3xl sm:text-4xl md:text-5xl font-black px-8 py-3 md:px-10 md:py-4 rounded-full shadow-[0_8px_24px_rgba(255,208,0,0.3)] hover:scale-105 hover:shadow-[0_12px_32px_rgba(255,208,0,0.5)] transition-all duration-300 cursor-pointer mb-5 tracking-tight leading-none"
         >
-          <FiHeart className="w-4 h-4" />
+          <FiHeart className="w-8 h-8 md:w-10 md:h-10" />
           <span>Complete Pet Care</span>
         </Link>
-        <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight text-black">
-          Everything your <span className="text-[#F5C400]"> pet needs</span>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight tracking-tight text-black">
+          Everything your <span className="text-[#F5C400]">pet needs</span>
         </h2>
-        <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto mt-5 leading-relaxed font-medium">
-          Food, treats, medicines, toys, and essentials —
-          delivered to your doorstep in minutes.
-        </p>
       </div>
 
       {/* Benefits — horizontal scroll on mobile, grid on desktop */}
