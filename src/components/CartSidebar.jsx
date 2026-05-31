@@ -18,14 +18,10 @@ import {
 import { BsClockHistory } from 'react-icons/bs';
 import { post, get, put, del } from '../helper/api';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
-import {
-  addSavedAddress,
-  getSavedAddresses,
-  setDefaultAddress,
-} from '../api/addressApi';
-
+import { addSavedAddress, getSavedAddresses, setDefaultAddress } from '../api/addressApi';
 import { getBackendProductCart } from '../api/cartApi';
 import { trackInitiateCheckout, trackPurchase } from '../helper/metaPixel';
+import loaderGif from '../assets/loader.gif';
 
 const ADDRESS_TYPES = {
   1: { label: 'Home', icon: FiHome },
@@ -97,8 +93,19 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('Online');
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [isCouponsLoading, setIsCouponsLoading] = useState(false);
+  
+  const [codSettings, setCodSettings] = useState({
+    minPrice: 0,
+    maxPrice: 0,
+    ordersEnabled: true,
+    perUserLimit: 999,
+    userOrderCount: 0,
+    isLoaded: false,
+  });
 
   const { isLoaded: isMapLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -140,6 +147,50 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
   const couponDiscount = appliedCoupon ? appliedCoupon.discount : 0;
   const totalPayable = itemsTotal - couponDiscount;
+
+  // Check COD constraints dynamically
+  const isCODAllowed = React.useMemo(() => {
+    if (!codSettings.isLoaded) return true; // Default allow while loading
+    if (!codSettings.ordersEnabled) return false;
+    if (codSettings.userOrderCount >= codSettings.perUserLimit) return false;
+    if (totalPayable < codSettings.minPrice || totalPayable > codSettings.maxPrice) return false;
+    return true;
+  }, [totalPayable, codSettings]);
+
+  useEffect(() => {
+    if (!isCODAllowed && paymentMethod === 'COD') {
+      setPaymentMethod('Online');
+    }
+  }, [isCODAllowed, paymentMethod]);
+
+  useEffect(() => {
+    const fetchCodRules = async () => {
+      try {
+        const token = localStorage.getItem('petric_token');
+        const [settingsRes, countRes] = await Promise.all([
+          get('settings').catch(() => null),
+          token ? get('booking/cod/orderCount', { headers: { Authorization: token } }).catch(() => null) : Promise.resolve(null)
+        ]);
+        
+        if (settingsRes?.setting) {
+          setCodSettings({
+            minPrice: settingsRes.setting.codMinPrice || 0,
+            maxPrice: settingsRes.setting.codMaxPrice || Infinity,
+            ordersEnabled: settingsRes.setting.codOrders ?? true,
+            perUserLimit: settingsRes.setting.codPerUser || 999,
+            userOrderCount: countRes?.codOrderCount || 0,
+            isLoaded: true,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch COD settings", err);
+      }
+    };
+    
+    if (isOpen) {
+      fetchCodRules();
+    }
+  }, [isOpen, isLoggedIn]);
 
   // Re-validate / recompute the applied coupon whenever the cart total changes.
   // 1) If items drop below the minimum, the coupon is auto-removed.
@@ -592,13 +643,14 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
     const bookingPayload = {
       type: '3',
-      status: 'awaitingPayment',
+      status: paymentMethod === 'COD' ? 'accepted' : 'awaitingPayment',
       totalPrice: itemsTotal,
       totalPayable,
       couponDiscountedAmount: couponDiscount > 0 ? couponDiscount : undefined,
       platformFee: 0,
       deliveryCharge: 0,
-      paymentType: 'Online',
+      paymentStatus: paymentMethod === 'COD' ? 'pending' : undefined,
+      paymentType: paymentMethod === 'COD' ? 'Cash' : 'Online',
       isLivePaymentTest: false,
       date: formatBookingDate(),
       typeOfBooking: 'Order',
@@ -617,12 +669,15 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
   };
 
   const handlePayment = async () => {
-    if (!selectedAddress) {
+    setIsProcessingOrder(true);
+    try {
+      if (!selectedAddress) {
       if (savedAddresses.length > 0) {
         setCheckoutStep('addresses');
       } else {
         openAddAddressForm();
       }
+      setIsProcessingOrder(false);
       return;
     }
 
@@ -631,6 +686,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
     if (!deliveryLat || !deliveryLng) {
       alert('Selected address needs location. Please add address again using current location.');
+      setIsProcessingOrder(false);
       return;
     }
 
@@ -640,13 +696,66 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
     if (bookingResponse?.type !== 'success' || !bookingResponse.booking?._id) {
       alert(bookingResponse?.message || 'Failed to create booking');
+      setIsProcessingOrder(false);
       return;
     }
 
-    const res = await loadRazorpayScript();
+    if (paymentMethod === 'COD') {
+      const booking = bookingResponse.booking;
+      
+      trackPurchase({
+        cartItems,
+        totalPayable,
+        orderId: booking._id,
+      });
 
-    if (!res) {
+      try {
+        await del('cart/delete?type=2', {
+          headers: {
+            Authorization: localStorage.getItem('petric_token'),
+          },
+        });
+      } catch(delErr) {
+        console.error('Cart already deleted or failed:', delErr);
+      }
+      
+      window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: [] } }));
+
+      try {
+        await post(
+          'logs/add',
+          {
+            description: `Placed an order of ₹${totalPayable} via COD`,
+            type: 'Order',
+          },
+          {
+            headers: {
+              Authorization: localStorage.getItem('petric_token'),
+            },
+          }
+        );
+      } catch (logErr) {
+        console.error('Failed to log order:', logErr);
+      }
+
+      // Show loader for an artificial 4-5 seconds for COD
+      await new Promise(resolve => setTimeout(resolve, 4500));
+
+      setIsProcessingOrder(false);
+      setPaymentSuccess(true);
+      
+      setTimeout(() => {
+        setPaymentSuccess(false);
+        onClose();
+      }, 3000);
+      return;
+    }
+
+    const isLoaded = await loadRazorpayScript();
+
+    if (!isLoaded) {
       alert('Razorpay SDK failed to load. Are you online?');
+      setIsProcessingOrder(false);
       return;
     }
 
@@ -654,6 +763,7 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
     if (!razorpayKey) {
       alert('Razorpay key is missing.');
+      setIsProcessingOrder(false);
       return;
     }
 
@@ -705,11 +815,17 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
           });
         }
 
-        await del('cart/delete?type=2', {
-          headers: {
-            Authorization: localStorage.getItem('petric_token'),
-          },
-        });
+        try {
+          await del('cart/delete?type=2', {
+            headers: {
+              Authorization: localStorage.getItem('petric_token'),
+            },
+          });
+        } catch(delErr) {
+          console.error('Cart already deleted or failed:', delErr);
+        }
+
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: [] } }));
 
         try {
           await post(
@@ -732,8 +848,14 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
         setTimeout(() => {
           setPaymentSuccess(false);
+          setIsProcessingOrder(false);
           onClose();
         }, 3000);
+      },
+      modal: {
+        ondismiss: function() {
+          setIsProcessingOrder(false);
+        }
       },
       theme: {
         color: '#FFD000',
@@ -744,9 +866,16 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
 
     paymentObject.on('payment.failed', function (response) {
       alert(`Payment failed: ${response.error.description}`);
+      setIsProcessingOrder(false);
     });
 
     paymentObject.open();
+    
+    } catch (globalErr) {
+      console.error('HandlePayment Global Error:', globalErr);
+      alert('An unexpected error occurred processing your payment.');
+      setIsProcessingOrder(false);
+    }
   };
 
 
@@ -1073,9 +1202,24 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
                   placeholder="Enter 10 digit number"
                   value={mobileNumber}
                   onChange={handleMobileChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && isMobileValid) handleContinueToOtp();
+                  }}
                   maxLength={10}
                   className="w-full px-4 py-3 text-sm text-black outline-none"
                 />
+                <button
+                  type="button"
+                  onClick={handleContinueToOtp}
+                  disabled={!isMobileValid}
+                  className={`m-1.5 w-10 h-10 rounded-lg flex shrink-0 items-center justify-center transition-all duration-300 ${
+                    isMobileValid 
+                      ? 'bg-[#FFD000] hover:bg-[#ffdb33] text-black cursor-pointer shadow-sm transform hover:scale-105' 
+                      : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  <FiCheck className="w-5 h-5" strokeWidth={3} />
+                </button>
               </div>
             </div>
           )}
@@ -1380,46 +1524,65 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
               </div>
             )}
 
-            <div className="flex items-center gap-3">
-              <div className="w-[25%] min-w-0">
-                <div className="flex items-center gap-1 text-[9px] font-bold uppercase leading-none text-gray-500">
-                  PAY USING
-                  <span className="mt-0.5 h-0 w-0 border-l-[4px] border-r-[4px] border-t-[5px] border-l-transparent border-r-transparent border-t-black"></span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-[25%] min-w-0 relative cursor-pointer group">
+                  <div className="flex items-center gap-1 text-[9px] font-bold uppercase leading-none text-gray-500">
+                    PAY USING
+                    <span className="mt-0.5 h-0 w-0 border-l-[4px] border-r-[4px] border-t-[5px] border-l-transparent border-r-transparent border-t-black"></span>
+                  </div>
+                  <p className="mt-1 truncate text-xs font-semibold leading-none text-black">
+                    {paymentMethod}
+                  </p>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  >
+                    <option value="Online">Online</option>
+                    {isCODAllowed && <option value="COD">COD</option>}
+                  </select>
                 </div>
-                <p className="mt-1 truncate text-xs font-semibold leading-none text-black">
-                  Online
-                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      setCheckoutStep('mobile');
+                      return;
+                    }
+
+                    if (!selectedAddress) {
+                      openAddAddressForm();
+                      return;
+                    }
+
+                    if (!isProcessingOrder) {
+                      handlePayment();
+                    }
+                  }}
+                  disabled={isProcessingOrder}
+                  className={`w-[75%] bg-[#FFD000] hover:bg-[#ffdb33] text-black rounded-xl px-4 py-3 flex items-center justify-center transition-colors shadow-md ${isProcessingOrder ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isLoggedIn && !selectedAddress ? (
+                    <div className="flex items-center justify-center gap-2 font-bold text-base">
+                      <FiPlus />
+                      Add Address
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-1 font-bold text-base">
+                      {isLoggedIn ? 'Place Order' : 'Login'}
+                      <FiChevronRight className="h-4 w-4" strokeWidth={2.5} />
+                    </div>
+                  )}
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    setCheckoutStep('mobile');
-                    return;
-                  }
-
-                  if (!selectedAddress) {
-                    openAddAddressForm();
-                    return;
-                  }
-
-                  handlePayment();
-                }}
-                className="w-[75%] bg-[#FFD000] hover:bg-[#ffdb33] text-black rounded-xl px-4 py-3 flex items-center justify-center transition-colors shadow-md"
-              >
-                {isLoggedIn && !selectedAddress ? (
-                  <div className="flex items-center justify-center gap-2 font-bold text-base">
-                    <FiPlus />
-                    Add Address
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-1 font-bold text-base">
-                    {isLoggedIn ? 'Place Order' : 'Login'}
-                    <FiChevronRight className="h-4 w-4" strokeWidth={2.5} />
-                  </div>
-                )}
-              </button>
+              {!isCODAllowed && codSettings.isLoaded && codSettings.ordersEnabled && codSettings.userOrderCount < codSettings.perUserLimit && (
+                <p className="text-[10px] text-gray-500 max-w-[200px] leading-tight">
+                  COD is available only for orders between ₹{codSettings.minPrice} and ₹{codSettings.maxPrice}.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -1450,9 +1613,17 @@ export default function CartSidebar({ isOpen, onClose, cartItems, onUpdateQuanti
           </div>
         )}
 
+        {/* Loading Overlay */}
+        {isProcessingOrder && (
+          <div className="absolute inset-0 z-[300] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+            <img src={loaderGif} alt="Processing" className="w-48 h-auto mb-4" />
+            <p className="font-semibold text-gray-700">Processing your order...</p>
+          </div>
+        )}
+
         {/* Payment Success Overlay */}
         {paymentSuccess && (
-          <div className="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center animate-in fade-in duration-300">
+          <div className="absolute inset-0 z-[300] bg-white flex flex-col items-center justify-center animate-in fade-in duration-300">
             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-[0_0_0_15px_rgba(220,252,231,0.5)] animate-[bounce_1s_ease-in-out_infinite]">
               <FiCheck className="w-12 h-12 text-green-600 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]" />
             </div>
