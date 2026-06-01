@@ -13,6 +13,7 @@ import Testimonials from '../components/Testimonials';
 import BottomPopup from '../components/BottomPopup';
 import VariantPopup from '../components/VariantPopup';
 import ProductCard from '../components/ProductCard';
+import ProductSkeletonCard from '../components/ProductSkeletonCard';
 import { FiChevronDown, FiChevronRight, FiStar, FiGift, FiPercent, FiAward, FiClock } from "react-icons/fi";
 import { get } from '../helper/api';
 import useCart from '../hooks/useCart';
@@ -72,6 +73,7 @@ export default function NewHome() {
   const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
   const [variantPopupProduct, setVariantPopupProduct] = useState(null);
   const [homePageSections, setHomePageSections] = useState([]);
+  const [isHomeLoading, setIsHomeLoading] = useState(true);
 
   const [shopCategories, setShopCategories] = useState([]);
   const categoriesScrollRef = useRef(null);
@@ -157,6 +159,8 @@ export default function NewHome() {
         }
       } catch (error) {
         console.error("Error fetching home page products:", error);
+      } finally {
+        setIsHomeLoading(false);
       }
     };
 
@@ -462,7 +466,16 @@ export default function NewHome() {
         </div>
 
         {/* First Backend Product Section */}
-        {topHomeSection && (
+        {isHomeLoading ? (
+          <div className="mb-14">
+            <div className="h-8 w-48 bg-gray-200 rounded mb-6 animate-pulse"></div>
+            <div className="flex gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-5 pt-2 px-1 md:px-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <ProductSkeletonCard key={i} mobileMode="carousel" desktopMode="carousel" className="md:w-[260px] lg:w-[280px] md:max-w-[280px]" />
+              ))}
+            </div>
+          </div>
+        ) : topHomeSection && (
           <div className="mb-14">
             <h2 className="text-2xl font-bold text-black mb-6">
               {topHomeSection.title}
@@ -661,7 +674,18 @@ export default function NewHome() {
         )}
 
         {/* Dynamic Sections from API */}
-        {remainingHomeSections.map((section, idx) => {
+        {isHomeLoading ? (
+          Array.from({ length: 2 }).map((_, idx) => (
+            <div key={idx} className="mb-14">
+              <div className="h-8 w-48 bg-gray-200 rounded mb-6 animate-pulse"></div>
+              <div className="flex md:grid md:grid-cols-4 gap-3 md:gap-5 overflow-x-auto [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-1 md:px-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ProductSkeletonCard key={i} mobileMode="carousel" desktopMode="grid" />
+                ))}
+              </div>
+            </div>
+          ))
+        ) : remainingHomeSections.map((section, idx) => {
           const isBestOffers = section.title.toLowerCase().includes('best offers');
           return (
           <div key={idx} className="mb-14">

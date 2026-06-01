@@ -67,7 +67,7 @@ export default function LogoBar() {
         <div className="flex items-center gap-1 md:gap-1.5">
            <BsLightningFill className="text-[#FFC107] h-4 w-4 md:h-5 md:w-5 drop-shadow-sm" />
            <span className="text-base md:text-lg font-extrabold text-black tracking-tight leading-none">
-             {deliveryTime ? `${deliveryTime} minutes` : 'Check Time'}
+             {deliveryTime ? (String(deliveryTime).includes('By') ? deliveryTime : `${deliveryTime} minutes`) : 'Check Time'}
            </span>
         </div>
         <div className="flex items-center gap-1 mt-0.5 md:mt-1 max-w-[130px] md:max-w-[200px]">

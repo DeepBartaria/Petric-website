@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import useCart from '../hooks/useCart';
 import { logPageVisit } from '../helper/analytics';
 import ProductCard from '../components/ProductCard';
+import ProductSkeletonCard from '../components/ProductSkeletonCard';
 import VariantPopup from '../components/VariantPopup';
 import useProductCoupons from '../hooks/useProductCoupons';
 const LIMIT = 20;
@@ -328,14 +329,7 @@ export default function AllCategories() {
     setActiveSubcategory(sub);
   };
 
-  const SkeletonCard = () => (
-    <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-2.5 md:p-4 shadow-sm animate-pulse">
-      <div className="w-full h-24 md:h-40 bg-gray-100 rounded-xl mb-3"></div>
-      <div className="h-3 bg-gray-100 rounded mb-2 w-3/4"></div>
-      <div className="h-3 bg-gray-100 rounded mb-2 w-1/2"></div>
-      <div className="h-4 bg-gray-100 rounded w-1/3 mt-4"></div>
-    </div>
-  );
+
 
   return (
     <div className="min-h-screen bg-[#FCFCFC] font-sans flex flex-col relative">
@@ -692,7 +686,7 @@ export default function AllCategories() {
             </div>
           ) : isInitialLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-6">
-              {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+              {Array.from({ length: 8 }).map((_, i) => <ProductSkeletonCard key={i} />)}
             </div>
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -714,7 +708,7 @@ export default function AllCategories() {
                   />  
                 ))}
 
-                {isFetchingMore && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={`skel-${i}`} />)}
+                {isFetchingMore && Array.from({ length: 4 }).map((_, i) => <ProductSkeletonCard key={`skel-${i}`} />)}
               </div>
 
               <div ref={sentinelRef} className="h-10 mt-4" />

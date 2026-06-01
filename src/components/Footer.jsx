@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 
 import { useDialog } from '../context/DialogContext';
 
-import { FaFacebookF, FaLinkedin } from 'react-icons/fa';
+import { FaFacebookF, FaLinkedin, FaDog, FaCat } from 'react-icons/fa';
 import { RiInstagramFill } from "react-icons/ri";
 import { IoLogoWhatsapp } from "react-icons/io";
+import { FiMessageCircle, FiHelpCircle, FiArrowRight } from 'react-icons/fi';
+import { BsChatHeartFill } from 'react-icons/bs';
 import { useLocation } from "react-router-dom";
 
 import f1 from '../assets/f1.png';
@@ -24,7 +26,7 @@ export default function Footer() {
   return (
     <footer className="w-full">
       {/* Top Section: App Promo */}
-      {location.pathname !== "/" && (
+      {location.pathname !== "/" && location.pathname !== "/all-categories" && !location.pathname.startsWith("/category/") && !location.pathname.startsWith("/product/") && (
         <div
           className="w-full flex flex-col md:flex-row items-center justify-between py-8 sm:py-12 bg-gradient-to-r from-[#1F395E] to-[#325B96] h-[280px] sm:h-[400px] px-4 sm:px-20"
         >
@@ -56,42 +58,167 @@ export default function Footer() {
           <img src={mobiles} alt="Android" height={400} width={400} className="hidden md:block" />
         </div>
       )}
-      {/* Middle Section: Links */}
+      {/* App Promo Image Section */}
+      <div className="w-full bg-gray-50 p-6 sm:p-8 md:p-10 relative overflow-hidden group">
+        
+        {/* Animated Dog and Cat Background */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-30 select-none">
+          <style>
+            {`
+              @keyframes chaseAcross {
+                0% { left: -200px; transform: scaleX(1); }
+                49.9% { left: 110%; transform: scaleX(1); }
+                50% { left: 110%; transform: scaleX(-1); }
+                99.9% { left: -200px; transform: scaleX(-1); }
+                100% { left: -200px; transform: scaleX(1); }
+              }
+              @keyframes runLeg {
+                0%, 100% { transform: rotate(-35deg); }
+                50% { transform: rotate(35deg); }
+              }
+              @keyframes wag {
+                0%, 100% { transform: rotate(-10deg); }
+                50% { transform: rotate(15deg); }
+              }
+              @keyframes bounceBody {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-3px); }
+              }
+            `}
+          </style>
+          
+          <div 
+            className="absolute top-[10%] flex items-end gap-2 drop-shadow-xl"
+            style={{ animation: 'chaseAcross 14s linear infinite' }}
+          >
+            {/* Running Dog Cartoon SVG */}
+            <svg viewBox="0 0 100 60" className="w-24 h-16 sm:w-32 sm:h-20" xmlns="http://www.w3.org/2000/svg">
+              <line x1="35" y1="35" x2="35" y2="50" stroke="#8B4513" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '35px 35px', animation: 'runLeg 0.3s infinite linear' }} />
+              <line x1="65" y1="35" x2="65" y2="50" stroke="#8B4513" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '65px 35px', animation: 'runLeg 0.3s infinite linear -0.15s' }} />
+              <g style={{ animation: 'bounceBody 0.3s infinite linear' }}>
+                <path d="M 25 25 Q 15 15 15 25" stroke="#D2691E" strokeWidth="5" strokeLinecap="round" fill="none" style={{ transformOrigin: '25px 25px', animation: 'wag 0.15s infinite linear' }} />
+                <rect x="25" y="20" width="45" height="20" rx="10" fill="#D2691E" />
+                <circle cx="75" cy="20" r="12" fill="#D2691E" />
+                <path d="M 75 15 Q 90 15 90 22 Q 90 27 75 27" fill="#D2691E" />
+                <circle cx="88" cy="18" r="2" fill="black" />
+                <circle cx="76" cy="17" r="1.5" fill="black" />
+                <path d="M 70 12 Q 60 5 62 18" stroke="#8B4513" strokeWidth="4" strokeLinecap="round" fill="#D2691E" />
+              </g>
+              <line x1="40" y1="35" x2="40" y2="50" stroke="#D2691E" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '40px 35px', animation: 'runLeg 0.3s infinite linear -0.15s' }} />
+              <line x1="70" y1="35" x2="70" y2="50" stroke="#D2691E" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '70px 35px', animation: 'runLeg 0.3s infinite linear' }} />
+            </svg>
+
+            {/* Running Cat Cartoon SVG */}
+            <svg viewBox="0 0 100 60" className="w-20 h-12 sm:w-24 sm:h-16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="35" y1="35" x2="35" y2="50" stroke="#D2691E" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '35px 35px', animation: 'runLeg 0.25s infinite linear' }} />
+              <line x1="65" y1="35" x2="65" y2="50" stroke="#D2691E" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '65px 35px', animation: 'runLeg 0.25s infinite linear -0.125s' }} />
+              <g style={{ animation: 'bounceBody 0.25s infinite linear' }}>
+                <path d="M 30 25 Q 10 10 20 5" stroke="#FFA500" strokeWidth="4" strokeLinecap="round" fill="none" style={{ transformOrigin: '30px 25px', animation: 'wag 0.25s infinite linear' }} />
+                <rect x="30" y="22" width="35" height="15" rx="7.5" fill="#FFA500" />
+                <circle cx="70" cy="20" r="10" fill="#FFA500" />
+                <circle cx="76" cy="22" r="3" fill="#FFA500" />
+                <circle cx="78" cy="21" r="1" fill="black" />
+                <circle cx="72" cy="18" r="1" fill="black" />
+                <path d="M 64 12 L 66 4 L 70 12 Z" fill="#FFA500" />
+                <path d="M 70 12 L 74 4 L 76 12 Z" fill="#D2691E" />
+              </g>
+              <line x1="40" y1="35" x2="40" y2="50" stroke="#FFA500" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '40px 35px', animation: 'runLeg 0.25s infinite linear -0.125s' }} />
+              <line x1="70" y1="35" x2="70" y2="50" stroke="#FFA500" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '70px 35px', animation: 'runLeg 0.25s infinite linear' }} />
+            </svg>
+          </div>
+
+          <div 
+            className="absolute top-[70%] flex items-end gap-2 drop-shadow-md opacity-60 filter blur-[1px]"
+            style={{ animation: 'chaseAcross 20s linear infinite 7s' }}
+          >
+            {/* Running Cat Cartoon SVG (Faded Background) */}
+            <svg viewBox="0 0 100 60" className="w-16 h-10 sm:w-20 sm:h-12" xmlns="http://www.w3.org/2000/svg">
+              <line x1="35" y1="35" x2="35" y2="50" stroke="#D2691E" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '35px 35px', animation: 'runLeg 0.25s infinite linear' }} />
+              <line x1="65" y1="35" x2="65" y2="50" stroke="#D2691E" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '65px 35px', animation: 'runLeg 0.25s infinite linear -0.125s' }} />
+              <g style={{ animation: 'bounceBody 0.25s infinite linear' }}>
+                <path d="M 30 25 Q 10 10 20 5" stroke="#FFA500" strokeWidth="4" strokeLinecap="round" fill="none" style={{ transformOrigin: '30px 25px', animation: 'wag 0.25s infinite linear' }} />
+                <rect x="30" y="22" width="35" height="15" rx="7.5" fill="#FFA500" />
+                <circle cx="70" cy="20" r="10" fill="#FFA500" />
+                <circle cx="76" cy="22" r="3" fill="#FFA500" />
+                <circle cx="78" cy="21" r="1" fill="black" />
+                <circle cx="72" cy="18" r="1" fill="black" />
+                <path d="M 64 12 L 66 4 L 70 12 Z" fill="#FFA500" />
+                <path d="M 70 12 L 74 4 L 76 12 Z" fill="#D2691E" />
+              </g>
+              <line x1="40" y1="35" x2="40" y2="50" stroke="#FFA500" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '40px 35px', animation: 'runLeg 0.25s infinite linear -0.125s' }} />
+              <line x1="70" y1="35" x2="70" y2="50" stroke="#FFA500" strokeWidth="5" strokeLinecap="round" style={{ transformOrigin: '70px 35px', animation: 'runLeg 0.25s infinite linear' }} />
+            </svg>
+            
+            {/* Running Dog Cartoon SVG (Faded Background) */}
+            <svg viewBox="0 0 100 60" className="w-20 h-14 sm:w-28 sm:h-16" xmlns="http://www.w3.org/2000/svg">
+              <line x1="35" y1="35" x2="35" y2="50" stroke="#8B4513" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '35px 35px', animation: 'runLeg 0.3s infinite linear' }} />
+              <line x1="65" y1="35" x2="65" y2="50" stroke="#8B4513" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '65px 35px', animation: 'runLeg 0.3s infinite linear -0.15s' }} />
+              <g style={{ animation: 'bounceBody 0.3s infinite linear' }}>
+                <path d="M 25 25 Q 15 15 15 25" stroke="#D2691E" strokeWidth="5" strokeLinecap="round" fill="none" style={{ transformOrigin: '25px 25px', animation: 'wag 0.15s infinite linear' }} />
+                <rect x="25" y="20" width="45" height="20" rx="10" fill="#D2691E" />
+                <circle cx="75" cy="20" r="12" fill="#D2691E" />
+                <path d="M 75 15 Q 90 15 90 22 Q 90 27 75 27" fill="#D2691E" />
+                <circle cx="88" cy="18" r="2" fill="black" />
+                <circle cx="76" cy="17" r="1.5" fill="black" />
+                <path d="M 70 12 Q 60 5 62 18" stroke="#8B4513" strokeWidth="4" strokeLinecap="round" fill="#D2691E" />
+              </g>
+              <line x1="40" y1="35" x2="40" y2="50" stroke="#D2691E" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '40px 35px', animation: 'runLeg 0.3s infinite linear -0.15s' }} />
+              <line x1="70" y1="35" x2="70" y2="50" stroke="#D2691E" strokeWidth="6" strokeLinecap="round" style={{ transformOrigin: '70px 35px', animation: 'runLeg 0.3s infinite linear' }} />
+            </svg>
+          </div>
+        </div>
+
+        <a href="https://petric.in/download/" target="_blank" rel="noopener noreferrer" className="hidden md:block w-full max-w-6xl mx-auto relative z-10 transition-transform duration-500 hover:scale-[1.02]">
+          <img src={laptop_hi} alt="Download App" className="w-full shadow-xl rounded-3xl" />
+        </a>
+        <a href="https://petric.in/download/" target="_blank" rel="noopener noreferrer" className="md:hidden block w-full relative z-10">
+          <img src={hi} alt="Download App" className="w-full shadow-xl rounded-3xl" />
+        </a>
+      </div>
+
+      {/* Have Questions Section */}
       <div
-        className="w-full bg-cover bg-no-repeat p-6 sm:p-8 md:p-10"
+        className="w-full bg-cover bg-no-repeat p-6 sm:p-12 md:p-16 relative overflow-hidden"
         style={{ backgroundImage: `url(${f2})` }}
       >
-        <a href="https://petric.in/download/" target="_blank" rel="noopener noreferrer" className="hidden md:block w-full mb-6 sm:mb-8">
-          <img src={laptop_hi} alt="Download App" className="w-full rounded-3xl" />
-        </a>
-        <a href="https://petric.in/download/" target="_blank" rel="noopener noreferrer" className="md:hidden block w-full mb-6 sm:mb-8">
-          <img src={hi} alt="Download App" className="w-full rounded-3xl" />
-        </a>
-        <div className="w-full flex justify-center px-4">
-          <div className="w-full max-w-4xl rounded-[32px] bg-gradient-to-br from-[#FFD000] to-[#FFF1A6] border border-[#F5C400]/40 shadow-sm px-6 sm:px-10 py-8 sm:py-10 flex flex-col items-center text-center">
+        <div className="w-full flex justify-center px-4 relative z-10">
+          <div className="w-full max-w-5xl rounded-[2.5rem] bg-white border-4 border-[#FFF2B8] shadow-[0_20px_60px_-15px_rgba(255,208,0,0.4)] px-8 sm:px-12 py-10 sm:py-14 flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative group hover:border-[#FFD000] transition-colors duration-500">
             
-            {/* Heading */}
-            <h3 className="text-2xl sm:text-4xl font-black text-[#1D3557] leading-tight">
-              Have Questions? 
-            </h3>
-            {/* Subtext */}
-            <p className="text-[#5F6C7B] text-sm sm:text-lg mt-3 max-w-2xl leading-relaxed">
-              Get answers about orders, delivery, pet care, products,
-              and everything Petric.
-            </p>
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-7 w-full sm:w-auto">
-              <Link to="/faqs">
-                <button className="w-full sm:w-auto bg-[#FFD000] hover:bg-[#ffdb33] text-black px-7 sm:px-8 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] shadow-md">
+            {/* Decorative Background Elements */}
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#FFD000] rounded-full mix-blend-multiply filter blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none"></div>
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-[#FF5757] rounded-full mix-blend-multiply filter blur-[80px] opacity-10 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none"></div>
+            <div className="absolute top-10 right-1/4 text-[150px] text-[#FFD000] opacity-[0.03] rotate-12 pointer-events-none group-hover:scale-110 transition-transform duration-700">?</div>
+            
+            {/* Left Content */}
+            <div className="flex-1 text-center md:text-left z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFBEA] border border-[#FFD000]/30 mb-6">
+                <span className="text-[#1D3557] text-xs sm:text-sm font-bold tracking-widest uppercase">We're here for you</span>
+              </div>
+              <h3 className="text-3xl sm:text-5xl font-black text-[#1D3557] leading-[1.15] mb-4">
+                Have <span className="text-[#FFD000] relative inline-block">Questions?<svg className="absolute -bottom-2 left-0 w-full h-3 text-[#FF5757] opacity-60" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,10 Q50,20 100,10" stroke="currentColor" strokeWidth="8" fill="none" /></svg></span> 
+              </h3>
+              <p className="text-gray-500 text-sm sm:text-base md:text-lg max-w-xl leading-relaxed mx-auto md:mx-0 font-medium">
+                Get answers about orders, delivery, pet care, products, and everything Petric. We're just a click away!
+              </p>
+            </div>
+
+            {/* Right Content - Buttons */}
+            <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 sm:gap-5 w-full md:w-auto z-10">
+              <Link to="/faqs" className="w-full md:w-auto">
+                <button className="w-full md:w-auto flex items-center justify-center gap-2.5 bg-[#FFD000] hover:bg-[#ffdb33] text-black px-8 py-4 rounded-2xl font-extrabold text-base transition-all duration-300 hover:scale-[1.05] hover:shadow-[0_10px_25px_rgba(255,208,0,0.5)] group/btn border border-[#F5C400]">
+                  <FiHelpCircle className="text-xl group-hover/btn:rotate-12 transition-transform" />
                   Explore FAQs
                 </button>
               </Link>
-              <Link to="/about/#contact">
-                <button className="w-full sm:w-auto bg-white hover:bg-[#FFFBEA] border border-[#F5C400]/50 text-[#1D3557] px-7 sm:px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.03] shadow-sm">
+              <Link to="/about/#contact" className="w-full md:w-auto">
+                <button className="w-full md:w-auto flex items-center justify-center gap-2.5 bg-white hover:bg-gray-50 border-2 border-gray-200 text-[#1D3557] px-8 py-4 rounded-2xl font-bold text-base transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:border-gray-300 group/btn2">
+                  <FiMessageCircle className="text-xl group-hover/btn2:-translate-y-1 transition-transform" />
                   Contact Us
+                  <FiArrowRight className="text-xl opacity-0 -ml-5 group-hover/btn2:opacity-100 group-hover/btn2:ml-0 transition-all duration-300 text-[#FF5757]" />
                 </button>
               </Link>
             </div>
+            
           </div>
         </div>
       </div>

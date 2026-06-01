@@ -22,11 +22,8 @@ export default function WhyTrustUs() {
   return (
     <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16 mb-8 sm:mb-12 md:mb-14 font-sans">
       <div className="text-center mb-6 sm:mb-8 md:mb-12">
-        <Link to="/story"
-          className="inline-block bg-[#FFD000] text-black text-3xl sm:text-4xl md:text-5xl font-black px-8 py-3 md:px-10 md:py-4 rounded-full shadow-[0_8px_24px_rgba(255,208,0,0.3)] hover:scale-105 hover:shadow-[0_12px_32px_rgba(255,208,0,0.5)] transition-all duration-300 mb-5 tracking-tight leading-none">
-          Why Choose Us
-        </Link>
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight tracking-tight text-black mb-2 sm:mb-3 md:mb-4">
+
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight tracking-tight text-black mb-2 sm:mb-3 md:mb-4">
           Why Pet Parents <span className="text-[#FF5757]">Trust Us</span>?
         </h2>
         <p className="text-gray-500 text-[11px] sm:text-sm md:text-base max-w-lg mx-auto px-4">

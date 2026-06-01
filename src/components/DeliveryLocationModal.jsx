@@ -113,10 +113,20 @@ export default function DeliveryLocationModal({ isOpen, onClose }) {
       },
       (response, status) => {
         setIsLoadingTime(false);
-        const time =
+        let time =
           status === 'OK' && response.rows[0].elements[0].status === 'OK'
             ? Math.ceil(response.rows[0].elements[0].duration.value / 60) + 20
             : calculateFallbackTime(selectedLocation);
+
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const isAfter9PM = hours >= 21;
+        const isBefore1030AM = hours < 10 || (hours === 10 && minutes <= 30);
+        
+        if (isAfter9PM || isBefore1030AM) {
+          time = 'By 11:00 am';
+        }
 
         const deliveryLocation = {
           lat: selectedLocation.lat,
@@ -257,7 +267,7 @@ export default function DeliveryLocationModal({ isOpen, onClose }) {
               {deliveryTime && (
                 <div className="flex items-center justify-center gap-2 text-green-700 font-bold bg-green-50 px-4 py-3 rounded-xl border border-green-200 text-sm">
                   <FiMapPin className="h-4 w-4 shrink-0" />
-                  Estimated delivery: {deliveryTime} minutes 🎉
+                  Estimated delivery: {String(deliveryTime).includes('By') ? deliveryTime : `${deliveryTime} minutes`} 🎉
                 </div>
               )}
             </>

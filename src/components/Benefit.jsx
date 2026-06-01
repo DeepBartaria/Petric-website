@@ -26,14 +26,8 @@ export default function Benefit() {
 
       {/* Header */}
       <div className="text-center mb-12 relative z-10 flex flex-col items-center">
-        <Link
-          to="/all-categories"
-          className="inline-flex items-center gap-3 bg-[#FFD000] text-black text-3xl sm:text-4xl md:text-5xl font-black px-8 py-3 md:px-10 md:py-4 rounded-full shadow-[0_8px_24px_rgba(255,208,0,0.3)] hover:scale-105 hover:shadow-[0_12px_32px_rgba(255,208,0,0.5)] transition-all duration-300 cursor-pointer mb-5 tracking-tight leading-none"
-        >
-          <FiHeart className="w-8 h-8 md:w-10 md:h-10" />
-          <span>Complete Pet Care</span>
-        </Link>
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight tracking-tight text-black">
+
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight tracking-tight text-black">
           Everything your <span className="text-[#F5C400]">pet needs</span>
         </h2>
       </div>

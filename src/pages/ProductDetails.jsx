@@ -242,11 +242,56 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white font-sans flex flex-col">
+      <div className="min-h-screen bg-[#FAFAFA] font-sans text-black relative flex flex-col">
         <NewHomeNavbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#FFD000] border-t-transparent" />
-        </div>
+        <main className="mx-auto max-w-[1400px] px-3 md:px-8 py-4 md:py-10 w-full flex-1">
+          {/* Breadcrumb Skeleton */}
+          <div className="mb-4 h-3 w-1/3 bg-gray-200 rounded animate-pulse"></div>
+
+          {/* Product Hero Section Skeleton */}
+          <section className="flex flex-col md:grid md:grid-cols-[1.5fr_1fr] gap-4 md:gap-8 mb-8 md:mb-12">
+            {/* Left: Image Skeleton */}
+            <div className="flex flex-col gap-3">
+              <div className="rounded-2xl md:rounded-[2rem] bg-gray-100 border border-gray-100 p-4 md:p-8 flex items-center justify-center shadow-sm min-h-[240px] md:min-h-[480px] animate-pulse"></div>
+              <div className="flex gap-2">
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-gray-100 animate-pulse border-2 border-gray-100"></div>
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-gray-100 animate-pulse border-2 border-gray-100"></div>
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-gray-100 animate-pulse border-2 border-gray-100"></div>
+              </div>
+            </div>
+
+            {/* Right: Product Info Skeleton */}
+            <aside className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 p-4 md:p-6 shadow-sm flex flex-col gap-4">
+              <div className="h-6 md:h-8 w-3/4 bg-gray-200 rounded animate-pulse mb-1"></div>
+              <div className="h-4 w-1/3 bg-gray-200 rounded animate-pulse mb-4"></div>
+
+              <div className="h-10 w-1/2 bg-gray-200 rounded animate-pulse mb-2"></div>
+
+              <div className="h-8 md:h-10 w-1/3 bg-gray-200 rounded animate-pulse mb-4"></div>
+
+              <div className="flex gap-3">
+                <div className="h-10 md:h-11 w-24 rounded-full bg-gray-200 animate-pulse"></div>
+                <div className="h-10 md:h-11 flex-1 rounded-full bg-gray-200 animate-pulse"></div>
+              </div>
+              
+              <div className="flex flex-col gap-2 pt-4 mt-2 border-t border-gray-50">
+                <div className="h-3 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-3 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-3 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </aside>
+          </section>
+
+          {/* Description Skeleton */}
+          <section className="mb-10 md:mb-14">
+            <div className="h-6 md:h-8 w-48 bg-gray-200 rounded mb-4 animate-pulse"></div>
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-8 shadow-sm">
+              <div className="h-4 w-full bg-gray-200 rounded animate-pulse mb-3"></div>
+              <div className="h-4 w-5/6 bg-gray-200 rounded animate-pulse mb-3"></div>
+              <div className="h-4 w-4/6 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </section>
+        </main>
         <Footer />
       </div>
     );
