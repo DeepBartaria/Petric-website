@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /saved-addresses
+Disallow: /reorder
+
+Sitemap: https://petric.in/sitemap.xml

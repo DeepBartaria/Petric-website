@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+/* Bottom Popup Animations */
+@keyframes slideUpIn {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDownOut {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slideUpIn {
+  animation: slideUpIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slideDownOut {
+  animation: slideDownOut 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* =============================================
+   Add-to-Cart Animation System
+   ============================================= */
+
+/* ADD button — tap bounce (scale squish then spring) */
+@keyframes add-btn-bounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.82); }
+  55%  { transform: scale(1.14); }
+  75%  { transform: scale(0.96); }
+  90%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* Cart icon — shake/wobble when item lands */
+@keyframes cart-shake {
+  0%   { transform: rotate(0deg)   scale(1);    }
+  12%  { transform: rotate(-16deg) scale(1.18); }
+  28%  { transform: rotate(12deg)  scale(1.12); }
+  44%  { transform: rotate(-8deg)  scale(1.06); }
+  60%  { transform: rotate(5deg)   scale(1.02); }
+  76%  { transform: rotate(-3deg)  scale(1);    }
+  88%  { transform: rotate(2deg);               }
+  100% { transform: rotate(0deg)   scale(1);    }
+}
+
+/* Cart count badge — pop when number increments */
+@keyframes count-pop {
+  0%   { transform: scale(1);    }
+  35%  { transform: scale(1.55); }
+  65%  { transform: scale(0.88); }
+  85%  { transform: scale(1.08); }
+  100% { transform: scale(1);    }
+}
+
+.animate-add-btn-bounce {
+  animation: add-btn-bounce 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-cart-shake {
+  animation: cart-shake 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-count-pop {
+  animation: count-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+body {
+  background-color: #FFFFFF;
+  /* font-family: "Outfit", sans-serif; */
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.balsamiq-sans-regular {
+  /* font-family: "Nunito", sans-serif; */
+  font-family: "Nunito", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.balsamiq-sans-bold {
+  font-family: "Nunito", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.balsamiq-sans-regular-italic {
+  font-family: "Nunito", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.balsamiq-sans-bold-italic {
+  font-family: "Nunito", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.outfit-regular {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.outfit-bold {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.outfit-medium {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.outfit-semibold {
+  font-family: "Outfit", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.primary-color {
+  color: #1D3557;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* :root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+} */

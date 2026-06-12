@@ -1,0 +1,824 @@
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import NewHomeNavbar from '../components/NewHomeNavbar';
+import CartSidebar from '../components/CartSidebar';
+import CartFloatingButton from '../components/CartFloatingButton';
+import Benefit from '../components/Benefit';
+import WhyTrustUs from '../components/WhyTrustUs';
+import BestOffer from '../components/BestOffer';
+import Testimonials from '../components/Testimonials';
+import Footer from '../components/Footer';
+import { get, post } from '../helper/api';
+import { FiChevronDown, FiMinus, FiPlus } from "react-icons/fi";
+import bannerWeb from '../assets/category/all categories.png';
+import bannerPhone from '../assets/category/all-categories_phone.png';
+import { Link } from 'react-router-dom';
+import useCart from '../hooks/useCart';
+import { logPageVisit } from '../helper/analytics';
+import { trackCleverTapEvent } from '../helper/clevertap';
+import ProductCard from '../components/ProductCard';
+import ProductSkeletonCard from '../components/ProductSkeletonCard';
+import VariantPopup from '../components/VariantPopup';
+import useProductCoupons from '../hooks/useProductCoupons';
+import {createSlug} from '../helper/slug';
+import { useParams } from "react-router-dom";
+import {findBrandBySlug} from '../helper/slug';
+import SEO from '../components/SEO';
+const LIMIT = 20;
+
+export default function AllCategories() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const searchQuery = searchParams.get('search');
+  // const brandId = searchParams.get('brandId');
+  // const brandName = searchParams.get('brandName');
+  const { brandSlug } = useParams();
+  const [brandId, setBrandId] = useState(null);
+  const [brandName, setBrandName] = useState(null);
+  // const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const {
+    cartItems,
+    isCartOpen,
+    setIsCartOpen,
+    pendingCartProduct,
+    addProductToCart,
+    handleUpdateQuantity,
+    handleLoginSuccess,
+  } = useCart();
+
+  const productCoupons = useProductCoupons();
+  const [isVariantPopupOpen, setIsVariantPopupOpen] = useState(false);
+  const [variantPopupProduct, setVariantPopupProduct] = useState(null);
+  const [bouncingProductId, setBouncingProductId] = useState(null);
+
+  useEffect(() => {
+    const handleOpenCart = () => setIsCartOpen(true);
+    window.addEventListener('openCart', handleOpenCart);
+    return () => window.removeEventListener('openCart', handleOpenCart);
+  }, []);
+
+  useEffect(() => {
+    const handleResetCategories = () => {
+      setActiveCategory(null);
+      setActiveSubcategory(null);
+    };
+    window.addEventListener('resetCategories', handleResetCategories);
+    return () => window.removeEventListener('resetCategories', handleResetCategories);
+  }, []);
+
+  // const [cartItems, setCartItems] = useState([]);
+
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeSubcategory, setActiveSubcategory] = useState(null);
+
+  const [products, setProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
+  const [expandedCategory, setExpandedCategory] = useState(null);
+  const [mostBroughtProducts, setMostBroughtProducts] = useState([]);
+
+  const sentinelRef = useRef(null);
+  const fetchKeyRef = useRef(0);
+  // Refs for scrolling category/subcategory pills to active position on mobile
+  const mobileCategoryScrollRef = useRef(null);
+  const mobileSubcategoryScrollRef = useRef(null);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [brandSlug]);
+
+  const fetchInitialData = async () => {
+    setBrandId(null);
+    setBrandName(null);
+    try {
+      const [catRes, subRes] = await Promise.all([
+        get('product/category'),
+        get('product/subCategory')
+      ]);
+      if (brandSlug) {
+        try {
+          const brandRes = await get("product/brand");
+
+          const brand = findBrandBySlug(
+            brandRes.productBrands || [],
+            brandSlug
+          );
+
+          if (brand) {
+            setBrandId(brand._id);
+            setBrandName(brand.name);
+          }
+        } catch (error) {
+          console.error("Brand lookup failed", error);
+        }
+      }
+      if (catRes?.categories && subRes?.subCategories) {
+        const combined = catRes.categories.map(c => ({
+          _id: c._id,
+          name: c.name,
+          img: c.categoryImage || c.image || '',
+          subcategories: subRes.subCategories.filter(s => s.category?._id === c._id)
+        }));
+
+        setCategoriesData(combined);
+
+        // Fetch Most Brought Products from Essentials & Toys
+        try {
+          const targetCategories = combined.filter(c => 
+            c.name.toLowerCase().includes('essential') || 
+            c.name.toLowerCase().includes('toy')
+          ).map(c => c._id);
+          
+          if (targetCategories.length > 0) {
+            const productsRes = await post('product/list/all/forUser', {
+              page: 1,
+              limit: 20,
+              productCategory: targetCategories,
+            });
+            if (productsRes && productsRes.products) {
+              let fetchedProducts = productsRes.products.map(p => {
+                const variant = p.variants?.[0] || {};
+                return {
+                  id: p._id,
+                  productId: p._id,
+                  variantId: variant._id || null,
+                  variantName: variant.name || '',
+                  unit: variant.unit || '',
+                  img: p.productImage,
+                  name: p.name,
+                  weight: variant.name || '',
+                  price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
+                  oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+                  originalPrice: variant.originalPrice || 0,
+                  discountedPrice: variant.discountedPrice || variant.originalPrice || 0,
+                  discount:
+                    variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
+                      ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
+                      : '',
+                  variants: p.variants || [],
+                };
+              });
+              fetchedProducts = fetchedProducts.sort(() => 0.5 - Math.random()).slice(0, 5);
+              setMostBroughtProducts(fetchedProducts);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching most brought products:", err);
+        }
+
+        if (combined.length > 0 && !searchQuery && !brandId) {
+          // No longer automatically setting activeCategory to show category grid
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      logPageVisit(`Searched for products: "${searchQuery}"`);
+    } else if (brandName) {
+      logPageVisit(`Visited brand products page: ${brandName}`);
+    } else if (activeCategory) {
+      const description = activeSubcategory
+        ? `Visited category: ${activeCategory.name} > ${activeSubcategory.name}`
+        : `Visited category: ${activeCategory.name}`;
+      logPageVisit(description);
+    }
+  }, [activeCategory, activeSubcategory, searchQuery, brandId, brandName]);
+
+  useEffect(() => {
+    if (activeCategory || searchQuery || brandId) {
+      setProducts([]);
+      setCurrentPage(1);
+      setTotalPages(1);
+      fetchKeyRef.current += 1;
+      fetchProducts(1, true, fetchKeyRef.current);
+    }
+  }, [activeCategory, activeSubcategory, searchQuery, brandId]);
+
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchProducts(currentPage, false, fetchKeyRef.current);
+    }
+  }, [currentPage]);
+
+  const fetchProducts = async (page, isReset, fetchKey) => {
+    if (isReset) {
+      setIsInitialLoading(true);
+    } else {
+      setIsFetchingMore(true);
+    }
+
+    try {
+      const body = { page, limit: LIMIT };
+
+      if (searchQuery) {
+        body.search = searchQuery;
+      } else if (brandId) {
+        body.brand = [brandId];
+      }
+
+      if (!searchQuery && !brandId) {
+        if (activeSubcategory && activeSubcategory.name !== "ALL") {
+          body.productSubCategory = [activeSubcategory._id];
+        } else if (activeCategory) {
+          body.productCategory = [activeCategory._id];
+        }
+      }
+
+      body.sort = { isBestSeller: -1, isBestAvailable: -1, createdAt: 1 };
+
+      const res = await post('product/list/all/forUser', body);
+
+      if (fetchKey !== fetchKeyRef.current) return;
+
+      if (res && res.products) {
+        setTotalProducts(res.totalProducts || 0);
+        setTotalPages(res.totalPages || 1);
+
+        const formatted = res.products.map(p => {
+            const variant = p.variants?.[0] || {};
+            return {
+              id: p._id,
+              productId: p._id,
+              variantId: variant._id || null,
+              variantName: variant.name || '',
+              unit: variant.unit || '',
+              img: p.productImage,
+              name: p.name,
+              weight: variant.name || '',
+              price: variant.discountedPrice ? `₹${variant.discountedPrice}` : '',
+              oldPrice: variant.originalPrice ? `₹${variant.originalPrice}` : '',
+              originalPrice: variant.originalPrice || 0,
+              discountedPrice: variant.discountedPrice || variant.originalPrice || 0,
+              discount:
+                variant.originalPrice && variant.discountedPrice && variant.originalPrice > variant.discountedPrice
+                  ? Math.round(((variant.originalPrice - variant.discountedPrice) / variant.originalPrice) * 100) + '%'
+                  : '',
+              variants: (p.variants || []).map(v => ({
+                id: v._id,
+                weight: v.name,
+                unit: v.unit || '',
+                originalPrice: v.originalPrice || 0,
+                discountedPrice: v.discountedPrice || v.originalPrice || 0,
+                price: v.discountedPrice ? `₹${v.discountedPrice}` : '',
+                oldPrice: v.originalPrice ? `₹${v.originalPrice}` : '',
+                discount:
+                  v.originalPrice && v.discountedPrice && v.originalPrice > v.discountedPrice
+                    ? Math.round(((v.originalPrice - v.discountedPrice) / v.originalPrice) * 100) + '%'
+                    : '',
+              })),
+              isBestSeller: p.isBestSeller,
+              isBestAvailable: p.isBestAvailable,
+              createdAt: p.createdAt,
+            };
+          });
+
+        setProducts(prev => (isReset ? formatted : [...prev, ...formatted]));
+      } else {
+        if (isReset) {
+          setProducts([]);
+          setTotalProducts(0);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      if (isReset) {
+        setProducts([]);
+        setTotalProducts(0);
+      }
+    } finally {
+      if (fetchKey !== fetchKeyRef.current) return;
+      setIsInitialLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+
+  const observerRef = useRef(null);
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !isFetchingMore && !isInitialLoading && currentPage < totalPages) {
+          setCurrentPage(prev => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
+
+    return () => observerRef.current?.disconnect();
+  }, [isFetchingMore, isInitialLoading, currentPage, totalPages]);
+
+  const handleAddToCart = (product) => {
+    setBouncingProductId(product.id || product._id);
+    // Restart animation by clearing and setting it again in next frame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setBouncingProductId(product.id || product._id);
+      });
+    });
+    addProductToCart(product);
+  };
+
+  const handleOpenProduct = (product) => {
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleOpenVariants = (product) => {
+    setVariantPopupProduct(product);
+    setIsVariantPopupOpen(true);
+  };
+
+  const handleCategoryClick = (category) => {
+    if (searchQuery) {
+       trackCleverTapEvent('Category Clicked', {
+         'Category ID': category._id,
+         'Category Name': category.name,
+         Source: 'Search Bar Result',
+       });
+    } else {
+       trackCleverTapEvent('Category Clicked', {
+         'Category ID': category._id,
+         'Category Name': category.name,
+         Source: 'Category Page',
+       });
+    }
+    if (searchQuery || brandId) navigate('/all-categories');
+    setActiveCategory(category);
+    setActiveSubcategory(category.subcategories[0] || null);
+  };
+
+  const handleSubcategoryClick = (category, sub) => {
+    if (searchQuery) {
+       trackCleverTapEvent('Subcategory Clicked', {
+         'Category ID': category._id,
+         'Category Name': category.name,
+         'Subcategory ID': sub._id,
+         'Subcategory Name': sub.name,
+         Source: 'Search Bar Result',
+       });
+    } else {
+       trackCleverTapEvent('Subcategory Clicked', {
+         'Category ID': category._id,
+         'Category Name': category.name,
+         'Subcategory ID': sub._id,
+         'Subcategory Name': sub.name,
+         Source: 'Category Page',
+       });
+    }
+    if (searchQuery || brandId) navigate('/all-categories');
+    setActiveCategory(category);
+    setActiveSubcategory(sub);
+  };
+
+
+
+  return (
+    <> 
+      <SEO
+        title="All Pet Supplies Categories for Dog, Cat & More | Petric"
+        description="Browse all pet supply categories on Petric: dog food, cat food, medicines, treats, toys, grooming and more. Fast delivery in Gurgaon."
+        canonical="https://petric.in/all-categories"
+      />
+
+      <div className="min-h-screen bg-[#FCFCFC] font-sans flex flex-col relative">
+        <NewHomeNavbar />
+
+        <CartSidebar
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cartItems={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onLoginSuccess={handleLoginSuccess}
+          loginBackCloses={Boolean(pendingCartProduct)}
+        />
+
+        <CartFloatingButton
+          cartItems={cartItems}
+          isCartOpen={isCartOpen}
+          onClick={() => setIsCartOpen(true)}
+        />
+
+        <VariantPopup
+          isOpen={isVariantPopupOpen}
+          onClose={() => setIsVariantPopupOpen(false)}
+          product={variantPopupProduct}
+          onAddToCart={handleAddToCart}
+        />
+
+
+        {/* Hero Banner */}
+        <section className="relative w-full h-[18vh] sm:h-[25vh] md:h-[30vh] flex items-center justify-center overflow-hidden bg-[#F8F9FA]">
+          <picture className="absolute inset-0 z-0 w-full h-full">
+            <source media="(max-width: 767px)" srcSet={bannerPhone} />
+            <img src={bannerWeb} alt="All Categories" className="w-full h-full object-cover object-center" />
+          </picture>
+          
+          <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-8 flex flex-col justify-center items-center text-center">
+            <div className="inline-block bg-white/40 backdrop-blur-md px-8 py-4 md:px-12 md:py-6 rounded-3xl shadow-2xl border border-white/60 transform transition-transform duration-300 hover:scale-105">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold balsamiq-sans-bold text-black drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] tracking-wide">
+                {!activeCategory && !searchQuery && !brandId
+                  ? "All Categories"
+                  : searchQuery
+                    ? `Search Results`
+                    : brandName
+                      ? `${brandName}`
+                      : (activeSubcategory?.name || activeCategory?.name)}
+              </h1>
+            </div>
+          </div>
+        </section>
+
+        {/* ── MOBILE: sticky category + subcategory filter bar ── */}
+        <div className="md:hidden sticky top-[160px] z-[80] bg-[#FCFCFC] border-b border-gray-100 shadow-sm">
+
+
+          {/* Subcategory pills row — only shown when there are subcategories */}
+          {activeCategory && activeCategory.subcategories.length > 0 && (
+            <div
+              ref={mobileSubcategoryScrollRef}
+              className="flex gap-2 overflow-x-auto px-4 pt-7 pb-3 [&::-webkit-scrollbar]:hidden"
+            >
+              {categoriesData
+                .find(c => c._id === activeCategory._id)
+                ?.subcategories.map((sub) => (
+                  <button
+                    key={sub._id}
+                    onClick={() => setActiveSubcategory(sub)}
+                    className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-semibold transition-all whitespace-nowrap ${
+                      activeSubcategory?._id === sub._id
+                        ? 'bg-[#FFD000] text-black'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {sub.name}
+                  </button>
+                ))}
+            </div>
+          )}
+        </div>
+
+        <main className="max-w-[1400px] mx-auto px-3 md:px-8 py-4 md:py-12 w-full flex-grow flex flex-col md:flex-row gap-4 md:gap-8 items-start">
+
+          {/* Left Sidebar: Categories (Desktop only) */}
+          <aside className="hidden md:flex w-56 lg:w-64 shrink-0 flex-col gap-2 sticky top-[150px] self-start max-h-[calc(100vh-170px)] overflow-y-auto [&::-webkit-scrollbar]:hidden pb-6">
+            {categoriesData.map((category) => (
+              <div
+                key={category._id}
+                className="rounded-2xl border border-gray-100 bg-white shadow-sm"
+              >
+                <button
+                  onClick={() => {
+                    setExpandedCategory(expandedCategory === category._id ? null : category._id);
+                    handleCategoryClick(category);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 ${
+                    activeCategory?._id === category._id
+                      ? 'bg-[#FFF4B8] border-l-4 border-l-[#FFD000] rounded-l-none'
+                      : 'hover:bg-gray-50 border-l-4 border-l-transparent rounded-l-none'
+                  } ${expandedCategory === category._id ? 'rounded-b-none' : ''}`}
+                >
+                  <span className={`text-sm font-bold tracking-wide text-left leading-snug ${
+                    activeCategory?._id === category._id ? 'text-black' : 'text-gray-600'
+                  }`}>
+                    {category.name}
+                  </span>
+                  <FiChevronDown
+                    className={`shrink-0 h-4 w-4 ml-2 text-gray-400 transition-transform duration-300 ${
+                      expandedCategory === category._id ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {expandedCategory === category._id && (
+                  <div className="border-t border-gray-100 flex flex-col pb-1">
+                    {category.subcategories.map((sub) => (
+                      <button
+                        key={sub._id}
+                        onClick={() => handleSubcategoryClick(category, sub)}
+                        className={`w-full text-left px-5 py-2.5 text-sm transition-colors flex items-center gap-2.5 border-l-4 ${
+                          activeSubcategory?._id === sub._id
+                            ? 'text-black font-semibold bg-[#FFFBEA] border-l-[#FFD000]'
+                            : 'text-gray-500 hover:text-black hover:bg-gray-50 border-l-transparent'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                          activeSubcategory?._id === sub._id ? 'bg-[#FFD000]' : 'bg-gray-300'
+                        }`} />
+                        <span className="leading-snug">{sub.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </aside>
+
+          {/* Right Content: Products Grid */}
+          <div className="w-full md:w-3/4 lg:w-4/5 flex flex-col">
+
+            {/* Breadcrumbs & Header */}
+            <div className="mb-4 md:mb-8 border-b border-gray-200 pb-3 md:pb-6">
+              {/* Breadcrumbs — hidden on mobile to save space */}
+              <div className="hidden md:flex text-[10px] md:text-[11px] text-gray-500 uppercase font-bold tracking-widest mb-4 md:mb-6 flex-wrap items-center gap-1.5 md:gap-2">
+                <Link
+                  to="/"
+                  className="underline underline-offset-2 cursor-pointer hover:text-black transition-colors"
+                >
+                  HOMEPAGE
+                </Link>
+                <span>&gt;</span>
+                {activeCategory && (
+                  <>
+                    <Link
+                      to={`/category/${createSlug(activeCategory.name)}`}
+                      state={{ categoryName: activeCategory.name }}
+                      className="underline underline-offset-2 cursor-pointer hover:text-black transition-colors"
+                    >
+                      {activeCategory.name}
+                    </Link>
+                  </>
+                )}
+                {activeSubcategory && (
+                  <>
+                    <span>&gt;</span>
+                    <Link
+                      to={`/category/${createSlug(activeCategory.name)}?subCategory=${createSlug(activeSubcategory.name)}`}
+                      state={{
+                        categoryName: activeCategory.name,
+                        subCategoryName: activeSubcategory.name
+                      }}
+                      className="underline decoration-black underline-offset-2 decoration-[1.5px] text-black hover:text-gray-700 transition-colors"
+                    >
+                      {activeSubcategory.name}
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <h1 className="text-2xl md:text-5xl font-extrabold text-black tracking-tight leading-tight">
+                  {!activeCategory && !searchQuery && !brandId
+                    ? "All Categories"
+                    : searchQuery
+                      ? `Results for "${searchQuery}"`
+                      : brandName
+                        ? `Brand: ${brandName}`
+                        : (activeSubcategory?.name || activeCategory?.name)}
+                </h1>
+
+                <span className="shrink-0 text-[10px] md:text-xs text-gray-400 font-bold tracking-wide">
+                  {!activeCategory && !searchQuery && !brandId
+                    ? `${categoriesData.length} categories`
+                    : searchQuery || brandName
+                      ? `${totalProducts} found`
+                      : `${totalProducts} products`}
+                </span>
+              </div>
+            </div>
+
+            {/* Sort By */}
+            {/* 
+            {!(!activeCategory && !searchQuery && !brandId) && (
+              <div className="flex justify-end mb-4 md:mb-6">
+                <span className="text-[10px] md:text-xs text-gray-500 font-bold tracking-wider cursor-pointer hover:text-black transition-colors">
+                  SORT BY: <span className="text-black ml-1">POPULARITY ∨</span>
+                </span>
+              </div>
+            )} 
+            */}
+
+            {/* Product Grid */}
+            {!activeCategory && !searchQuery && !brandId ? (
+              <div className="flex flex-col w-full">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:flex md:flex-wrap justify-items-center md:justify-start gap-3 md:gap-8 mt-4">
+                  {categoriesData.map((cat, index) => {
+                    return (
+                      <div
+                        key={cat._id}
+                        onClick={() => handleCategoryClick(cat)}
+                        className="flex flex-col items-center gap-2 md:gap-3 w-full md:w-44 shrink-0 cursor-pointer group"
+                      >
+                        <div className="w-full aspect-square max-w-[115px] sm:max-w-[128px] md:max-w-none md:w-44 md:h-44 rounded-full overflow-hidden bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] md:hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] md:hover:-translate-y-1 transition-all duration-300 active:scale-95 flex items-center justify-center">
+                          {cat.img ? (
+                            <img src={cat.img} alt={cat.name} className="w-full h-full object-contain p-2 md:p-2 transition-transform duration-300 md:group-hover:scale-110" />
+                          ) : (
+                            <span className="text-2xl md:text-3xl font-black text-gray-300">{cat.name?.charAt(0)}</span>
+                          )}
+                        </div>
+                        
+                        <span className="text-[11px] md:text-sm font-semibold text-gray-600 md:text-gray-700 group-hover:text-black text-center truncate w-full">{cat.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Best Seller Section 
+                <div className="mt-16 pt-8 border-t border-gray-100">
+                  <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">Best Seller</h2>
+                  <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
+                    {[
+                      { id: 'd1', name: "Royal Canin Mini Adult Dog Food", img: "https://placehold.co/200/FFF/000?text=Product", weight: "2 kg", price: "₹1,850", oldPrice: "₹2,000", discount: "7%" },
+                      { id: 'd2', name: "Whiskas Adult Ocean Fish Cat Food", img: "https://placehold.co/200/FFF/000?text=Product", weight: "1.2 kg", price: "₹390", oldPrice: "₹450", discount: "13%" },
+                      { id: 'd3', name: "Farmina N&D Chicken & Pomegranate", img: "https://placehold.co/200/FFF/000?text=Product", weight: "2.5 kg", price: "₹2,500", oldPrice: "₹2,800", discount: "10%" },
+                      { id: 'd4', name: "Drools Absolute Calcium Bone", img: "https://placehold.co/200/FFF/000?text=Product", weight: "40 Pcs", price: "₹250", oldPrice: "₹300", discount: "16%" },
+                      { id: 'd5', name: "Himalaya Erina EP Tick Shampoo", img: "https://placehold.co/200/FFF/000?text=Product", weight: "200 ml", price: "₹180", oldPrice: "₹200", discount: "10%" },
+                    ].map((product, i) => (
+                      <div key={i} className="bg-white rounded-3xl w-[45vw] md:w-[260px] lg:w-[280px] shrink-0 snap-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm border border-gray-50">
+                        <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
+                          <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
+                          <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                            {product.discount && (
+                              <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">{product.discount} Off</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col flex-grow">
+                          <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                          <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</div>
+                          <div className="flex items-center justify-between gap-2 mt-auto">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-black text-sm md:text-base">{product.price}</span>
+                              <span className="text-[10px] md:text-xs text-gray-400 line-through">{product.oldPrice}</span>
+                            </div>
+                            {(() => {
+                              const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
+                              return cartItem ? (
+                                <div className="flex h-7 md:h-8 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                                  <button
+                                    className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                                    onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                  >
+                                    <FiMinus className="h-3 w-3" />
+                                  </button>
+                                  <span className="grid h-7 md:h-8 min-w-7 md:min-w-8 place-items-center bg-white text-[10px] md:text-xs font-extrabold border-x border-gray-100">
+                                    {cartItem.quantity}
+                                  </span>
+                                  <button
+                                    className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                                    onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                  >
+                                    <FiPlus className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                  onAnimationEnd={() => setBouncingProductId(null)}
+                                  className={`bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-4 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] hover:scale-105 transition-all${bouncingProductId === (product.id || product._id) ? ' animate-add-btn-bounce' : ''}`}
+                                >
+                                  ADD
+                                </button>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div> 
+                */}
+
+                {/* Most Brought Section */}
+                {mostBroughtProducts.length > 0 && (
+                <div className="mt-10 mb-10">
+                  <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">Most Brought</h2>
+                  <div className="flex gap-3 md:gap-6 overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden pb-4 pt-2 px-2">
+                    {mostBroughtProducts.map((product, i) => (
+                      <div key={i} className="bg-white rounded-3xl w-[45vw] md:w-[260px] lg:w-[280px] shrink-0 snap-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col overflow-hidden group p-3 md:p-4 shadow-sm border border-gray-50">
+                        <div className="w-full h-28 md:h-40 flex items-center justify-center bg-gray-50 rounded-xl mb-3 md:mb-4 p-1 md:p-2 relative">
+                          <img src={product.img} alt={product.name} className="h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" />
+                          <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                            {product.discount && (
+                              <div className="bg-[#FF5757] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">{product.discount} Off</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col flex-grow">
+                          <h3 className="font-bold text-black text-xs md:text-sm line-clamp-2 mb-0.5 md:mb-1">{product.name}</h3>
+                          <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2">{product.weight}</div>
+                          <div className="flex items-center justify-between gap-2 mt-auto">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-black text-sm md:text-base">{product.price}</span>
+                              <span className="text-[10px] md:text-xs text-gray-400 line-through">{product.oldPrice}</span>
+                            </div>
+                            {(() => {
+                              const cartItem = cartItems.find(item => item.productId === (product.id || product._id));
+                              return cartItem ? (
+                                <div className="flex h-7 md:h-8 items-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                                  <button
+                                    className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                                    onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                  >
+                                    <FiMinus className="h-3 w-3" />
+                                  </button>
+                                  <span className="grid h-7 md:h-8 min-w-7 md:min-w-8 place-items-center bg-white text-[10px] md:text-xs font-extrabold border-x border-gray-100">
+                                    {cartItem.quantity}
+                                  </span>
+                                  <button
+                                    className="grid h-7 md:h-8 w-7 md:w-8 place-items-center hover:bg-gray-100 transition-colors"
+                                    onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                  >
+                                    <FiPlus className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <motion.button
+                                  onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.92 }}
+                                  animate={{
+                                    boxShadow: [
+                                      "0px 0px 0px 0px rgba(255, 208, 0, 0)",
+                                      "0px 0px 0px 6px rgba(255, 208, 0, 0.25)",
+                                      "0px 0px 0px 0px rgba(255, 208, 0, 0)"
+                                    ]
+                                  }}
+                                  transition={{
+                                    boxShadow: { repeat: Infinity, duration: 2, ease: "easeInOut" },
+                                    scale: { type: "spring", stiffness: 400, damping: 10 }
+                                  }}
+                                  className="relative overflow-hidden bg-[#FFD000] text-black text-[10px] md:text-sm font-bold px-4 md:px-6 py-1 md:py-2 rounded-full hover:bg-[#ffdb33] transition-colors"
+                                >
+                                  <span className="relative z-10">ADD</span>
+                                  <motion.div
+                                    animate={{ x: ["-100%", "200%"] }}
+                                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut", repeatDelay: 1 }}
+                                    className="absolute inset-0 z-0 w-[150%] -skew-x-12 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                                  />
+                                </motion.button>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                )}
+              </div>
+            ) : isInitialLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-5">
+                {Array.from({ length: 8 }).map((_, i) => <ProductSkeletonCard key={i} />)}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="text-6xl mb-4">🐾</div>
+                <h3 className="text-xl font-bold text-gray-700 mb-2">No products found</h3>
+                <p className="text-gray-400 text-sm">Try selecting a different category</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-5">
+                  {products.map((product, i) => (
+                    <ProductCard
+                      key={`${product.id}-${i}`}
+                      product={product}
+                      coupons={productCoupons}
+                      onOpenProduct={handleOpenProduct}
+                      onAddToCart={handleAddToCart}
+                      onOpenVariants={handleOpenVariants}
+                    />  
+                  ))}
+
+                  {isFetchingMore && Array.from({ length: 4 }).map((_, i) => <ProductSkeletonCard key={`skel-${i}`} />)}
+                </div>
+
+                <div ref={sentinelRef} className="h-10 mt-4" />
+
+                {!isFetchingMore && currentPage >= totalPages && products.length > 0 && (
+                  <p className="text-center text-gray-400 text-sm font-bold py-6 tracking-wide">
+                    — You've seen all {totalProducts} products —
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </main>
+
+        <div className="bg-white w-full">
+          <Benefit />
+          <WhyTrustUs />
+          {/* <BestOffer /> */}
+          <Testimonials />
+          <Footer />
+        </div>
+      </div>
+    </>
+  );
+}
